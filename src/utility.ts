@@ -10,3 +10,7 @@ export function getYearFraction(month = 0, day = 0) {
 export function getDateNumber(inputDate: number[]) {
   return inputDate[0] + getYearFraction(inputDate[1], inputDate[2]);
 }
+
+export interface PathTransformer {
+  transformFn: (input: React.SVGProps<SVGPathElement>) => React.SVGProps<SVGPathElement>
+}
