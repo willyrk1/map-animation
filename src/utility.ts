@@ -14,3 +14,8 @@ export function getDateNumber(inputDate: number[]) {
 export interface PathTransformer {
   transformFn?: (input: React.SVGProps<SVGPathElement>) => React.SVGProps<SVGPathElement>
 }
+
+export interface CountryDetails {
+  name: string
+  coordinates: Array<number[][]>
+}

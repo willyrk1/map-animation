@@ -4,10 +4,12 @@ import ModernWorld from './paths/ModernWorld';
 import { modernColorMap } from './paths/modernConstants';
 import AustriaHungary from './paths/AustriaHungary';
 import PathBuilder from "./paths/PathBuilder.tsx";
+import modernCountries from "./modernCountriesEvery5mi.json"
+import {CountryDetails} from "./utility.ts";
 
 export default function App() {
   // const [viewBox, setViewBox] = React.useState("504 305 13 13");
-  const [viewBox, setViewBox] = React.useState("8 32 10 7");
+  const [viewBox, setViewBox] = React.useState("0 0 360 260");
   const animationRef = React.useRef<number>();
 
   const startBox = { x: 500, y: 50, width: 400, height: 400 };
@@ -67,7 +69,10 @@ export default function App() {
         xmlns="http://www.w3.org/2000/svg"
         viewBox={viewBox}
       >
-        <PathBuilder />
+        {Object.values<CountryDetails>(modernCountries).map(({ coordinates }) => {
+          return coordinates.map(countryCoordinates => <PathBuilder countryCoordinates={countryCoordinates} />)
+        })}
+
         {/*<ModernWorld transformFn={transformFn} />*/}
         {/*<AustriaHungary transformFn={transformFn2}/>*/}
       </svg>
