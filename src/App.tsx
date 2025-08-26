@@ -3,6 +3,7 @@ import './App.css';
 import ModernWorld from './paths/ModernWorld';
 import { modernColorMap } from './paths/modernConstants';
 import AustriaHungary from './paths/AustriaHungary';
+import PathBuilder from "./paths/PathBuilder.tsx";
 
 export default function App() {
   const [viewBox, setViewBox] = React.useState("504 305 13 13");
@@ -63,10 +64,11 @@ export default function App() {
     <div className='container'>
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        viewBox={viewBox}
+        // viewBox={viewBox}
       >
-        <ModernWorld transformFn={transformFn} />
-        <AustriaHungary transformFn={transformFn2}/>
+        <PathBuilder />
+        {/*<ModernWorld transformFn={transformFn} />*/}
+        {/*<AustriaHungary transformFn={transformFn2}/>*/}
       </svg>
     </div>
   );
