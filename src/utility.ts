@@ -12,5 +12,5 @@ export function getDateNumber(inputDate: number[]) {
 }
 
 export interface PathTransformer {
-  transformFn: (input: React.SVGProps<SVGPathElement>) => React.SVGProps<SVGPathElement>
+  transformFn?: (input: React.SVGProps<SVGPathElement>) => React.SVGProps<SVGPathElement>
 }

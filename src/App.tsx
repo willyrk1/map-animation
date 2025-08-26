@@ -2,9 +2,10 @@ import React from 'react';
 import './App.css';
 import ModernWorld from './paths/ModernWorld';
 import { modernColorMap } from './paths/modernConstants';
+import AustriaHungary from './paths/AustriaHungary';
 
 export default function App() {
-  const [viewBox, setViewBox] = React.useState("0 0 100 100");
+  const [viewBox, setViewBox] = React.useState("504 305 13 13");
   const animationRef = React.useRef<number>();
 
   const startBox = { x: 500, y: 50, width: 400, height: 400 };
@@ -36,7 +37,7 @@ export default function App() {
   }
 
   React.useEffect(() => {
-    startAnimation()
+    // startAnimation()
   }, [])
 
   function transformFn(input: React.SVGProps<SVGPathElement>): React.SVGProps<SVGPathElement> {
@@ -48,6 +49,16 @@ export default function App() {
     }
   }
 
+  function transformFn2(input: React.SVGProps<SVGPathElement>): React.SVGProps<SVGPathElement> {
+    const modernColorMap2 = {...modernColorMap, 'Austria': '#66cdff'}
+    return {
+      ...input,
+      stroke: "black",
+      strokeWidth: 0.1,
+      fill: modernColorMap2[input.title],
+    }
+  }
+
   return (
     <div className='container'>
       <svg
@@ -55,6 +66,7 @@ export default function App() {
         viewBox={viewBox}
       >
         <ModernWorld transformFn={transformFn} />
+        <AustriaHungary transformFn={transformFn2}/>
       </svg>
     </div>
   );

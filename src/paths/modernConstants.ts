@@ -38,7 +38,8 @@ export const modernColorMap: Record<string, string> = {
   'Cyprus': '#997b00',
   'Denmark': '#80007e',
   'United Kingdom': '#ff4f33',
-  'San Marino': '#e600d2',
+  'San Marino': '#00abff',
   'Ireland': '#00e607',
   'Liechtenstein': '#00abff',
+  'Andorra': '#e600d2',
 }
