@@ -6,7 +6,8 @@ import AustriaHungary from './paths/AustriaHungary';
 import PathBuilder from "./paths/PathBuilder.tsx";
 
 export default function App() {
-  const [viewBox, setViewBox] = React.useState("504 305 13 13");
+  // const [viewBox, setViewBox] = React.useState("504 305 13 13");
+  const [viewBox, setViewBox] = React.useState("8 32 10 7");
   const animationRef = React.useRef<number>();
 
   const startBox = { x: 500, y: 50, width: 400, height: 400 };
@@ -64,7 +65,7 @@ export default function App() {
     <div className='container'>
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        // viewBox={viewBox}
+        viewBox={viewBox}
       >
         <PathBuilder />
         {/*<ModernWorld transformFn={transformFn} />*/}
