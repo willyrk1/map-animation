@@ -1,3 +1,7 @@
+import modernCountriesEvery5mi from "./modernCountriesEvery5mi.json"
+import modernCountriesLowRes from "./custom.lores.geo.json"
+import modernCountriesHighRes from "./custom.hires.geo.json"
+import {Feature, FeatureCollection, GeoJSON, GeoJsonObject, Position} from "geojson";
 
 export interface PathTransformer {
   transformFn?: (input: React.SVGProps<SVGPathElement>) => React.SVGProps<SVGPathElement>
@@ -24,5 +28,38 @@ export function longLat2CSV([long, lat]: LongLat) {
 export function latLong2ViewBox(left: number, top: number, right: number, bottom: number) {
   const bottomY = lat2y(bottom)
   const topY = lat2y(top)
-  return `${left + 180} ${180 - topY} ${right - left} ${topY - lat2y(bottom)}`
+  return `${left + 180} ${180 - topY} ${right - left} ${topY - bottomY}`
+}
+
+export function getCountriesEvery5mi() {
+  return modernCountriesEvery5mi as unknown as Record<string, CountryDetails>
+}
+
+export function getCountriesLowRes() {
+  return geoJson2CountryDetails(modernCountriesLowRes as FeatureCollection)
+}
+
+export function getCountriesHighRes() {
+  return geoJson2CountryDetails(modernCountriesHighRes as FeatureCollection)
+}
+
+function geoJson2CountryDetails(geoJson: FeatureCollection) {
+  return geoJson.features.reduce(toCountryDetails, {})
+}
+
+function toCountryDetails(countryDetailsMap: Record<string, CountryDetails>, feature: Feature){
+  const p = feature.properties
+  const name: string = p?.name
+  const geometry = feature.geometry
+  let coordinates: Array<Array<Position>> | undefined = undefined
+  if (geometry.type === "Polygon") {
+    coordinates = geometry.coordinates
+  }
+  else if (geometry.type === "MultiPolygon") {
+    coordinates = geometry.coordinates.flat()
+  }
+  if (coordinates)
+    countryDetailsMap[name] = { name, coordinates }
+
+  return countryDetailsMap
 }

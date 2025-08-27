@@ -1,17 +1,16 @@
-import { latLong2ViewBox, LongLat, longLat2CSV } from "../utility"
+import {LongLat, longLat2CSV, PathTransformer} from "../utility"
+import {SVGProps} from "react";
+import TransformedPath from "../TransformedPath.tsx";
 
-export interface LongLatPathProps {
+export interface LongLatPathProps extends SVGProps<SVGPathElement>, PathTransformer {
+    countryName: string
     countryCoordinates: Array<LongLat>
 }
 
 export default function LongLatPath(props: Readonly<LongLatPathProps>) {
-    const { countryCoordinates } = props
+    const {countryName, countryCoordinates, ...rest} = props
     const path = countryCoordinates.map(longLat2CSV)
-    // const [x, y, width, height] = latLong2ViewBox(9, 49.5, 17.5, 46).split(' ')
     return (
-        <>
-            <path fill='none' stroke='black' strokeWidth={0.1} d={`M ${path.join(' ')} Z`} />
-            {/* <rect {...{x, y, width, height}} fill="none" stroke="black" /> */}
-        </>
+        <TransformedPath name={countryName} fill='none' stroke='black' strokeWidth={0.1} d={`M ${path.join(' ')} Z`} {...rest} />
     )
 }

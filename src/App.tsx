@@ -1,14 +1,14 @@
 import React from 'react';
 import './App.css';
-import { modernColorMap } from './paths/modernConstants';
+import {modernColorMap} from './paths/modernConstants';
 import LongLatPath from "./paths/LongLatPath.tsx";
-import modernCountries from "./modernCountriesEvery5mi.json"
-import {CountryDetails, latLong2ViewBox} from "./utility.ts";
+import {getCountriesHighRes, latLong2ViewBox} from "./utility.ts";
 
 export default function App() {
   // const [viewBox, setViewBox] = React.useState("504 305 13 13");
   // const [viewBox, setViewBox] = React.useState('0 0 360 360');
-  const [viewBox, setViewBox] = React.useState(latLong2ViewBox(7, 51, 19, 44));
+  // const [viewBox, setViewBox] = React.useState(latLong2ViewBox(7, 51, 19, 44));
+  const [viewBox, setViewBox] = React.useState(latLong2ViewBox(-12, 60, 51, 33));
   const animationRef = React.useRef<number>();
 
   const startBox = { x: 500, y: 50, width: 400, height: 400 };
@@ -47,8 +47,8 @@ export default function App() {
     return {
       ...input,
       stroke: "black",
-      strokeWidth: 0.1,
-      fill: modernColorMap[input.title],
+      strokeWidth: 0.03,
+      fill: modernColorMap[input.name ?? ''] ?? 'none',
     }
   }
 
@@ -58,7 +58,7 @@ export default function App() {
       ...input,
       stroke: "black",
       strokeWidth: 0.1,
-      fill: modernColorMap2[input.title],
+      fill: input.name ? modernColorMap[input.name] : 'none',
     }
   }
 
@@ -68,10 +68,14 @@ export default function App() {
         xmlns="http://www.w3.org/2000/svg"
         viewBox={viewBox}
       >
-        {Object.values(modernCountries as Record<string, CountryDetails>).map(({ coordinates }) => {
-          return coordinates.map(countryCoordinates => <LongLatPath countryCoordinates={countryCoordinates} />)
+        {Object.values(getCountriesHighRes()).map(({name, coordinates}) => {
+          return coordinates.map(countryCoordinates => (
+              <LongLatPath countryName={name}
+                           countryCoordinates={countryCoordinates}
+                           transformFn={transformFn}/>
+          ))
         })}
       </svg>
     </div>
-  );
+  )
 }
