@@ -1,21 +1,28 @@
 
-export function getYearFraction(month = 0, day = 0) {
-  if (!month) {
-    return 0.5
-  }
-  const mathDate = new Date(2000, month - 1, day || 15)
-  return (mathDate.getTime() - new Date(2000, 0).getTime()) / (1000 * 3600 * 24 * 365)
-}
-
-export function getDateNumber(inputDate: number[]) {
-  return inputDate[0] + getYearFraction(inputDate[1], inputDate[2]);
-}
-
 export interface PathTransformer {
   transformFn?: (input: React.SVGProps<SVGPathElement>) => React.SVGProps<SVGPathElement>
 }
 
+export type LongLat = [number, number]
+
 export interface CountryDetails {
   name: string
-  coordinates: Array<number[][]>
+  coordinates: Array<Array<LongLat>>
+}
+
+const RAD2DEG = 180 / Math.PI;
+const PI_4 = Math.PI / 4;
+
+export function lat2y(lat: number) {
+    return Math.log(Math.tan((lat / 90 + 1) * PI_4 )) * RAD2DEG;
+}
+
+export function longLat2CSV([long, lat]: LongLat) {
+  return `${long + 180},${180 - lat2y(lat)}`
+}
+
+export function latLong2ViewBox(left: number, top: number, right: number, bottom: number) {
+  const bottomY = lat2y(bottom)
+  const topY = lat2y(top)
+  return `${left + 180} ${180 - topY} ${right - left} ${topY - lat2y(bottom)}`
 }
