@@ -1,10 +1,17 @@
 .container {
   height: 100vh;
+  position: relative;
 }
 
 .container svg {
   height: 100%;
   width: 100%;
+}
+
+.next {
+  position: absolute;
+  margin: 10px;
+  padding: 10px;
 }
 
 .detail-link {

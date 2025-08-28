@@ -12,7 +12,29 @@ export default function App() {
   // const [viewBox, setViewBox] = React.useState('0 0 360 360');
   const [viewBox, setViewBox] = React.useState(defaultViewBox);
   // const [viewBox, setViewBox] = React.useState(latLong2ViewBox(-12, 60, 51, 33));
-  const [animationOpacity, setAnimationOpacity] = React.useState(0.0)
+
+  const [countries, setCountries] = React.useState(initCountries)
+
+  function initCountries(): Record<string, CountryDetails> {
+    // const baseCountries = getCountriesHighRes()
+    const initialCountries = {
+      // "Austria": baseCountries["Austria"],
+      // "Hungary": baseCountries["Hungary"],
+      // "Czechia": baseCountries["Czechia"],
+      // "Slovakia": baseCountries["Slovakia"],
+      ...getCountriesHighRes(),
+      ...(austriaHungary as unknown as Record<string, CountryDetails>)
+    }
+    for (const name in initialCountries) {
+      initialCountries[name].pathProps = {
+        stroke: "black",
+        strokeWidth: 0.03,
+        fill: modernColorMap[name ?? ''] ?? 'none',
+        opacity: (name === 'AustriaHungary') ? 0.0 : 1.0,
+      }
+    }
+    return initialCountries
+  }
 
   const animationRef = React.useRef<number>();
 
@@ -50,7 +72,17 @@ export default function App() {
     const t = Math.min(elapsed / duration, 1); // Normalized time, clamped to [0,1]
 
     // Interpolate each value
-    setAnimationOpacity(t);
+    setCountries(curCountries => {
+      const curAustriaHungary = curCountries['AustriaHungary']
+      const newAustriaHungary: CountryDetails = {
+        ...curAustriaHungary,
+        pathProps: {
+          ...curAustriaHungary.pathProps,
+          opacity: t
+        }
+      }
+      return { ...curCountries, 'AustriaHungary': newAustriaHungary }
+    })
     console.log('QQQ1', t)
 
     if (t < 1) {
@@ -66,37 +98,26 @@ export default function App() {
 
   React.useEffect(() => {
     // startViewboxAnimation()
-    startOpacityAnimation()
+    // startOpacityAnimation()
   }, [])
 
-  function transformFn(input: React.SVGProps<SVGPathElement>): React.SVGProps<SVGPathElement> {
-    return {
-      ...input,
-      stroke: "black",
-      strokeWidth: 0.03,
-      fill: modernColorMap[input.name ?? ''] ?? 'none',
-      opacity: (input.name === 'AustriaHungary') ? animationOpacity : /*(input.name === 'Austria') ? 1.0 - animationOpacity :*/ 1.0,
-    }
-  }
-
-  const modernCountries = getCountriesHighRes()
-
-  const displayCountries = {
-    ...modernCountries,
-    ...(austriaHungary as unknown as Record<string, CountryDetails>)
+  function handleNext() {
+    startOpacityAnimation()
   }
 
   return (
     <div className='container'>
+      <button className='next' onClick={handleNext}>NEXT</button>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox={viewBox}
       >
-        {Object.values(displayCountries).map(({name, coordinates}) => {
-          return coordinates.map(countryCoordinates => (
-              <LongLatPath countryName={name}
+        {Object.values(countries).map(({name, coordinates, pathProps}) => {
+          return coordinates.map((countryCoordinates, index) => (
+              <LongLatPath key={`${name}${index}`}
+                           countryName={name}
                            countryCoordinates={countryCoordinates}
-                           transformFn={transformFn}
+                           pathProps={pathProps}
               />
           ))
         })}

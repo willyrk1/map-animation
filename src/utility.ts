@@ -1,15 +1,13 @@
 import modernCountriesHighRes from "./custom.hires.geo.json"
 import {Feature, FeatureCollection, Position} from "geojson";
-
-export interface PathTransformer {
-  transformFn?: (input: React.SVGProps<SVGPathElement>) => React.SVGProps<SVGPathElement>
-}
+import React from "react";
 
 export type LongLat = [number, number]
 
 export interface CountryDetails {
   name: string
   coordinates: Array<Array<LongLat>>
+  pathProps?: React.SVGProps<SVGPathElement>
 }
 
 const RAD2DEG = 180 / Math.PI;

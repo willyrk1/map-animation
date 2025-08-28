@@ -1,16 +1,17 @@
-import {LongLat, longLat2CSV, PathTransformer} from "../utility"
-import {SVGProps} from "react";
-import TransformedPath from "../TransformedPath.tsx";
+import {LongLat, longLat2CSV} from "../utility"
+import React from "react";
 
-export interface LongLatPathProps extends SVGProps<SVGPathElement>, PathTransformer {
+export interface LongLatPathProps {
     countryName: string
     countryCoordinates: Array<LongLat>
+    pathProps?: React.SVGProps<SVGPathElement>
 }
 
-export default function LongLatPath(props: Readonly<LongLatPathProps>) {
-    const {countryName, countryCoordinates, ...rest} = props
+export default React.memo(function LongLatPath(props: Readonly<LongLatPathProps>) {
+    const {countryName, countryCoordinates, pathProps} = props
     const path = countryCoordinates.map(longLat2CSV)
     return (
-        <TransformedPath name={countryName} fill='none' stroke='black' strokeWidth={0.1} d={`M ${path.join(' ')} Z`} {...rest} />
+        <path name={countryName} fill='none' stroke='black' strokeWidth={0.1}
+              d={`M ${path.join(' ')} Z`} {...pathProps} />
     )
-}
+})
