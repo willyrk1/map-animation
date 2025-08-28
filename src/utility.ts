@@ -1,7 +1,5 @@
-import modernCountriesEvery5mi from "./modernCountriesEvery5mi.json"
-import modernCountriesLowRes from "./custom.lores.geo.json"
 import modernCountriesHighRes from "./custom.hires.geo.json"
-import {Feature, FeatureCollection, GeoJSON, GeoJsonObject, Position} from "geojson";
+import {Feature, FeatureCollection, Position} from "geojson";
 
 export interface PathTransformer {
   transformFn?: (input: React.SVGProps<SVGPathElement>) => React.SVGProps<SVGPathElement>
@@ -31,13 +29,9 @@ export function latLong2ViewBox(left: number, top: number, right: number, bottom
   return `${left + 180} ${180 - topY} ${right - left} ${topY - bottomY}`
 }
 
-export function getCountriesEvery5mi() {
-  return modernCountriesEvery5mi as unknown as Record<string, CountryDetails>
-}
-
-export function getCountriesLowRes() {
-  return geoJson2CountryDetails(modernCountriesLowRes as FeatureCollection)
-}
+// export function getCountriesEvery5mi() {
+//   return modernCountriesEvery5mi as unknown as Record<string, CountryDetails>
+// }
 
 export function getCountriesHighRes() {
   return geoJson2CountryDetails(modernCountriesHighRes as FeatureCollection)

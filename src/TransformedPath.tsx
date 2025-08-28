@@ -5,5 +5,5 @@ export type TransformedPathProps = React.SVGProps<SVGPathElement> & PathTransfor
 
 export default function TransformedPath(props: TransformedPathProps) {
   const {transformFn, ...rest} = props
-  return <path {...transformFn ? transformFn(rest) : undefined} />
+  return <path {...transformFn ? transformFn(rest) : rest} />
 }
