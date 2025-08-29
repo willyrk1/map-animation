@@ -1,5 +1,5 @@
-{
-  "AustriaHungary": {
+[
+  {
     "name": "AustriaHungary",
     "coordinates": [
       [
@@ -6486,4 +6486,4 @@
       ]
     ]
   }
-}
+]

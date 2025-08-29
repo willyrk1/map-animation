@@ -1,40 +1,46 @@
 import React from 'react';
 import './App.css';
-import {modernColorMap} from './paths/modernConstants';
+import { modernColorMap } from './paths/modernConstants';
 import LongLatPath from "./paths/LongLatPath.tsx";
-import {CountryDetails, getCountriesHighRes, latLong2ViewBox} from "./utility.ts";
+import { CountryDetails, getCountriesHighRes, latLong2ViewBox } from "./utility.ts";
 import austriaHungary from "./AustriaHungary.json"
 
-const defaultViewBox = latLong2ViewBox(7, 51, 19, 44)
+function toWithPathProps(country: CountryDetails): CountryDetails {
+  return {
+    ...country,
+    pathProps: {
+      stroke: "black",
+      strokeWidth: 0.03,
+      fill: modernColorMap[country.name ?? ''] ?? 'none',
+    }
+  }
+}
+
+function toHiddenWithPathProps(country: CountryDetails): CountryDetails {
+  const withPathProps = toWithPathProps(country)
+  return {
+    ...withPathProps,
+    pathProps: {
+      ...withPathProps.pathProps,
+      opacity: 0.0
+    }
+  }
+}
+
+function initCountries() {
+  const initialCountries = [
+    ...getCountriesHighRes().map(toWithPathProps),
+    ...(austriaHungary as unknown as Array<CountryDetails>).map(toHiddenWithPathProps)
+  ]
+
+  return initialCountries
+}
+
+const defaultViewBox = latLong2ViewBox(7, 54, 19, 42)
 
 export default function App() {
-  // const [viewBox, setViewBox] = React.useState("504 305 13 13");
-  // const [viewBox, setViewBox] = React.useState('0 0 360 360');
   const [viewBox, setViewBox] = React.useState(defaultViewBox);
-  // const [viewBox, setViewBox] = React.useState(latLong2ViewBox(-12, 60, 51, 33));
-
-  const [countries, setCountries] = React.useState(initCountries)
-
-  function initCountries(): Record<string, CountryDetails> {
-    // const baseCountries = getCountriesHighRes()
-    const initialCountries = {
-      // "Austria": baseCountries["Austria"],
-      // "Hungary": baseCountries["Hungary"],
-      // "Czechia": baseCountries["Czechia"],
-      // "Slovakia": baseCountries["Slovakia"],
-      ...getCountriesHighRes(),
-      ...(austriaHungary as unknown as Record<string, CountryDetails>)
-    }
-    for (const name in initialCountries) {
-      initialCountries[name].pathProps = {
-        stroke: "black",
-        strokeWidth: 0.03,
-        fill: modernColorMap[name ?? ''] ?? 'none',
-        opacity: (name === 'AustriaHungary') ? 0.0 : 1.0,
-      }
-    }
-    return initialCountries
-  }
+  const [countries, setCountries] = React.useState(initCountries())
 
   const animationRef = React.useRef<number>();
 
@@ -73,17 +79,25 @@ export default function App() {
 
     // Interpolate each value
     setCountries(curCountries => {
-      const curAustriaHungary = curCountries['AustriaHungary']
-      const newAustriaHungary: CountryDetails = {
+      const austriaHungaryIndex = curCountries.findIndex(({ name }) => name === 'AustriaHungary')
+      const curAustriaHungary = curCountries[austriaHungaryIndex]
+      const newCountries = curCountries.toSpliced(austriaHungaryIndex, 1, {
         ...curAustriaHungary,
         pathProps: {
           ...curAustriaHungary.pathProps,
           opacity: t
         }
+      })
+      if (t >= 1) {
+        const austriaIndex = curCountries.findIndex(({ name }) => name === 'Austria')
+        if (austriaIndex >= 0)
+          curCountries.splice(austriaIndex, 1)
+        const hungaryIndex = curCountries.findIndex(({ name }) => name === 'Hungary')
+        if (hungaryIndex >= 0)
+          curCountries.splice(hungaryIndex, 1)
       }
-      return { ...curCountries, 'AustriaHungary': newAustriaHungary }
+      return newCountries
     })
-    console.log('QQQ1', t)
 
     if (t < 1) {
       animationRef.current = requestAnimationFrame(() => animateOpacity(startTime));
@@ -112,13 +126,13 @@ export default function App() {
         xmlns="http://www.w3.org/2000/svg"
         viewBox={viewBox}
       >
-        {Object.values(countries).map(({name, coordinates, pathProps}) => {
+        {countries.map(({ name, coordinates, pathProps }) => {
           return coordinates.map((countryCoordinates, index) => (
-              <LongLatPath key={`${name}${index}`}
-                           countryName={name}
-                           countryCoordinates={countryCoordinates}
-                           pathProps={pathProps}
-              />
+            <LongLatPath key={`${name}${index}`}
+              countryName={name}
+              countryCoordinates={countryCoordinates}
+              pathProps={pathProps}
+            />
           ))
         })}
       </svg>
