@@ -38,7 +38,14 @@ function initCountries() {
   return initialCountries
 }
 
-const defaultViewBox = latLong2ViewBox(7, 54, 19, 42)
+const defaultViewBox = latLong2ViewBox(-26, 72, 67, 24)
+
+interface ViewBox {x: number, y: number, width: number, height: number}
+
+function viewBoxFromString(viewBoxString: string) {
+  const [x, y, width, height] = viewBoxString.split(' ').map(v => +v)
+  return {x, y, width, height}
+}
 
 export default function App() {
   const [viewBox, setViewBox] = React.useState(defaultViewBox);
@@ -47,36 +54,23 @@ export default function App() {
 
   const animationRef = React.useRef<number>();
 
-  const startBox = { x: 500, y: 50, width: 400, height: 400 };
-  const targetBox = { x: 500, y: 225, width: 150, height: 150 };
   const duration = 1000; // Duration in milliseconds (1 second)
 
-  function animateViewBox(startTime: number) {
-    const now = performance.now();
-    const elapsed = now - startTime;
-    const t = Math.min(elapsed / duration, 1); // Normalized time, clamped to [0,1]
+  function animateViewBoxChange(startBoxString: string, targetBoxString: string) {
+    return function (t: number) {
+      const startBox = viewBoxFromString(startBoxString)
+      const targetBox = viewBoxFromString(targetBoxString)
+      const x = startBox.x + (targetBox.x - startBox.x) * t;
+      const y = startBox.y + (targetBox.y - startBox.y) * t;
+      const width = startBox.width + (targetBox.width - startBox.width) * t;
+      const height = startBox.height + (targetBox.height - startBox.height) * t;
 
-    // Interpolate each value
-    const x = startBox.x + (targetBox.x - startBox.x) * t;
-    const y = startBox.y + (targetBox.y - startBox.y) * t;
-    const width = startBox.width + (targetBox.width - startBox.width) * t;
-    const height = startBox.height + (targetBox.height - startBox.height) * t;
-
-    setViewBox(`${x} ${y} ${width} ${height}`);
-
-    if (t < 1) {
-      animationRef.current = requestAnimationFrame(() => animateViewBox(startTime));
+      setViewBox(`${x} ${y} ${width} ${height}`);
     }
   }
 
-  function startViewboxAnimation() {
-    if (animationRef.current !== undefined)
-      cancelAnimationFrame(animationRef.current);
-    animationRef.current = requestAnimationFrame(() => animateViewBox(performance.now()));
-  }
-
   function animateCountryReplacement(fromCountryNames: Array<string>, toCountryName: string, toCountry: CountryDetails) {
-    return function(t: number) {
+    return function (t: number) {
       setCountries(curCountries => {
         const toCountryIndex = curCountries.findIndex(({ name }) => name === toCountryName)
         const curToCountry = curCountries[toCountryIndex] ?? toHiddenWithPathProps(toCountry)
@@ -108,7 +102,7 @@ export default function App() {
     }
   }
 
-  function animateOpacity(startTime: number, animateFn: (t: number) => void) {
+  function doAnimation(startTime: number, animateFn: (t: number) => void) {
     const now = performance.now();
     const elapsed = now - startTime;
     const t = Math.min(elapsed / duration, 1); // Normalized time, clamped to [0,1]
@@ -116,14 +110,14 @@ export default function App() {
     animateFn(t)
 
     if (t < 1) {
-      animationRef.current = requestAnimationFrame(() => animateOpacity(startTime, animateFn));
+      animationRef.current = requestAnimationFrame(() => doAnimation(startTime, animateFn));
     }
   }
 
-  function startOpacityAnimation(animateFn: (t: number) => void) {
+  function startAnimation(animateFn: (t: number) => void) {
     if (animationRef.current !== undefined)
       cancelAnimationFrame(animationRef.current);
-    animationRef.current = requestAnimationFrame(() => animateOpacity(performance.now(), animateFn));
+    animationRef.current = requestAnimationFrame(() => doAnimation(performance.now(), animateFn));
   }
 
   React.useEffect(() => {
@@ -133,12 +127,16 @@ export default function App() {
 
   function handleNext() {
     [
-      () => startOpacityAnimation(animateCountryReplacement(
-        ['Austria', 'Hungary'], 'AustriaHungary', austriaHungary[0])
-      ),
-      () => startOpacityAnimation(animateCountryReplacement(
-        ['AustriaHungary'], 'AustriaHungaryCZ', austriaHungaryCZ[0])
-      ),
+      () => startAnimation(animateViewBoxChange(
+        viewBox,
+        latLong2ViewBox(7, 54, 19, 42)
+      )),
+      () => startAnimation(animateCountryReplacement(
+        ['Austria', 'Hungary'], 'AustriaHungary', austriaHungary[0]
+      )),
+      () => startAnimation(animateCountryReplacement(
+        ['AustriaHungary'], 'AustriaHungaryCZ', austriaHungaryCZ[0]
+      )),
     ][step]()
 
     setStep(curStep => curStep + 1)
