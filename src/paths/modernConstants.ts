@@ -18,6 +18,7 @@ export const modernColorMap: Record<string, string> = {
   'Slovenia': '#4d54ff',
   'Austria': '#e200ff',
   'AustriaHungary': '#e200ff',
+  'AustriaHungaryCZ': '#e200ff',
   'Italy': '#ff3377',
   'Slovakia': '#8bff66',
   'Czechia': '#cc0012',
