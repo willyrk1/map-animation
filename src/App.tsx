@@ -29,10 +29,10 @@ function toHiddenWithPathProps(country: CountryDetails): CountryDetails {
 }
 
 function initCountries() {
-  const hiddenCountries = [...austriaHungary, ...austriaHungaryCZ].map(toHiddenWithPathProps)
+  // const hiddenCountries = [...austriaHungary, ...austriaHungaryCZ].map(toHiddenWithPathProps)
   const initialCountries = [
     ...getCountriesHighRes().map(toWithPathProps),
-    ...hiddenCountries
+    // ...hiddenCountries
   ]
 
   return initialCountries
@@ -75,47 +75,37 @@ export default function App() {
     animationRef.current = requestAnimationFrame(() => animateViewBox(performance.now()));
   }
 
-  function combineAustriaAndHungary(t: number) {
-    setCountries(curCountries => {
-      const austriaHungaryIndex = curCountries.findIndex(({ name }) => name === 'AustriaHungary')
-      const curAustriaHungary = curCountries[austriaHungaryIndex]
-      const newCountries = curCountries.toSpliced(austriaHungaryIndex, 1, {
-        ...curAustriaHungary,
-        pathProps: {
-          ...curAustriaHungary.pathProps,
-          opacity: t
+  function animateCountryReplacement(fromCountryNames: Array<string>, toCountryName: string, toCountry: CountryDetails) {
+    return function(t: number) {
+      setCountries(curCountries => {
+        const toCountryIndex = curCountries.findIndex(({ name }) => name === toCountryName)
+        const curToCountry = curCountries[toCountryIndex] ?? toHiddenWithPathProps(toCountry)
+        const newToCountry = {
+          ...curToCountry,
+          pathProps: {
+            ...curToCountry.pathProps,
+            opacity: t
+          }
         }
-      })
-      if (t >= 1) {
-        const austriaIndex = curCountries.findIndex(({ name }) => name === 'Austria')
-        if (austriaIndex >= 0)
-          curCountries.splice(austriaIndex, 1)
-        const hungaryIndex = curCountries.findIndex(({ name }) => name === 'Hungary')
-        if (hungaryIndex >= 0)
-          curCountries.splice(hungaryIndex, 1)
-      }
-      return newCountries
-    })
-  }
 
-  function combineAHandCZ(t: number) {
-    setCountries(curCountries => {
-      const austriaHungaryCZIndex = curCountries.findIndex(({ name }) => name === 'AustriaHungaryCZ')
-      const curAustriaHungaryCZ = curCountries[austriaHungaryCZIndex]
-      const newCountries = curCountries.toSpliced(austriaHungaryCZIndex, 1, {
-        ...curAustriaHungaryCZ,
-        pathProps: {
-          ...curAustriaHungaryCZ.pathProps,
-          opacity: t
+        const newCountries = curCountries.toSpliced(
+          toCountryIndex >= 0 ? toCountryIndex : curCountries.length,
+          1,
+          newToCountry
+        )
+
+        if (t >= 1) {
+          for (const fromCountryName of fromCountryNames) {
+            const fromCountryIndex = newCountries.findIndex(({ name }) => name === fromCountryName)
+            if (fromCountryIndex >= 0) {
+              newCountries.splice(fromCountryIndex, 1)
+            }
+          }
         }
+
+        return newCountries
       })
-      if (t >= 1) {
-        const austriaHungaryIndex = curCountries.findIndex(({ name }) => name === 'AustriaHungary')
-        if (austriaHungaryIndex >= 0)
-          curCountries.splice(austriaHungaryIndex, 1)
-      }
-      return newCountries
-    })
+    }
   }
 
   function animateOpacity(startTime: number, animateFn: (t: number) => void) {
@@ -143,8 +133,12 @@ export default function App() {
 
   function handleNext() {
     [
-      () => startOpacityAnimation(combineAustriaAndHungary),
-      () => startOpacityAnimation(combineAHandCZ),
+      () => startOpacityAnimation(animateCountryReplacement(
+        ['Austria', 'Hungary'], 'AustriaHungary', austriaHungary[0])
+      ),
+      () => startOpacityAnimation(animateCountryReplacement(
+        ['AustriaHungary'], 'AustriaHungaryCZ', austriaHungaryCZ[0])
+      ),
     ][step]()
 
     setStep(curStep => curStep + 1)
