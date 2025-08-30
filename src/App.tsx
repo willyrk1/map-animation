@@ -5,6 +5,7 @@ import LongLatPath from "./paths/LongLatPath.tsx";
 import { CountryDetails, getCountriesHighRes, latLong2ViewBox } from "./utility.ts";
 import austriaHungary from "./AustriaHungary.json"
 import austriaHungaryCZ from "./AustriaHungaryCZ.json"
+import ahBalkans from "./AHBalkans.json"
 
 function toWithPathProps(country: CountryDetails): CountryDetails {
   return {
@@ -31,9 +32,8 @@ function toHiddenWithPathProps(country: CountryDetails): CountryDetails {
 function initCountries() {
   // const hiddenCountries = [...austriaHungary, ...austriaHungaryCZ].map(toHiddenWithPathProps)
   const initialCountries = [
-    ...getCountriesHighRes().map(toWithPathProps),
-    // ...hiddenCountries
-  ]
+    ...getCountriesHighRes(),
+  ].map(toWithPathProps)
 
   return initialCountries
 }
@@ -129,13 +129,17 @@ export default function App() {
     [
       () => startAnimation(animateViewBoxChange(
         viewBox,
-        latLong2ViewBox(7, 54, 19, 42)
+        // latLong2ViewBox(13, 48, 18, 42),
+        latLong2ViewBox(7, 52, 19, 40),
       )),
       () => startAnimation(animateCountryReplacement(
         ['Austria', 'Hungary'], 'AustriaHungary', austriaHungary[0]
       )),
       () => startAnimation(animateCountryReplacement(
         ['AustriaHungary'], 'AustriaHungaryCZ', austriaHungaryCZ[0]
+      )),
+      () => startAnimation(animateCountryReplacement(
+        ['AustriaHungaryCZ', 'Slovenia', 'Croatia', 'Bosnia and Herz.'], 'AustriaHungaryBalkans', ahBalkans[0]
       )),
     ][step]()
 
