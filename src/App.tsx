@@ -2,7 +2,7 @@ import React from 'react';
 import './App.css';
 import { modernColorMap } from './paths/modernConstants';
 import LongLatPath from "./paths/LongLatPath.tsx";
-import { CountryDetails, getCountriesHighRes, latLong2ViewBox } from "./utility.ts";
+import { CountryDetails, getCountriesHighRes, getSerbiaDetails, latLong2ViewBox } from "./utility.ts";
 import austriaHungary from "./AustriaHungary.json"
 import austriaHungaryCZ from "./AustriaHungaryCZ.json"
 import ahBalkans from "./AHBalkans.json"
@@ -33,6 +33,7 @@ function initCountries() {
   // const hiddenCountries = [...austriaHungary, ...austriaHungaryCZ].map(toHiddenWithPathProps)
   const initialCountries = [
     ...getCountriesHighRes(),
+    ...getSerbiaDetails(),
   ].map(toWithPathProps)
 
   return initialCountries
@@ -129,8 +130,8 @@ export default function App() {
     [
       () => startAnimation(animateViewBoxChange(
         viewBox,
-        // latLong2ViewBox(13, 48, 18, 42),
-        latLong2ViewBox(7, 52, 19, 40),
+        latLong2ViewBox(18.5, 47, 23.5, 41.5),
+        // latLong2ViewBox(7, 52, 19, 40),
       )),
       () => startAnimation(animateCountryReplacement(
         ['Austria', 'Hungary'], 'AustriaHungary', austriaHungary[0]

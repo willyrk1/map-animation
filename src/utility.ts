@@ -1,4 +1,5 @@
 import modernCountriesHighRes from "./custom.hires.geo.json"
+import serbia from "./Serbia.json"
 import {Feature, FeatureCollection, Position} from "geojson";
 import React from "react";
 
@@ -31,6 +32,10 @@ export function latLong2ViewBox(left: number, top: number, right: number, bottom
 
 export function getCountriesHighRes() {
   return geoJson2CountryDetails(modernCountriesHighRes as FeatureCollection)
+}
+
+export function getSerbiaDetails() {
+  return geoJson2CountryDetails(serbia as FeatureCollection)
 }
 
 function geoJson2CountryDetails(geoJson: FeatureCollection) {
