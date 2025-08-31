@@ -2,7 +2,7 @@ import React from 'react';
 import './App.css';
 import { modernColorMap } from './paths/modernConstants';
 import LongLatPath from "./paths/LongLatPath.tsx";
-import { CountryDetails, getCountriesHighRes, getSerbiaDetails, latLong2ViewBox, joinShapes } from "./utility.ts";
+import { CountryDetails, getCountriesHighRes, latLong2ViewBox, joinShapes, getVojvodina } from "./utility.ts";
 
 function toWithPathProps(country: CountryDetails): CountryDetails {
   return {
@@ -29,7 +29,7 @@ function toHiddenWithPathProps(country: CountryDetails): CountryDetails {
 function initCountries() {
   const initialCountries = [
     ...getCountriesHighRes(),
-    ...getSerbiaDetails(),
+    getVojvodina(),
   ].map(toWithPathProps)
 
   return initialCountries

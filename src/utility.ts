@@ -1,6 +1,6 @@
-import modernCountriesHighRes from "./custom.hires.geo.json"
-import serbia from "./Serbia.json"
-import {Feature, FeatureCollection, Position} from "geojson";
+import modernGeoJson from "./custom.hires.geo.json"
+import serbiaGeoJson from "./Serbia.json"
+import { Feature, FeatureCollection, Polygon, Position } from "geojson";
 import React from "react";
 
 export interface CountryDetails {
@@ -13,7 +13,7 @@ const RAD2DEG = 180 / Math.PI;
 const PI_4 = Math.PI / 4;
 
 export function lat2y(lat: number) {
-    return Math.log(Math.tan((lat / 90 + 1) * PI_4 )) * RAD2DEG;
+  return Math.log(Math.tan((lat / 90 + 1) * PI_4)) * RAD2DEG;
 }
 
 export function longLat2CSV([long, lat]: Position) {
@@ -26,23 +26,41 @@ export function latLong2ViewBox(left: number, top: number, right: number, bottom
   return `${left + 180} ${180 - topY} ${right - left} ${topY - bottomY}`
 }
 
-// export function getCountriesEvery5mi() {
-//   return modernCountriesEvery5mi as unknown as Record<string, CountryDetails>
-// }
-
 export function getCountriesHighRes() {
-  return geoJson2CountryDetails(modernCountriesHighRes as FeatureCollection)
+  return geoJson2CountryDetails(modernGeoJson as FeatureCollection)
 }
 
-export function getSerbiaDetails() {
-  return geoJson2CountryDetails(serbia as FeatureCollection)
+function isPolygonFeature(feature: Feature | undefined): feature is Feature<Polygon> {
+  return feature?.geometry.type === "Polygon";
+}
+
+const vojvodinaFeatureNames = [
+  "Sremski",
+  "Južno-Backi",
+  "Zapadno-Backi",
+  "Severno-Backi",
+  "Severno-Banatski",
+  "Srednje-Banatski",
+  "Južno-Banatski",
+]
+
+export function getVojvodina() {
+  const vojvodinaShapes = vojvodinaFeatureNames
+    .map(name => (serbiaGeoJson as FeatureCollection).features.find(f => f.properties?.name === name))
+    .filter(isPolygonFeature)
+    .map(f => f.geometry.coordinates.flat())
+  const coordinates = joinShapes(...vojvodinaShapes)
+  return {
+    name: "Vojvodina",
+    coordinates: [coordinates]
+  }
 }
 
 function geoJson2CountryDetails(geoJson: FeatureCollection) {
   return geoJson.features.map(toCountryDetails)
 }
 
-function toCountryDetails(feature: Feature): CountryDetails{
+function toCountryDetails(feature: Feature): CountryDetails {
   const p = feature.properties
   const name: string = p?.name
   const geometry = feature.geometry
@@ -64,8 +82,8 @@ function coordsMatch(coord1: Position, coord2: Position) {
   return coord1[0] === coord2[0] && coord1[1] === coord2[1]
 }
 
-export function joinShapes(path1: Array<Position>, ...otherPaths: Array<Array<Position>>) {
-  let finalPath = path1
+export function joinShapes(...paths: Array<Array<Position>>) {
+  let [finalPath, ...otherPaths] = paths
   for (let otherPath of otherPaths)
     finalPath = _joinShapes(finalPath, otherPath)
   return finalPath
@@ -151,8 +169,8 @@ function _joinShapes(path1: Array<Position>, path2: Array<Position>) {
       ...path1Fixed.slice(chain1End + 1),
     ]
   // if (chain1Start > chain1End && chain2Start > chain2End)
-    return [
-      ...path1Fixed.slice(chain1End, chain1Start + 1),
-      ...path2Oriented.slice(chain2End + 1, chain2Start).toReversed(),
-    ]
+  return [
+    ...path1Fixed.slice(chain1End, chain1Start + 1),
+    ...path2Oriented.slice(chain2End + 1, chain2Start).toReversed(),
+  ]
 }
