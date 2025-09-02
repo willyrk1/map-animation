@@ -14,11 +14,11 @@ export function lat2y(lat: number) {
   return Math.log(Math.tan((lat / 90 + 1) * PI_4)) * RAD2DEG;
 }
 
-export function longLat2CSV([long, lat]: Position) {
+export function position2CSV([long, lat]: Position) {
   return `${long + 180},${180 - lat2y(lat)}`
 }
 
-export function latLong2ViewBox(left: number, top: number, right: number, bottom: number) {
+export function position2ViewBox(left: number, top: number, right: number, bottom: number) {
   const bottomY = lat2y(bottom)
   const topY = lat2y(top)
   return `${left + 180} ${180 - topY} ${right - left} ${topY - bottomY}`

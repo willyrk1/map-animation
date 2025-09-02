@@ -1,8 +1,8 @@
 import React from 'react';
 import './App.css';
 import { modernColorMap } from './paths/modernConstants';
-import LongLatPath from "./paths/LongLatPath.tsx";
-import { CountryDetails, latLong2ViewBox, joinShapes, viewBoxFromString } from "./utility.ts";
+import LongLatPath from "./paths/PositionPath.tsx";
+import { CountryDetails, position2ViewBox, joinShapes, viewBoxFromString } from "./utility.ts";
 import { getCountriesHighRes, getVojvodina } from './countries.ts';
 
 function toWithPathProps(country: CountryDetails): CountryDetails {
@@ -36,7 +36,7 @@ function initCountries() {
   return initialCountries
 }
 
-const defaultViewBox = latLong2ViewBox(-26, 72, 67, 24)
+const defaultViewBox = position2ViewBox(-26, 72, 67, 24)
 
 export default function App() {
   const [viewBox, setViewBox] = React.useState(defaultViewBox);
@@ -122,7 +122,7 @@ export default function App() {
         viewBox,
         // latLong2ViewBox(17.3, 43.2, 18.7, 42.1),
         // latLong2ViewBox(13, 47, 20, 42.1),
-        latLong2ViewBox(7, 52, 19, 40),
+        position2ViewBox(7, 52, 19, 40),
       )),
       () => {
         const austriaCoordinates = countries.find(({ name }) => name === 'Austria')?.coordinates[0]
