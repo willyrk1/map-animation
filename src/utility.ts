@@ -1,5 +1,3 @@
-import modernGeoJson from "./custom.hires.geo.json"
-import serbiaGeoJson from "./Serbia.json"
 import { Feature, FeatureCollection, Polygon, Position } from "geojson";
 import React from "react";
 
@@ -26,37 +24,16 @@ export function latLong2ViewBox(left: number, top: number, right: number, bottom
   return `${left + 180} ${180 - topY} ${right - left} ${topY - bottomY}`
 }
 
-export function getCountriesHighRes() {
-  return geoJson2CountryDetails(modernGeoJson as FeatureCollection)
+export function viewBoxFromString(viewBoxString: string) {
+  const [x, y, width, height] = viewBoxString.split(' ').map(v => +v)
+  return { x, y, width, height }
 }
 
-function isPolygonFeature(feature: Feature | undefined): feature is Feature<Polygon> {
+export function isPolygonFeature(feature: Feature | undefined): feature is Feature<Polygon> {
   return feature?.geometry.type === "Polygon";
 }
 
-const vojvodinaFeatureNames = [
-  "Sremski",
-  "Južno-Backi",
-  "Zapadno-Backi",
-  "Severno-Backi",
-  "Severno-Banatski",
-  "Srednje-Banatski",
-  "Južno-Banatski",
-]
-
-export function getVojvodina() {
-  const vojvodinaShapes = vojvodinaFeatureNames
-    .map(name => (serbiaGeoJson as FeatureCollection).features.find(f => f.properties?.name === name))
-    .filter(isPolygonFeature)
-    .map(f => f.geometry.coordinates.flat())
-  const coordinates = joinShapes(...vojvodinaShapes)
-  return {
-    name: "Vojvodina",
-    coordinates: [coordinates]
-  }
-}
-
-function geoJson2CountryDetails(geoJson: FeatureCollection) {
+export function geoJson2CountryDetails(geoJson: FeatureCollection) {
   return geoJson.features.map(toCountryDetails)
 }
 
@@ -78,7 +55,7 @@ function toCountryDetails(feature: Feature): CountryDetails {
   return { name, coordinates }
 }
 
-function coordsMatch(coord1: Position, coord2: Position) {
+export function coordsMatch(coord1: Position, coord2: Position) {
   return coord1[0] === coord2[0] && coord1[1] === coord2[1]
 }
 
@@ -173,4 +150,21 @@ function _joinShapes(path1: Array<Position>, path2: Array<Position>) {
     ...path1Fixed.slice(chain1End, chain1Start + 1),
     ...path2Oriented.slice(chain2End + 1, chain2Start).toReversed(),
   ]
+}
+
+export function getDistanceFromLonLatInMiles(lon1: number, lat1: number, lon2: number, lat2: number) {
+  const R = 3958.8; // Radius of the Earth in miles
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = R * c;
+  return distance;
+}
+
+export function toMinimum(acc: number, cur: number) {
+  return acc < cur ? acc : cur
 }

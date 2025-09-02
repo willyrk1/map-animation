@@ -2,7 +2,8 @@ import React from 'react';
 import './App.css';
 import { modernColorMap } from './paths/modernConstants';
 import LongLatPath from "./paths/LongLatPath.tsx";
-import { CountryDetails, getCountriesHighRes, latLong2ViewBox, joinShapes, getVojvodina } from "./utility.ts";
+import { CountryDetails, latLong2ViewBox, joinShapes, viewBoxFromString } from "./utility.ts";
+import { getCountriesHighRes, getVojvodina } from './countries.ts';
 
 function toWithPathProps(country: CountryDetails): CountryDetails {
   return {
@@ -29,18 +30,13 @@ function toHiddenWithPathProps(country: CountryDetails): CountryDetails {
 function initCountries() {
   const initialCountries = [
     ...getCountriesHighRes(),
-    getVojvodina(),
+    // getVojvodina(),
   ].map(toWithPathProps)
 
   return initialCountries
 }
 
 const defaultViewBox = latLong2ViewBox(-26, 72, 67, 24)
-
-function viewBoxFromString(viewBoxString: string) {
-  const [x, y, width, height] = viewBoxString.split(' ').map(v => +v)
-  return { x, y, width, height }
-}
 
 export default function App() {
   const [viewBox, setViewBox] = React.useState(defaultViewBox);
@@ -163,13 +159,33 @@ export default function App() {
         const croatiaCoordinates = countries.find(({ name }) => name === 'Croatia')?.coordinates
         const bosniaCoordinates = countries.find(({ name }) => name === 'Bosnia and Herz.')?.coordinates[0]
         if (ahczCoordinates && sloveniaCoordinates && croatiaCoordinates && bosniaCoordinates) {
-          const ahBalkansCoordinates = joinShapes(ahczCoordinates, sloveniaCoordinates, croatiaCoordinates[0], bosniaCoordinates, croatiaCoordinates[1])
+          const [croatiaMain, croatiaExclave, ...croatiaRest] = croatiaCoordinates
+          const ahBalkansCoordinates = joinShapes(ahczCoordinates, sloveniaCoordinates, croatiaMain, bosniaCoordinates, croatiaExclave)
           const austriaHungaryBalkans = {
             "name": "AustriaHungaryBalkans",
-            "coordinates": [ahBalkansCoordinates, ...croatiaCoordinates.slice(2)]
+            "coordinates": [ahBalkansCoordinates, ...croatiaRest]
           }
           startAnimation(animateCountryReplacement(
             ['AustriaHungaryCZ', 'Slovenia', 'Croatia', 'Bosnia and Herz.'], 'AustriaHungaryBalkans', austriaHungaryBalkans
+          ))
+        }
+      },
+      () => {
+        const ahBalkansCoordinates = countries.find(({ name }) => name === 'AustriaHungaryBalkans')?.coordinates
+        const romaniaCoordinates = countries.find(({ name }) => name === 'Romania')?.coordinates
+        if (ahBalkansCoordinates && romaniaCoordinates) {
+          const [ahBalkansMain, ...ahBalkansRest] = ahBalkansCoordinates
+          const vojvodinaCoordinates = getVojvodina(ahBalkansMain, romaniaCoordinates[0]).coordinates[0]
+          console.log("Austria Hungary", ahBalkansMain)
+          console.log("Vojvodina", vojvodinaCoordinates)
+          console.log("Romania", countries.find(({ name }) => name === 'Romania')?.coordinates)
+          const ahSerbiaCoordinates = joinShapes(ahBalkansMain, vojvodinaCoordinates)
+          const austriaHungarySerbia = {
+            "name": "AustriaHungarySerbia",
+            "coordinates": [ahSerbiaCoordinates, ...ahBalkansRest]
+          }
+          startAnimation(animateCountryReplacement(
+            ['AustriaHungarySerbia'], 'AustriaHungarySerbia', austriaHungarySerbia
           ))
         }
       },
