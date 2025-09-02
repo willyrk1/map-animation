@@ -1,9 +1,9 @@
 import React from 'react';
 import './App.css';
-import { modernColorMap } from './paths/modernConstants';
+import {modernColorMap} from './paths/modernConstants';
 import LongLatPath from "./paths/PositionPath.tsx";
 import { CountryDetails, position2ViewBox, joinShapes, viewBoxFromString } from "./utility.ts";
-import { getCountriesHighRes, getVojvodina } from './countries.ts';
+import {getCountriesHighRes, getVojvodina} from './countries.ts';
 
 function toWithPathProps(country: CountryDetails): CountryDetails {
   return {
@@ -30,7 +30,6 @@ function toHiddenWithPathProps(country: CountryDetails): CountryDetails {
 function initCountries() {
   const initialCountries = [
     ...getCountriesHighRes(),
-    // getVojvodina(),
   ].map(toWithPathProps)
 
   return initialCountries
@@ -173,19 +172,17 @@ export default function App() {
       () => {
         const ahBalkansCoordinates = countries.find(({ name }) => name === 'AustriaHungaryBalkans')?.coordinates
         const romaniaCoordinates = countries.find(({ name }) => name === 'Romania')?.coordinates
-        if (ahBalkansCoordinates && romaniaCoordinates) {
+        const serbiaCoordinates = countries.find(({name}) => name === 'Serbia')?.coordinates
+        if (ahBalkansCoordinates && romaniaCoordinates && serbiaCoordinates) {
           const [ahBalkansMain, ...ahBalkansRest] = ahBalkansCoordinates
-          const vojvodinaCoordinates = getVojvodina(ahBalkansMain, romaniaCoordinates[0]).coordinates[0]
-          console.log("Austria Hungary", ahBalkansMain)
-          console.log("Vojvodina", vojvodinaCoordinates)
-          console.log("Romania", countries.find(({ name }) => name === 'Romania')?.coordinates)
+          const vojvodinaCoordinates = getVojvodina(ahBalkansMain, romaniaCoordinates[0], serbiaCoordinates[0]).coordinates[0]
           const ahSerbiaCoordinates = joinShapes(ahBalkansMain, vojvodinaCoordinates)
           const austriaHungarySerbia = {
             "name": "AustriaHungarySerbia",
             "coordinates": [ahSerbiaCoordinates, ...ahBalkansRest]
           }
           startAnimation(animateCountryReplacement(
-            ['AustriaHungarySerbia'], 'AustriaHungarySerbia', austriaHungarySerbia
+              ['AustriaHungaryBalkans'], 'AustriaHungarySerbia', austriaHungarySerbia
           ))
         }
       },

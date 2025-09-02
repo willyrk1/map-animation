@@ -1,5 +1,6 @@
 import { Feature, FeatureCollection, Polygon, Position } from "geojson";
 import React from "react";
+import serbiaGeoJson from "./Serbia.json";
 
 export interface CountryDetails {
   name: string
@@ -33,6 +34,28 @@ export function isPolygonFeature(feature: Feature | undefined): feature is Featu
   return feature?.geometry.type === "Polygon";
 }
 
+const vojvodinaFeatureNames = [
+  "Sremski",
+  "Južno-Backi",
+  "Zapadno-Backi",
+  "Severno-Backi",
+  "Severno-Banatski",
+  "Srednje-Banatski",
+  "Južno-Banatski",
+]
+
+export function getVojvodinaOriginal() {
+  const vojvodinaShapes = vojvodinaFeatureNames
+      .map(name => (serbiaGeoJson as FeatureCollection).features.find(f => f.properties?.name === name))
+      .filter(isPolygonFeature)
+      .map(f => f.geometry.coordinates.flat())
+  const coordinates = joinShapes(...vojvodinaShapes)
+  return {
+    name: "Vojvodina",
+    coordinates: [coordinates]
+  }
+}
+
 export function geoJson2CountryDetails(geoJson: FeatureCollection) {
   return geoJson.features.map(toCountryDetails)
 }
@@ -55,7 +78,7 @@ function toCountryDetails(feature: Feature): CountryDetails {
   return { name, coordinates }
 }
 
-export function coordsMatch(coord1: Position, coord2: Position) {
+export function positionsMatch(coord1: Position, coord2: Position) {
   return coord1[0] === coord2[0] && coord1[1] === coord2[1]
 }
 
@@ -68,15 +91,15 @@ export function joinShapes(...paths: Array<Array<Position>>) {
 
 function _joinShapes(path1: Array<Position>, path2: Array<Position>) {
   // Geojson coordinates tend to duplicate the first and last elements which will confuse this algorithm.
-  const path1Fixed = coordsMatch(path1[0], path1[path1.length - 1]) ? path1.slice(1) : path1
-  const path2Fixed = coordsMatch(path2[0], path2[path2.length - 1]) ? path2.slice(1) : path2
+  const path1Fixed = positionsMatch(path1[0], path1[path1.length - 1]) ? path1.slice(1) : path1
+  const path2Fixed = positionsMatch(path2[0], path2[path2.length - 1]) ? path2.slice(1) : path2
 
   // Search (hard) for a first match between the paths.
-  const firstMatchPath1Index = path1Fixed.findIndex(coord1 => path2Fixed.find(coord2 => coordsMatch(coord1, coord2)))
+  const firstMatchPath1Index = path1Fixed.findIndex(position1 => path2Fixed.find(position2 => positionsMatch(position1, position2)))
   if (firstMatchPath1Index < 0) {
     throw new Error("No touch points for joining paths.")
   }
-  let firstMatchPath2Index = path2Fixed.findIndex(coord2 => coordsMatch(path1Fixed[firstMatchPath1Index], coord2))
+  let firstMatchPath2Index = path2Fixed.findIndex(position2 => positionsMatch(path1Fixed[firstMatchPath1Index], position2))
 
   // If the first path1 coordinate is the match, then we don't know if it's the real start of the chain
   // or it's the middle and the real start is at the bottom wrapping up to the top. If so, leave it
@@ -88,9 +111,9 @@ function _joinShapes(path1: Array<Position>, path2: Array<Position>) {
   const prevPath1Index = (firstMatchPath1Index === 0) ? path1Fixed.length - 1 : firstMatchPath1Index - 1
   const nextPath2Index = (firstMatchPath2Index === path2Fixed.length - 1) ? 0 : firstMatchPath2Index + 1
   const prevPath2Index = (firstMatchPath2Index === 0) ? path2Fixed.length - 1 : firstMatchPath2Index - 1
-  if (coordsMatch(path1Fixed[nextPath1Index], path2Fixed[nextPath2Index]))
+  if (positionsMatch(path1Fixed[nextPath1Index], path2Fixed[nextPath2Index]))
     path2Oriented = path2Fixed
-  else if (coordsMatch(path1Fixed[nextPath1Index], path2Fixed[prevPath2Index])) {
+  else if (positionsMatch(path1Fixed[nextPath1Index], path2Fixed[prevPath2Index])) {
     path2Oriented = path2Fixed.toReversed()
     firstMatchPath2Index = path2Fixed.length - firstMatchPath2Index - 1
   }
@@ -105,7 +128,7 @@ function _joinShapes(path1: Array<Position>, path2: Array<Position>) {
   // Let's go find it.
   if (firstMatchPath1Index === 0) {
     let startSearch1 = prevPath1Index, startSearch2 = (firstMatchPath2Index === 0) ? path2Oriented.length - 1 : firstMatchPath2Index - 1
-    while (coordsMatch(path1Fixed[startSearch1], path2Oriented[startSearch2])) {
+    while (positionsMatch(path1Fixed[startSearch1], path2Oriented[startSearch2])) {
       chain1Start = startSearch1
       chain2Start = startSearch2
       startSearch1--
@@ -119,7 +142,7 @@ function _joinShapes(path1: Array<Position>, path2: Array<Position>) {
     endSearch2 = (firstMatchPath2Index === path2Oriented.length - 1) ? 0 : firstMatchPath2Index + 1,
     chain1End = firstMatchPath1Index,
     chain2End = firstMatchPath2Index
-  while (coordsMatch(path1Fixed[endSearch1], path2Oriented[endSearch2])) {
+  while (positionsMatch(path1Fixed[endSearch1], path2Oriented[endSearch2])) {
     chain1End = endSearch1
     chain2End = endSearch2
     endSearch1 = (endSearch1 === path1Fixed.length - 1) ? 0 : endSearch1 + 1
@@ -152,7 +175,7 @@ function _joinShapes(path1: Array<Position>, path2: Array<Position>) {
   ]
 }
 
-export function getDistanceFromLonLatInMiles(lon1: number, lat1: number, lon2: number, lat2: number) {
+export function getDistanceFromPositionInMiles([lon1, lat1]: Position, [lon2, lat2]: Position) {
   const R = 3958.8; // Radius of the Earth in miles
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
@@ -165,6 +188,6 @@ export function getDistanceFromLonLatInMiles(lon1: number, lat1: number, lon2: n
   return distance;
 }
 
-export function toMinimum(acc: number, cur: number) {
-  return acc < cur ? acc : cur
+export function safeGet<T>(ary: Array<T>, index: number) {
+  return ary[((index % ary.length) + ary.length) % ary.length]
 }
