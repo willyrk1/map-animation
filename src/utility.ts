@@ -46,9 +46,9 @@ const vojvodinaFeatureNames = [
 
 export function getVojvodinaOriginal() {
   const vojvodinaShapes = vojvodinaFeatureNames
-      .map(name => (serbiaGeoJson as FeatureCollection).features.find(f => f.properties?.name === name))
-      .filter(isPolygonFeature)
-      .map(f => f.geometry.coordinates.flat())
+    .map(name => (serbiaGeoJson as FeatureCollection).features.find(f => f.properties?.name === name))
+    .filter(isPolygonFeature)
+    .map(f => f.geometry.coordinates.flat())
   const coordinates = joinShapes(...vojvodinaShapes)
   return {
     name: "Vojvodina",
@@ -93,6 +93,49 @@ function _joinShapes(path1: Array<Position>, path2: Array<Position>) {
   // Geojson coordinates tend to duplicate the first and last elements which will confuse this algorithm.
   const path1Fixed = positionsMatch(path1[0], path1[path1.length - 1]) ? path1.slice(1) : path1
   const path2Fixed = positionsMatch(path2[0], path2[path2.length - 1]) ? path2.slice(1) : path2
+
+  const returnCoordinates: Array<Position> = []
+
+  // Walk path 1 until it meets path 2.
+  let index1 = 0
+  let index2 = path2Fixed.findIndex(pos2 => positionsMatch(pos2, path1Fixed[index1]))
+  while (index1 < path1Fixed.length && index2 < 0) {
+    returnCoordinates.push(path1Fixed[index1])
+    index1++
+    index2 = path2Fixed.findIndex(pos2 => positionsMatch(pos2, path1Fixed[index1]))
+  }
+
+  if (returnCoordinates.length) {
+    // If the first segment added elements, then we'll walk both in the same direction to find
+    // the end of the shared border, i.e. the second intersection.
+    const firstIntersection = index2
+    // returnCoordinates.push(path2Fixed[index2])
+    while (positionsMatch(safeGet(path1Fixed, index1), safeGet(path2Fixed, index2))) {
+      index1++
+      index2++
+    }
+
+    // Now we'll go back to the first intersection and walk the 2nd path in reverse to complete the 2nd circle.
+    for (
+      let reverseIndex2 = firstIntersection;
+      !positionsMatch(safeGet(path2Fixed, reverseIndex2), safeGet(path2Fixed, index2));
+      reverseIndex2--
+    ) {
+      returnCoordinates.push(safeGet(path2Fixed, reverseIndex2))
+    }
+
+    // Then walk the first path from the second intersection back to the beginning to complete the 1st circle.
+    for (
+      index1--;
+      !positionsMatch(safeGet(path1Fixed, index1), safeGet(path1Fixed, 0));
+      index1++
+    ) {
+      returnCoordinates.push(safeGet(path1Fixed, index1))
+    }
+  }
+  else {
+    // If the first segment is empty, then we started in the middle of the shared boundary. First determine orientation.
+  }
 
   // Search (hard) for a first match between the paths.
   const firstMatchPath1Index = path1Fixed.findIndex(position1 => path2Fixed.find(position2 => positionsMatch(position1, position2)))

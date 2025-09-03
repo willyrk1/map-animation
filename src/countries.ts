@@ -48,7 +48,7 @@ export function getVojvodina(ahBalkansCoordinates: Position[], romaniaCoordinate
     return vojvodinaCoordinates.map(toDistanceFromPoint).reduce(toMinimum)
   }
 
-  const returnVojvodina: Position[] = []
+  const returnVojvodina: Array<Position> = []
 
   // Districts merged, now unify the boundaries. First, find the intersection of Serbia, Romania and Austria-Hungary.
   function isOnSerbiaBoundary(position: Position) {
