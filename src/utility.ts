@@ -109,17 +109,18 @@ function _joinShapes(path1: Array<Position>, path2: Array<Position>) {
     // If the first segment added elements, then we'll walk both in the same direction to find
     // the end of the shared border, i.e. the second intersection.
     const firstIntersection = index2
-    // returnCoordinates.push(path2Fixed[index2])
+    const direction2 = positionsMatch(safeGet(path2Fixed, index2 - 1), safeGet(path1Fixed, index1 + 1)) ? -1 : 1
+
     while (positionsMatch(safeGet(path1Fixed, index1), safeGet(path2Fixed, index2))) {
       index1++
-      index2++
+      index2 += direction2
     }
 
     // Now we'll go back to the first intersection and walk the 2nd path in reverse to complete the 2nd circle.
     for (
       let reverseIndex2 = firstIntersection;
-      !positionsMatch(safeGet(path2Fixed, reverseIndex2), safeGet(path2Fixed, index2));
-      reverseIndex2--
+      !positionsMatch(safeGet(path2Fixed, reverseIndex2), safeGet(path2Fixed, index2 - direction2));
+      reverseIndex2 -= direction2
     ) {
       returnCoordinates.push(safeGet(path2Fixed, reverseIndex2))
     }
@@ -138,7 +139,7 @@ function _joinShapes(path1: Array<Position>, path2: Array<Position>) {
     const needReverse = positionsMatch(safeGet(path2Fixed, index2 - 1), path1Fixed[1]) ||
       positionsMatch(safeGet(path2Fixed, index2 + 1), path1Fixed[path1Fixed.length - 1])
     const direction2 = needReverse ? -1 : 1
-    
+
     // Walk to one end of the boundary.
     const start2 = index2
     while (positionsMatch(path1Fixed[index1], safeGet(path2Fixed, index2))) {
@@ -148,7 +149,7 @@ function _joinShapes(path1: Array<Position>, path2: Array<Position>) {
 
     // Walk to the opposite end.
     let index1Reverse = -1, index2Reverse = start2 - direction2
-    while (positionsMatch(path1Fixed[index1Reverse], safeGet(path2Fixed, index2Reverse))) {
+    while (positionsMatch(safeGet(path1Fixed, index1Reverse), safeGet(path2Fixed, index2Reverse))) {
       index1Reverse--
       index2Reverse -= direction2
     }
