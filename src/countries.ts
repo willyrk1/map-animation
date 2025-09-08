@@ -24,6 +24,18 @@ const vojvodinaFeatureNames = [
   "Južno-Banatski",
 ]
 
+export function getVojvodinaOriginal() {
+  const vojvodinaShapes = vojvodinaFeatureNames
+    .map(name => (serbiaGeoJson as FeatureCollection).features.find(f => f.properties?.name === name))
+    .filter(isPolygonFeature)
+    .map(f => f.geometry.coordinates.flat())
+  const coordinates = joinShapes(...vojvodinaShapes)
+  return {
+    name: "Vojvodina",
+    coordinates: [coordinates]
+  }
+}
+
 interface IndexedDistance {
   index: number
   distance: number

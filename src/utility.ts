@@ -1,6 +1,5 @@
 import { Feature, FeatureCollection, Polygon, Position } from "geojson";
 import React from "react";
-import serbiaGeoJson from "./Serbia.json";
 
 export interface CountryDetails {
   name: string
@@ -32,28 +31,6 @@ export function viewBoxFromString(viewBoxString: string) {
 
 export function isPolygonFeature(feature: Feature | undefined): feature is Feature<Polygon> {
   return feature?.geometry.type === "Polygon";
-}
-
-const vojvodinaFeatureNames = [
-  "Sremski",
-  "Južno-Backi",
-  "Zapadno-Backi",
-  "Severno-Backi",
-  "Severno-Banatski",
-  "Srednje-Banatski",
-  "Južno-Banatski",
-]
-
-export function getVojvodinaOriginal() {
-  const vojvodinaShapes = vojvodinaFeatureNames
-    .map(name => (serbiaGeoJson as FeatureCollection).features.find(f => f.properties?.name === name))
-    .filter(isPolygonFeature)
-    .map(f => f.geometry.coordinates.flat())
-  const coordinates = joinShapes(...vojvodinaShapes)
-  return {
-    name: "Vojvodina",
-    coordinates: [coordinates]
-  }
 }
 
 export function geoJson2CountryDetails(geoJson: FeatureCollection) {
