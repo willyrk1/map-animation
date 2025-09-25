@@ -9,6 +9,7 @@ export const modernColorMap: Record<string, string> = {
   'Greece': '#cc0012',
   'Bulgaria': '#80ff8c',
   'Romania': '#ffe600',
+  'NewRomania': '#ffe600',
   'Turkey': '#4d54ff',
   'Armenia': '#cc0012',
   'Azerbaijan': '#a600b3',

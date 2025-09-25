@@ -1,10 +1,11 @@
 import React from 'react';
 import './App.css';
-import {modernColorMap} from './paths/modernConstants';
+import { modernColorMap } from './paths/modernConstants';
 import LongLatPath from "./paths/PositionPath.tsx";
 import { CountryDetails, position2ViewBox, joinShapes, viewBoxFromString } from "./utility.ts";
-import {getCountriesHighRes, getVojvodina} from './countries.ts';
+import { getCountriesHighRes, getVojvodina } from './countries.ts';
 import exRomaniaJson from "./exRomania.json"
+import neRomaniaJson from "./neRomania.json"
 
 function toWithPathProps(country: CountryDetails): CountryDetails {
   return {
@@ -61,24 +62,28 @@ export default function App() {
     }
   }
 
-  function animateCountryReplacement(fromCountryNames: Array<string>, toCountryName: string, toCountry: CountryDetails) {
+  function animateCountryReplacement(fromCountryNames: Array<string>, toCountries: Array<CountryDetails>) {
     return function (t: number) {
       setCountries(curCountries => {
-        const toCountryIndex = curCountries.findIndex(({ name }) => name === toCountryName)
-        const curToCountry = curCountries[toCountryIndex] ?? toHiddenWithPathProps(toCountry)
-        const newToCountry = {
-          ...curToCountry,
-          pathProps: {
-            ...curToCountry.pathProps,
-            opacity: t
-          }
-        }
+        const newCountries = [...curCountries]
 
-        const newCountries = curCountries.toSpliced(
-          toCountryIndex >= 0 ? toCountryIndex : curCountries.length,
-          1,
-          newToCountry
-        )
+        for (let toCountry of toCountries) {
+          const toCountryIndex = newCountries.findIndex(({ name }) => name === toCountry.name)
+          const curToCountry = newCountries[toCountryIndex] ?? toHiddenWithPathProps(toCountry)
+          const newToCountry = {
+            ...curToCountry,
+            pathProps: {
+              ...curToCountry.pathProps,
+              opacity: t
+            }
+          }
+
+          newCountries.splice(
+            toCountryIndex >= 0 ? toCountryIndex : newCountries.length,
+            1,
+            newToCountry
+          )
+        }
 
         if (t >= 1) {
           for (const fromCountryName of fromCountryNames) {
@@ -134,9 +139,7 @@ export default function App() {
             "name": "AustriaHungary",
             "coordinates": [austriaHungaryCoordinates]
           }
-          startAnimation(animateCountryReplacement(
-            ['Austria', 'Hungary'], 'AustriaHungary', austriaHungary
-          ))
+          startAnimation(animateCountryReplacement(['Austria', 'Hungary'], [austriaHungary]))
         }
       },
       () => {
@@ -149,9 +152,7 @@ export default function App() {
             "name": "AustriaHungaryCZ",
             "coordinates": [ahczCoordinates]
           }
-          startAnimation(animateCountryReplacement(
-            ['AustriaHungary'], 'AustriaHungaryCZ', austriaHungaryCZ
-          ))
+          startAnimation(animateCountryReplacement(['AustriaHungary'], [austriaHungaryCZ]))
         }
       },
       () => {
@@ -166,15 +167,13 @@ export default function App() {
             "name": "AustriaHungaryBalkans",
             "coordinates": [ahBalkansCoordinates, ...croatiaRest]
           }
-          startAnimation(animateCountryReplacement(
-            ['AustriaHungaryCZ', 'Slovenia', 'Croatia', 'Bosnia and Herz.'], 'AustriaHungaryBalkans', austriaHungaryBalkans
-          ))
+          startAnimation(animateCountryReplacement(['AustriaHungaryCZ', 'Slovenia', 'Croatia', 'Bosnia and Herz.'], [austriaHungaryBalkans]))
         }
       },
       () => {
         const ahBalkansCoordinates = countries.find(({ name }) => name === 'AustriaHungaryBalkans')?.coordinates
         const romaniaCoordinates = countries.find(({ name }) => name === 'Romania')?.coordinates
-        const serbiaCoordinates = countries.find(({name}) => name === 'Serbia')?.coordinates
+        const serbiaCoordinates = countries.find(({ name }) => name === 'Serbia')?.coordinates
         if (ahBalkansCoordinates && romaniaCoordinates && serbiaCoordinates) {
           const [ahBalkansMain, ...ahBalkansRest] = ahBalkansCoordinates
           const vojvodinaCoordinates = getVojvodina(ahBalkansMain, romaniaCoordinates[0], serbiaCoordinates[0]).coordinates[0]
@@ -183,23 +182,26 @@ export default function App() {
             "name": "AustriaHungarySerbia",
             "coordinates": [ahSerbiaCoordinates, ...ahBalkansRest]
           }
-          startAnimation(animateCountryReplacement(
-              ['AustriaHungaryBalkans'], 'AustriaHungarySerbia', austriaHungarySerbia
-          ))
+          startAnimation(animateCountryReplacement(['AustriaHungaryBalkans'], [austriaHungarySerbia]))
         }
       },
       () => {
         const ahSerbiaCoordinates = countries.find(({ name }) => name === 'AustriaHungarySerbia')?.coordinates
-        if (ahSerbiaCoordinates) {
+        const romaniaCoordinates = countries.find(({ name }) => name === 'Romania')?.coordinates
+        if (ahSerbiaCoordinates && romaniaCoordinates) {
+          const [romaniaMain, ...romaniaRest] = romaniaCoordinates
+          const origRomaniaCoordinates = joinShapes(romaniaMain, neRomaniaJson)
+          const origRomania = {
+            "name": "NewRomania",
+            "coordinates": [origRomaniaCoordinates, ...romaniaRest]
+          }
           const [ahSerbiaMain, ...ahSerbiaRest] = ahSerbiaCoordinates
           const ahRomaniaCoordinates = joinShapes(ahSerbiaMain, exRomaniaJson)
           const austriaHungaryRomania = {
             "name": "AustriaHungaryRomania",
             "coordinates": [ahRomaniaCoordinates, ...ahSerbiaRest]
           }
-          startAnimation(animateCountryReplacement(
-              ['AustriaHungarySerbia'], 'AustriaHungaryRomania', austriaHungaryRomania
-          ))
+          startAnimation(animateCountryReplacement(['AustriaHungarySerbia', 'Romania'], [origRomania, austriaHungaryRomania]))
         }
       },
     ][step]()
