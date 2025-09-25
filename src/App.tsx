@@ -4,6 +4,7 @@ import {modernColorMap} from './paths/modernConstants';
 import LongLatPath from "./paths/PositionPath.tsx";
 import { CountryDetails, position2ViewBox, joinShapes, viewBoxFromString } from "./utility.ts";
 import {getCountriesHighRes, getVojvodina} from './countries.ts';
+import exRomaniaJson from "./exRomania.json"
 
 function toWithPathProps(country: CountryDetails): CountryDetails {
   return {
@@ -12,6 +13,7 @@ function toWithPathProps(country: CountryDetails): CountryDetails {
       stroke: "black",
       strokeWidth: 0.03,
       fill: modernColorMap[country.name ?? ''] ?? 'none',
+      ...country.pathProps
     }
   }
 }
@@ -183,6 +185,20 @@ export default function App() {
           }
           startAnimation(animateCountryReplacement(
               ['AustriaHungaryBalkans'], 'AustriaHungarySerbia', austriaHungarySerbia
+          ))
+        }
+      },
+      () => {
+        const ahSerbiaCoordinates = countries.find(({ name }) => name === 'AustriaHungarySerbia')?.coordinates
+        if (ahSerbiaCoordinates) {
+          const [ahSerbiaMain, ...ahSerbiaRest] = ahSerbiaCoordinates
+          const ahRomaniaCoordinates = joinShapes(ahSerbiaMain, exRomaniaJson)
+          const austriaHungaryRomania = {
+            "name": "AustriaHungaryRomania",
+            "coordinates": [ahRomaniaCoordinates, ...ahSerbiaRest]
+          }
+          startAnimation(animateCountryReplacement(
+              ['AustriaHungarySerbia'], 'AustriaHungaryRomania', austriaHungaryRomania
           ))
         }
       },
