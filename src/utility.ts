@@ -37,7 +37,7 @@ export function geoJson2CountryDetails(geoJson: FeatureCollection) {
   return geoJson.features.map(toCountryDetails)
 }
 
-function toCountryDetails(feature: Feature): CountryDetails {
+export function toCountryDetails(feature: Feature): CountryDetails {
   const p = feature.properties
   const name: string = p?.name
   const geometry = feature.geometry
