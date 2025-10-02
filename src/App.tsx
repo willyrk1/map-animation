@@ -2,8 +2,8 @@ import React from 'react';
 import './App.css';
 import { modernColorMap } from './paths/modernConstants';
 import LongLatPath from "./paths/PositionPath.tsx";
-import { CountryDetails, position2ViewBox, joinShapes, viewBoxFromString } from "./utility.ts";
-import { getCountriesHighRes } from './countries.ts';
+import { CountryDetails, position2ViewBox, union, viewBoxFromString } from "./utility.ts";
+import { getCountriesHighRes, getGaliciaBukovina } from './countries.ts';
 import vojvodinaJson from "./data/Vojvodina.json"
 import exRomaniaJson from "./data/exRomania.json"
 import neRomaniaJson from "./data/neRomania.json"
@@ -44,7 +44,7 @@ const defaultViewBox = position2ViewBox(-26, 72, 67, 24)
 
 export default function App() {
   const [viewBox, setViewBox] = React.useState(defaultViewBox);
-  const [countries, setCountries] = React.useState(initCountries())
+  const [countries, setCountries] = React.useState(() => initCountries())
   const [step, setStep] = React.useState(0)
 
   const animationRef = React.useRef<number>();
@@ -131,41 +131,41 @@ export default function App() {
         position2ViewBox(7, 52, 19, 40),
       )),
       () => {
-        const austriaCoordinates = countries.find(({ name }) => name === 'Austria')?.coordinates[0]
-        const hungaryCoordinates = countries.find(({ name }) => name === 'Hungary')?.coordinates[0]
+        const austriaCoordinates = countries.find(({ name }) => name === 'Austria')?.coordinates
+        const hungaryCoordinates = countries.find(({ name }) => name === 'Hungary')?.coordinates
         if (austriaCoordinates && hungaryCoordinates) {
-          const austriaHungaryCoordinates = joinShapes(austriaCoordinates, hungaryCoordinates)
+          const austriaHungaryCoordinates = union(austriaCoordinates, hungaryCoordinates)
           const austriaHungary = {
             "name": "AustriaHungary",
-            "coordinates": [austriaHungaryCoordinates]
+            "coordinates": austriaHungaryCoordinates
           }
           startAnimation(animateCountryReplacement(['Austria', 'Hungary'], [austriaHungary]))
         }
       },
       () => {
-        const ahCoordinates = countries.find(({ name }) => name === 'AustriaHungary')?.coordinates[0]
-        const czechiaCoordinates = countries.find(({ name }) => name === 'Czechia')?.coordinates[0]
-        const slovakiaCoordinates = countries.find(({ name }) => name === 'Slovakia')?.coordinates[0]
+        const ahCoordinates = countries.find(({ name }) => name === 'AustriaHungary')?.coordinates
+        const czechiaCoordinates = countries.find(({ name }) => name === 'Czechia')?.coordinates
+        const slovakiaCoordinates = countries.find(({ name }) => name === 'Slovakia')?.coordinates
         if (ahCoordinates && czechiaCoordinates && slovakiaCoordinates) {
-          const ahczCoordinates = joinShapes(ahCoordinates, czechiaCoordinates, slovakiaCoordinates)
+          const ahczCoordinates = union(ahCoordinates, czechiaCoordinates, slovakiaCoordinates)
           const austriaHungaryCZ = {
             "name": "AustriaHungaryCZ",
-            "coordinates": [ahczCoordinates]
+            "coordinates": ahczCoordinates
           }
           startAnimation(animateCountryReplacement(['AustriaHungary'], [austriaHungaryCZ]))
         }
       },
       () => {
-        const ahczCoordinates = countries.find(({ name }) => name === 'AustriaHungaryCZ')?.coordinates[0]
-        const sloveniaCoordinates = countries.find(({ name }) => name === 'Slovenia')?.coordinates[0]
+        const ahczCoordinates = countries.find(({ name }) => name === 'AustriaHungaryCZ')?.coordinates
+        const sloveniaCoordinates = countries.find(({ name }) => name === 'Slovenia')?.coordinates
         const croatiaCoordinates = countries.find(({ name }) => name === 'Croatia')?.coordinates
-        const bosniaCoordinates = countries.find(({ name }) => name === 'Bosnia and Herz.')?.coordinates[0]
+        const bosniaCoordinates = countries.find(({ name }) => name === 'Bosnia and Herz.')?.coordinates
         if (ahczCoordinates && sloveniaCoordinates && croatiaCoordinates && bosniaCoordinates) {
           const [croatiaMain, croatiaExclave, ...croatiaRest] = croatiaCoordinates
-          const ahBalkansCoordinates = joinShapes(ahczCoordinates, sloveniaCoordinates, croatiaMain, bosniaCoordinates, croatiaExclave)
+          const ahBalkansCoordinates = union(ahczCoordinates, sloveniaCoordinates, [croatiaMain], [croatiaExclave], bosniaCoordinates)
           const austriaHungaryBalkans = {
             "name": "AustriaHungaryBalkans",
-            "coordinates": [ahBalkansCoordinates, ...croatiaRest]
+            "coordinates": [...ahBalkansCoordinates, ...croatiaRest]
           }
           startAnimation(animateCountryReplacement(['AustriaHungaryCZ', 'Slovenia', 'Croatia', 'Bosnia and Herz.'], [austriaHungaryBalkans]))
         }
@@ -173,11 +173,11 @@ export default function App() {
       () => {
         const ahBalkansCoordinates = countries.find(({ name }) => name === 'AustriaHungaryBalkans')?.coordinates
         if (ahBalkansCoordinates) {
-          const [ahBalkansMain, ...ahBalkansRest] = ahBalkansCoordinates
-          const ahItalyCoordinates = joinShapes(ahBalkansMain, trentinoSouthTyrolJson)
+          const [_ahBalkansMain, ...ahBalkansRest] = ahBalkansCoordinates
+          const ahItalyCoordinates = union(ahBalkansCoordinates, [trentinoSouthTyrolJson])
           const austriaHungaryItaly = {
             "name": "AustriaHungaryItaly",
-            "coordinates": [ahItalyCoordinates, ...ahBalkansRest]
+            "coordinates": [...ahItalyCoordinates, ...ahBalkansRest]
           }
           startAnimation(animateCountryReplacement(['AustriaHungaryBalkans'], [austriaHungaryItaly]))
         }
@@ -185,11 +185,11 @@ export default function App() {
       () => {
         const ahItalyCoordinates = countries.find(({ name }) => name === 'AustriaHungaryItaly')?.coordinates
         if (ahItalyCoordinates) {
-          const [ahItalyMain, ...ahItalyRest] = ahItalyCoordinates
-          const ahSerbiaCoordinates = joinShapes(ahItalyMain, vojvodinaJson)
+          const [_ahItalyMain, ...ahItalyRest] = ahItalyCoordinates
+          const ahSerbiaCoordinates = union(ahItalyCoordinates, [vojvodinaJson])
           const austriaHungarySerbia = {
             "name": "AustriaHungarySerbia",
-            "coordinates": [ahSerbiaCoordinates, ...ahItalyRest]
+            "coordinates": [...ahSerbiaCoordinates, ...ahItalyRest]
           }
           startAnimation(animateCountryReplacement(['AustriaHungaryItaly'], [austriaHungarySerbia]))
         }
@@ -198,19 +198,31 @@ export default function App() {
         const ahSerbiaCoordinates = countries.find(({ name }) => name === 'AustriaHungarySerbia')?.coordinates
         const romaniaCoordinates = countries.find(({ name }) => name === 'Romania')?.coordinates
         if (ahSerbiaCoordinates && romaniaCoordinates) {
-          const [romaniaMain, ...romaniaRest] = romaniaCoordinates
-          const origRomaniaCoordinates = joinShapes(romaniaMain, neRomaniaJson)
+          const [_romaniaMain, ...romaniaRest] = romaniaCoordinates
+          const origRomaniaCoordinates = union(romaniaCoordinates, [neRomaniaJson])
           const origRomania = {
             "name": "NewRomania",
-            "coordinates": [origRomaniaCoordinates, ...romaniaRest]
+            "coordinates": [...origRomaniaCoordinates, ...romaniaRest]
           }
-          const [ahSerbiaMain, ...ahSerbiaRest] = ahSerbiaCoordinates
-          const ahRomaniaCoordinates = joinShapes(ahSerbiaMain, exRomaniaJson)
+          const [_ahSerbiaMain, ...ahSerbiaRest] = ahSerbiaCoordinates
+          const ahRomaniaCoordinates = union(ahSerbiaCoordinates, [exRomaniaJson])
           const austriaHungaryRomania = {
             "name": "AustriaHungaryRomania",
-            "coordinates": [ahRomaniaCoordinates, ...ahSerbiaRest]
+            "coordinates": [...ahRomaniaCoordinates, ...ahSerbiaRest]
           }
           startAnimation(animateCountryReplacement(['AustriaHungarySerbia', 'Romania'], [origRomania, austriaHungaryRomania]))
+        }
+      },
+      () => {
+        const ahRomaniaCoordinates = countries.find(({ name }) => name === 'AustriaHungaryRomania')?.coordinates
+        if (ahRomaniaCoordinates) {
+          const [_ahRomaniaMain, ...ahRomaniaRest] = ahRomaniaCoordinates
+          const ahFinalCoordinates = union(ahRomaniaCoordinates, getGaliciaBukovina())
+          const austriaHungaryFinal = {
+            "name": "AustriaHungaryFinal",
+            "coordinates": [...ahFinalCoordinates, ...ahRomaniaRest]
+          }
+          startAnimation(animateCountryReplacement(['AustriaHungaryRomania'], [austriaHungaryFinal]))
         }
       },
     ][step]()
