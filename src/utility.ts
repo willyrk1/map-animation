@@ -15,8 +15,16 @@ export function lat2y(lat: number) {
   return Math.log(Math.tan((lat / 90 + 1) * PI_4)) * RAD2DEG;
 }
 
+export function y2lat(y: number) {
+  return 90 * (4 * Math.atan(Math.exp(y * Math.PI / 180)) / Math.PI - 1)
+}
+
 export function position2CSV([long, lat]: Position) {
   return `${long + 180},${180 - lat2y(lat)}`
+}
+
+export function xy2Position([x, y]: [number, number]): Position {
+  return [x - 180, y2lat(180 - y)]
 }
 
 export function position2ViewBox(left: number, top: number, right: number, bottom: number) {
@@ -63,8 +71,14 @@ export function union(...paths: Array<Array<Array<Position>>>): Array<Array<Posi
 }
 
 export function intersect(...paths: Array<Array<Array<Position>>>): Array<Array<Position>> {
-  const unioned = turf.intersect(turf.featureCollection(paths.map(p => turf.polygon(p))))
-  const polygon = unioned && isPolygonFeature(unioned) ? unioned.geometry.coordinates : []
+  const intersected = turf.intersect(turf.featureCollection(paths.map(p => turf.polygon(p))))
+  const polygon = intersected && isPolygonFeature(intersected) ? intersected.geometry.coordinates : []
+  return polygon
+}
+
+export function difference(...paths: Array<Array<Array<Position>>>): Array<Array<Position>> {
+  const differenced = turf.difference(turf.featureCollection(paths.map(p => turf.polygon(p))))
+  const polygon = differenced && isPolygonFeature(differenced) ? differenced.geometry.coordinates : []
   return polygon
 }
 

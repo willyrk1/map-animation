@@ -3,10 +3,9 @@ import './App.css';
 import { modernColorMap } from './paths/modernConstants';
 import LongLatPath from "./paths/PositionPath.tsx";
 import { CountryDetails, position2ViewBox, union, viewBoxFromString } from "./utility.ts";
-import { getCountriesHighRes, getGaliciaBukovina } from './countries.ts';
+import { getCountriesHighRes, getGaliciaBukovina, getNERomania } from './countries.ts';
 import vojvodinaJson from "./data/Vojvodina.json"
 import exRomaniaJson from "./data/exRomania.json"
-import neRomaniaJson from "./data/neRomania.json"
 import trentinoSouthTyrolJson from "./data/TrentinoSouthTyrol.json"
 
 function toWithPathProps(country: CountryDetails): CountryDetails {
@@ -199,7 +198,7 @@ export default function App() {
         const romaniaCoordinates = countries.find(({ name }) => name === 'Romania')?.coordinates
         if (ahSerbiaCoordinates && romaniaCoordinates) {
           const [_romaniaMain, ...romaniaRest] = romaniaCoordinates
-          const origRomaniaCoordinates = union(romaniaCoordinates, [neRomaniaJson])
+          const origRomaniaCoordinates = union(romaniaCoordinates, getNERomania(romaniaCoordinates))
           const origRomania = {
             "name": "NewRomania",
             "coordinates": [...origRomaniaCoordinates, ...romaniaRest]

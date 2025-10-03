@@ -1,6 +1,6 @@
-import { FeatureCollection } from "geojson";
+import { FeatureCollection, Position } from "geojson";
 import modernGeoJson from "./data/custom.hires.geo.json"
-import { geoJson2CountryDetails, union } from "./utility";
+import { difference, geoJson2CountryDetails, union } from "./utility";
 import galiciaJson from "./data/Galicia.json"
 import bukovinaJson from "./data/Bukovina.json"
 
@@ -37,4 +37,34 @@ export function getGaliciaBukovina() {
   ]
 
   return [union([galiciaJson], [bukovinaJson], [fix])[0]]
+}
+
+export function getNERomania(romaniaJson: Position[][]) {
+  const fix = [
+    [
+      26.256215019471938,
+      48.20137489491236
+    ],
+    [
+      26.247431779855134,
+      48.20543273251561
+    ],
+    [
+      26.29615157000009,
+      48.17899831200005
+    ],
+    [
+      26.303489624000093,
+      48.212045390000114
+    ],
+    [
+      26.256215019471938,
+      48.20137489491236
+    ],
+  ]
+
+  const bukovinaRomania = union(romaniaJson, [bukovinaJson])
+  const bukovinaNERomania = union(romaniaJson, [bukovinaJson], [fix])[0]
+
+  return difference([bukovinaNERomania], bukovinaRomania)
 }
