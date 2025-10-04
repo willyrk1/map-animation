@@ -1,4 +1,4 @@
-import { Feature, FeatureCollection, Polygon, Position } from "geojson";
+import { Feature, FeatureCollection, MultiPolygon, Polygon, Position } from "geojson";
 import React from "react";
 import * as turf from '@turf/turf'
 
@@ -42,6 +42,10 @@ export function isPolygonFeature(feature: Feature | undefined): feature is Featu
   return feature?.geometry.type === "Polygon";
 }
 
+export function isMultiPolygonFeature(feature: Feature | undefined): feature is Feature<MultiPolygon> {
+  return feature?.geometry.type === "MultiPolygon";
+}
+
 export function geoJson2CountryDetails(geoJson: FeatureCollection) {
   return geoJson.features.map(toCountryDetails)
 }
@@ -64,22 +68,30 @@ export function toCountryDetails(feature: Feature): CountryDetails {
   return { name, coordinates }
 }
 
+function paths2FeatureCollection(paths: Array<Array<Array<Position>>>) {
+  return turf.featureCollection(paths.map(p => turf.polygon(p)))
+}
+
+function feature2Positions(feature: Feature | null): Array<Array<Position>> {
+  if (feature) {
+    if (isPolygonFeature(feature))
+      return feature.geometry.coordinates
+    if (isMultiPolygonFeature(feature))
+      return feature.geometry.coordinates[0]
+  }
+  return []
+}
+
 export function union(...paths: Array<Array<Array<Position>>>): Array<Array<Position>> {
-  const unioned = turf.union(turf.featureCollection(paths.map(p => turf.polygon(p))))
-  const polygon = unioned && isPolygonFeature(unioned) ? unioned.geometry.coordinates : []
-  return polygon
+  return feature2Positions(turf.union(paths2FeatureCollection(paths)))
 }
 
 export function intersect(...paths: Array<Array<Array<Position>>>): Array<Array<Position>> {
-  const intersected = turf.intersect(turf.featureCollection(paths.map(p => turf.polygon(p))))
-  const polygon = intersected && isPolygonFeature(intersected) ? intersected.geometry.coordinates : []
-  return polygon
+  return feature2Positions(turf.intersect(paths2FeatureCollection(paths)))
 }
 
 export function difference(...paths: Array<Array<Array<Position>>>): Array<Array<Position>> {
-  const differenced = turf.difference(turf.featureCollection(paths.map(p => turf.polygon(p))))
-  const polygon = differenced && isPolygonFeature(differenced) ? differenced.geometry.coordinates : []
-  return polygon
+  return feature2Positions(turf.difference(paths2FeatureCollection(paths)))
 }
 
 export function getDistanceFromPositionInMiles([lon1, lat1]: Position, [lon2, lat2]: Position) {

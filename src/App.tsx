@@ -1,8 +1,8 @@
 import React from 'react';
 import './App.css';
-import { modernColorMap } from './paths/modernConstants';
+import { modernColorMap } from './colors.ts';
 import LongLatPath from "./paths/PositionPath.tsx";
-import { CountryDetails, position2ViewBox, union, viewBoxFromString } from "./utility.ts";
+import { CountryDetails, difference, position2ViewBox, union, viewBoxFromString } from "./utility.ts";
 import { getCountriesHighRes, getGaliciaBukovina, getNERomania } from './countries.ts';
 import vojvodinaJson from "./data/Vojvodina.json"
 import exRomaniaJson from "./data/exRomania.json"
@@ -39,7 +39,7 @@ function initCountries() {
   return initialCountries
 }
 
-const defaultViewBox = position2ViewBox(-26, 72, 67, 24)
+const defaultViewBox = position2ViewBox(-10, 72, 67, 34)
 
 export default function App() {
   const [viewBox, setViewBox] = React.useState(defaultViewBox);
@@ -125,6 +125,70 @@ export default function App() {
 
   function handleNext() {
     [
+      () => {
+        const russiaCoordinates = countries.find(({ name }) => name === 'Russia')?.coordinates
+        const finlandCoordinates = countries.find(({ name }) => name === 'Finland')?.coordinates
+        if (russiaCoordinates && finlandCoordinates) {
+          const [_russiaMain, ...russiaRest] = russiaCoordinates
+          const [_finlandMain, ...finlandRest] = finlandCoordinates
+          const russiaFinlandCoordinates = union(russiaCoordinates, finlandCoordinates)
+          const russiaFinland = {
+            "name": "RussiaFinland",
+            "coordinates": [...russiaFinlandCoordinates, ...russiaRest, ...finlandRest]
+          }
+          startAnimation(animateCountryReplacement(['Russia', 'Finland'], [russiaFinland]))
+        }
+      },
+      () => {
+        const russiaFinlandCoordinates = countries.find(({ name }) => name === 'RussiaFinland')?.coordinates
+        const estoniaCoordinates = countries.find(({ name }) => name === 'Estonia')?.coordinates
+        const latviaCoordinates = countries.find(({ name }) => name === 'Latvia')?.coordinates
+        const lithuaniaCoordinates = countries.find(({ name }) => name === 'Lithuania')?.coordinates
+        if (russiaFinlandCoordinates && estoniaCoordinates && latviaCoordinates && lithuaniaCoordinates) {
+          const [_russiaFinlandMain, kaliningradCoordinates, ...russiaFinlandRest] = russiaFinlandCoordinates
+          const [_estoniaMain, ...estoniaRest] = estoniaCoordinates
+          const [_latviaMain, ...latviaRest] = latviaCoordinates
+          const [_lithuaniaMain, ...lithuaniaRest] = lithuaniaCoordinates
+          const russiaBalticsCoordinates = union(russiaFinlandCoordinates, estoniaCoordinates, latviaCoordinates, lithuaniaCoordinates, [kaliningradCoordinates])
+          const russiaBaltics = {
+            "name": "RussiaBaltics",
+            "coordinates": [...russiaBalticsCoordinates, ...russiaFinlandRest, ...estoniaRest, ...latviaRest, ...lithuaniaRest]
+          }
+          startAnimation(animateCountryReplacement(['RussiaFinland', 'Estonia', 'Latvia', 'Lithuania'], [russiaBaltics]))
+        }
+      },
+      () => {
+        const russiaBalticsCoordinates = countries.find(({ name }) => name === 'RussiaBaltics')?.coordinates
+        const belarusCoordinates = countries.find(({ name }) => name === 'Belarus')?.coordinates
+        if (russiaBalticsCoordinates && belarusCoordinates) {
+          const [_russiaBalticsMain, ...russiaBalticsRest] = russiaBalticsCoordinates
+          const [_belarusMain, ...belarusRest] = belarusCoordinates
+          const russiaBelarusCoordinates = union(russiaBalticsCoordinates, belarusCoordinates)
+          const russiaBelarus = {
+            "name": "RussiaBelarus",
+            "coordinates": [...russiaBelarusCoordinates, ...russiaBalticsRest, ...belarusRest]
+          }
+          startAnimation(animateCountryReplacement(['RussiaBaltics', 'Belarus'], [russiaBelarus]))
+        }
+      },
+      () => {
+        const russiaBelarusCoordinates = countries.find(({ name }) => name === 'RussiaBelarus')?.coordinates
+        const ukraineCoordinates = countries.find(({ name }) => name === 'Ukraine')?.coordinates
+        const moldovaCoordinates = countries.find(({ name }) => name === 'Moldova')?.coordinates
+        if (russiaBelarusCoordinates && ukraineCoordinates && moldovaCoordinates) {
+          const [_russiaBelarusMain, ...russiaBelarusRest] = russiaBelarusCoordinates
+          const [_ukraineMain, ...ukraineRest] = ukraineCoordinates
+          const [_moldovaMain, ...moldovaRest] = moldovaCoordinates
+          const galiciaBukovinaCoordinates = getGaliciaBukovina()
+          const eastUkraineCoordinates = difference(ukraineCoordinates, galiciaBukovinaCoordinates)
+          const russiaUkraineCoordinates = union(russiaBelarusCoordinates, moldovaCoordinates, eastUkraineCoordinates)
+          const russiaUkraine = {
+            "name": "RussiaUkraine",
+            "coordinates": [...russiaUkraineCoordinates, ...russiaBelarusRest, ...ukraineRest, ...moldovaRest]
+          }
+          startAnimation(animateCountryReplacement(['RussiaBelarus', 'Moldova'], [russiaUkraine]))
+        }
+      },
       () => startAnimation(animateViewBoxChange(
         viewBox,
         position2ViewBox(7, 52, 19, 40),

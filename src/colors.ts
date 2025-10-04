@@ -30,6 +30,10 @@ export const modernColorMap: Record<string, string> = {
   'Czechia': '#cc0012',
   'Poland': '#e6e000',
   'Russia': 'green',
+  'RussiaFinland': 'green',
+  'RussiaBaltics': 'green',
+  'RussiaBelarus': 'green',
+  'RussiaUkraine': 'green',
   'Georgia': '#e6e000',
   'Belarus': '#cc0012',
   'Lithuania': '#001fcc',
@@ -50,4 +54,7 @@ export const modernColorMap: Record<string, string> = {
   'Ireland': '#00e607',
   'Liechtenstein': '#00abff',
   'Andorra': '#e600d2',
+  'Norway': '#ff0029',
+  'Sweden': '#ffe31a',
+  'Finland': '#1adcff',
 }
