@@ -34,6 +34,7 @@ export const modernColorMap: Record<string, string> = {
   'RussiaBaltics': 'green',
   'RussiaBelarus': 'green',
   'RussiaUkraine': 'green',
+  'RussiaPoland': 'green',
   'Georgia': '#e6e000',
   'Belarus': '#cc0012',
   'Lithuania': '#001fcc',

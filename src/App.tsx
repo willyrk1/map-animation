@@ -3,9 +3,13 @@ import './App.css';
 import { modernColorMap } from './colors.ts';
 import LongLatPath from "./paths/PositionPath.tsx";
 import { CountryDetails, difference, position2ViewBox, union, viewBoxFromString } from "./utility.ts";
-import { getCountriesHighRes, getGaliciaBukovina, getNERomania } from './countries.ts';
+import { getCountriesHighRes } from './countries.ts';
 import vojvodinaJson from "./data/Vojvodina.json"
 import exRomaniaJson from "./data/exRomania.json"
+import neRomaniaJson from "./data/neRomania.json"
+import galiciaJson from "./data/Galicia.json"
+import bukovinaJson from "./data/Bukovina.json"
+import congressPolandJson from "./data/CongressPoland.json"
 import trentinoSouthTyrolJson from "./data/TrentinoSouthTyrol.json"
 
 function toWithPathProps(country: CountryDetails): CountryDetails {
@@ -179,14 +183,27 @@ export default function App() {
           const [_russiaBelarusMain, ...russiaBelarusRest] = russiaBelarusCoordinates
           const [_ukraineMain, ...ukraineRest] = ukraineCoordinates
           const [_moldovaMain, ...moldovaRest] = moldovaCoordinates
-          const galiciaBukovinaCoordinates = getGaliciaBukovina()
-          const eastUkraineCoordinates = difference(ukraineCoordinates, galiciaBukovinaCoordinates)
+          const eastUkraineCoordinates = difference(ukraineCoordinates, [galiciaJson], [bukovinaJson])
           const russiaUkraineCoordinates = union(russiaBelarusCoordinates, moldovaCoordinates, eastUkraineCoordinates)
           const russiaUkraine = {
             "name": "RussiaUkraine",
             "coordinates": [...russiaUkraineCoordinates, ...russiaBelarusRest, ...ukraineRest, ...moldovaRest]
           }
           startAnimation(animateCountryReplacement(['RussiaBelarus', 'Moldova'], [russiaUkraine]))
+        }
+      },
+      () => {
+        const russiaUkraineCoordinates = countries.find(({ name }) => name === 'RussiaUkraine')?.coordinates
+        const polandCoordinates = countries.find(({ name }) => name === 'Poland')?.coordinates
+        if (russiaUkraineCoordinates && polandCoordinates) {
+          const [_russiaUkraineMain, ...russiaUkraineRest] = russiaUkraineCoordinates
+          const [, eastPoland] = difference(polandCoordinates, [congressPolandJson])
+          const [russiaPolandCoordinates] = union(russiaUkraineCoordinates, [eastPoland], [congressPolandJson])
+          const russiaPoland = {
+            "name": "RussiaPoland",
+            "coordinates": [russiaPolandCoordinates, ...russiaUkraineRest]
+          }
+          startAnimation(animateCountryReplacement(['RussiaUkraine'], [russiaPoland]))
         }
       },
       () => startAnimation(animateViewBoxChange(
@@ -262,7 +279,7 @@ export default function App() {
         const romaniaCoordinates = countries.find(({ name }) => name === 'Romania')?.coordinates
         if (ahSerbiaCoordinates && romaniaCoordinates) {
           const [_romaniaMain, ...romaniaRest] = romaniaCoordinates
-          const origRomaniaCoordinates = union(romaniaCoordinates, getNERomania(romaniaCoordinates))
+          const origRomaniaCoordinates = union(romaniaCoordinates, [neRomaniaJson])
           const origRomania = {
             "name": "NewRomania",
             "coordinates": [...origRomaniaCoordinates, ...romaniaRest]
@@ -280,7 +297,7 @@ export default function App() {
         const ahRomaniaCoordinates = countries.find(({ name }) => name === 'AustriaHungaryRomania')?.coordinates
         if (ahRomaniaCoordinates) {
           const [_ahRomaniaMain, ...ahRomaniaRest] = ahRomaniaCoordinates
-          const ahFinalCoordinates = union(ahRomaniaCoordinates, getGaliciaBukovina())
+          const ahFinalCoordinates = union(ahRomaniaCoordinates, [galiciaJson], [bukovinaJson])
           const austriaHungaryFinal = {
             "name": "AustriaHungaryFinal",
             "coordinates": [...ahFinalCoordinates, ...ahRomaniaRest]

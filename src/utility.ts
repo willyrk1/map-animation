@@ -77,7 +77,7 @@ function feature2Positions(feature: Feature | null): Array<Array<Position>> {
     if (isPolygonFeature(feature))
       return feature.geometry.coordinates
     if (isMultiPolygonFeature(feature))
-      return feature.geometry.coordinates[0]
+      return feature.geometry.coordinates.map(c => c[0])
   }
   return []
 }
