@@ -2,12 +2,12 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.css'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
-import App from './App.js'
+import WW1 from './WW1.js'
 
 const router = createBrowserRouter([
   {
     path: "/map-animation",
-    element: <App />,
+    element: <WW1 />,
   },
 ])
 
