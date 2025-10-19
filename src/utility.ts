@@ -69,7 +69,7 @@ export function toCountryDetails(feature: Feature): CountryDetails {
 }
 
 function paths2FeatureCollection(paths: Array<Array<Array<Position>>>) {
-  return turf.featureCollection(paths.map(p => turf.polygon(p)))
+  return turf.featureCollection(paths.map(p => turf.multiPolygon(p.map(x => [x]))))
 }
 
 function feature2Positions(feature: Feature | null): Array<Array<Position>> {
@@ -77,13 +77,13 @@ function feature2Positions(feature: Feature | null): Array<Array<Position>> {
     if (isPolygonFeature(feature))
       return feature.geometry.coordinates
     if (isMultiPolygonFeature(feature))
-      return feature.geometry.coordinates.map(c => c[0])
+      return feature.geometry.coordinates.flat()
   }
   return []
 }
 
 export function union(...paths: Array<Array<Array<Position>>>): Array<Array<Position>> {
-  return feature2Positions(turf.union(paths2FeatureCollection(paths)))
+  return feature2Positions(turf.union(paths2FeatureCollection(paths))).filter(path => getArea(path) > 20)
 }
 
 export function intersect(...paths: Array<Array<Array<Position>>>): Array<Array<Position>> {
@@ -92,6 +92,28 @@ export function intersect(...paths: Array<Array<Array<Position>>>): Array<Array<
 
 export function difference(...paths: Array<Array<Array<Position>>>): Array<Array<Position>> {
   return feature2Positions(turf.difference(paths2FeatureCollection(paths)))
+}
+
+interface PathArea {
+  path: Array<Position>
+  area: number
+}
+
+function byAreaDescending(pa1: PathArea, pa2: PathArea): number {
+  return pa2.area - pa1.area
+}
+
+export function getArea(path: Array<Position>) {
+  return turf.area(turf.polygon([path]))
+}
+
+export function addArea(coordinates: Array<Array<Position>>): Array<PathArea> {
+  return coordinates
+    .map(path => ({ path, area: getArea(path) }))
+}
+
+export function sortByArea(coordinates: Array<Array<Position>>): Array<Array<Position>> {
+  return addArea(coordinates).sort(byAreaDescending).map(({ path }) => path)
 }
 
 export function getDistanceFromPositionInMiles([lon1, lat1]: Position, [lon2, lat2]: Position) {

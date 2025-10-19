@@ -1,15 +1,23 @@
 import { countryReplacement, MapTransitionList, SteplessMapState, viewBoxChange } from "./mapReducer";
 import { CountryDetails, difference, position2ViewBox, union } from "./utility";
+import MapAnimation from "./MapAnimation";
+import { getCountriesHighRes } from "./countries";
+import { modernColorMap } from "./colors";
+import congressPolandJson from "./data/CongressPoland.json"
+import trentinoSouthTyrolJson from "./data/TrentinoSouthTyrol.json"
 import vojvodinaJson from "./data/Vojvodina.json"
 import exRomaniaJson from "./data/exRomania.json"
 import neRomaniaJson from "./data/neRomania.json"
 import galiciaJson from "./data/Galicia.json"
 import bukovinaJson from "./data/Bukovina.json"
-import congressPolandJson from "./data/CongressPoland.json"
-import trentinoSouthTyrolJson from "./data/TrentinoSouthTyrol.json"
-import MapAnimation from "./MapAnimation";
-import { getCountriesHighRes } from "./countries";
-import { modernColorMap } from "./colors";
+import southDobrujaJson from "./data/SouthDobruja.json"
+import bulgarianMacedoniaJson from './data/BulgarianMacedonia.json'
+import seNMacedoniaJson from './data/seNMacedonia.json'
+import bulgarianThraceJson from './data/BulgarianThrace.json'
+import ottomanWestThraceJson from './data/OttomanWestThrace.json'
+import bosilegradJson from './data/Bosilegrad.json'
+import nBulgariaSerbiaJson from './data/nBulgariaSerbia.json'
+import tzaribrodJson from './data/Tzaribrod.json'
 
 const initialState = {
   viewBox: position2ViewBox(-10, 72, 67, 34),
@@ -32,8 +40,7 @@ function getRussiaBalticsUnion({ countries }: SteplessMapState) {
   const latviaCoordinates = countries.find(({ name }) => name === 'Latvia')?.coordinates
   const lithuaniaCoordinates = countries.find(({ name }) => name === 'Lithuania')?.coordinates
   if (russiaFinlandUnion && russiaCoordinates && estoniaCoordinates && latviaCoordinates && lithuaniaCoordinates) {
-    const kaliningradCoordinates = russiaCoordinates[1]
-    return union(russiaFinlandUnion, estoniaCoordinates, latviaCoordinates, lithuaniaCoordinates, [kaliningradCoordinates])
+    return union(russiaFinlandUnion, estoniaCoordinates, latviaCoordinates, lithuaniaCoordinates)
   }
 }
 
@@ -52,7 +59,7 @@ function getRussiaUkraineUnion({ countries }: SteplessMapState) {
   const ukraineCoordinates = countries.find(({ name }) => name === 'Ukraine')?.coordinates
   const moldovaCoordinates = countries.find(({ name }) => name === 'Moldova')?.coordinates
   if (russiaBelarusUnion && ukraineCoordinates && moldovaCoordinates) {
-    const eastUkraineCoordinates = difference(ukraineCoordinates, [galiciaJson], [bukovinaJson])
+    const eastUkraineCoordinates = difference(ukraineCoordinates, galiciaJson, bukovinaJson)
     return union(russiaBelarusUnion, moldovaCoordinates, eastUkraineCoordinates)
   }
 }
@@ -62,8 +69,8 @@ const russiaUkraineUnion = getRussiaUkraineUnion(initialState)
 function getRussiaPolandUnion({ countries }: SteplessMapState) {
   const polandCoordinates = countries.find(({ name }) => name === 'Poland')?.coordinates
   if (russiaUkraineUnion && polandCoordinates) {
-    const [, eastPoland] = difference(polandCoordinates, [congressPolandJson])
-    return union(russiaUkraineUnion, [eastPoland], [congressPolandJson])[0]
+    const [, eastPoland] = difference(polandCoordinates, congressPolandJson)
+    return union(russiaUkraineUnion, [eastPoland], congressPolandJson)
   }
 }
 
@@ -94,8 +101,7 @@ function getAHBalkansUnion({ countries }: SteplessMapState) {
   const croatiaCoordinates = countries.find(({ name }) => name === 'Croatia')?.coordinates
   const bosniaCoordinates = countries.find(({ name }) => name === 'Bosnia and Herz.')?.coordinates
   if (ahCzechUnion && sloveniaCoordinates && croatiaCoordinates && bosniaCoordinates) {
-    const [croatiaMain, croatiaExclave] = croatiaCoordinates
-    return union(ahCzechUnion, sloveniaCoordinates, [croatiaMain], [croatiaExclave], bosniaCoordinates)
+    return union(ahCzechUnion, sloveniaCoordinates, croatiaCoordinates, bosniaCoordinates)
   }
 }
 
@@ -103,7 +109,7 @@ const ahBalkansUnion = getAHBalkansUnion(initialState)
 
 function getAHItalyUnion() {
   if (ahBalkansUnion) {
-    return union(ahBalkansUnion, [trentinoSouthTyrolJson])
+    return union(ahBalkansUnion, trentinoSouthTyrolJson)
   }
 }
 
@@ -111,7 +117,7 @@ const ahItalyUnion = getAHItalyUnion()
 
 function getAHSerbiaUnion() {
   if (ahItalyUnion) {
-    return union(ahItalyUnion, [vojvodinaJson])
+    return union(ahItalyUnion, vojvodinaJson)
   }
 }
 
@@ -120,7 +126,7 @@ const ahSerbiaUnion = getAHSerbiaUnion()
 function getRomaniaUnion({ countries }: SteplessMapState) {
   const romaniaCoordinates = countries.find(({ name }) => name === 'Romania')?.coordinates
   if (romaniaCoordinates) {
-    return union(romaniaCoordinates, [neRomaniaJson])
+    return union(romaniaCoordinates, neRomaniaJson)
   }
 }
 
@@ -128,7 +134,7 @@ const romaniaUnion = getRomaniaUnion(initialState)
 
 function getAHRomaniaUnion() {
   if (ahSerbiaUnion) {
-    return union(ahSerbiaUnion, [exRomaniaJson])
+    return union(ahSerbiaUnion, exRomaniaJson)
   }
 }
 
@@ -136,78 +142,81 @@ const ahRomaniaUnion = getAHRomaniaUnion()
 
 function getAHFinalUnion() {
   if (ahRomaniaUnion) {
-    return union(ahRomaniaUnion, [galiciaJson], [bukovinaJson])
+    return union(ahRomaniaUnion, galiciaJson, bukovinaJson)
   }
 }
 
 const ahFinalUnion = getAHFinalUnion()
 
+function getBulgariaUnion({ countries }: SteplessMapState) {
+  const bulgariaCoordinates = countries.find(({ name }) => name === 'Bulgaria')?.coordinates
+  if (bulgariaCoordinates) {
+    return union(bulgariaCoordinates, bulgarianMacedoniaJson, seNMacedoniaJson, bulgarianThraceJson, bosilegradJson, tzaribrodJson, nBulgariaSerbiaJson)
+  }
+}
+
+const bulgariaUnion = getBulgariaUnion(initialState)
+
+function getTurkeyEuropeUnion({ countries }: SteplessMapState) {
+  const turkeyCoordinates = countries.find(({ name }) => name === 'Turkey')?.coordinates
+  if (turkeyCoordinates) {
+    return union(turkeyCoordinates, ottomanWestThraceJson)
+  }
+}
+
+const turkeyEuropeUnion = getTurkeyEuropeUnion(initialState)
+
+function getRomaniaBulgariaUnion() {
+  if (romaniaUnion && ahFinalUnion) {
+    const smallRomania = difference(romaniaUnion, ahFinalUnion)
+    return union(smallRomania, southDobrujaJson)
+  }
+}
+
+const romaniaBulgariaUnion = getRomaniaBulgariaUnion()
+
 const transitions: MapTransitionList = [
-  ({ countries }) => {
-    const russiaCoordinates = countries.find(({ name }) => name === 'Russia')?.coordinates
-    const finlandCoordinates = countries.find(({ name }) => name === 'Finland')?.coordinates
-    if (russiaFinlandUnion && russiaCoordinates && finlandCoordinates) {
-      const [_russiaMain, ...russiaRest] = russiaCoordinates
-      const [_finlandMain, ...finlandRest] = finlandCoordinates
+  () => {
+    if (russiaFinlandUnion) {
       const russiaFinland = {
         "name": "RussiaFinland",
-        "coordinates": [...russiaFinlandUnion, ...russiaRest, ...finlandRest]
+        "coordinates": russiaFinlandUnion
       }
       return countryReplacement(['Russia', 'Finland'], [russiaFinland])
     }
   },
-  ({ countries }) => {
-    const russiaFinlandCoordinates = countries.find(({ name }) => name === 'RussiaFinland')?.coordinates
-    const estoniaCoordinates = countries.find(({ name }) => name === 'Estonia')?.coordinates
-    const latviaCoordinates = countries.find(({ name }) => name === 'Latvia')?.coordinates
-    const lithuaniaCoordinates = countries.find(({ name }) => name === 'Lithuania')?.coordinates
-    if (russiaBalticsUnion && russiaFinlandCoordinates && estoniaCoordinates && latviaCoordinates && lithuaniaCoordinates) {
-      const [_russiaFinlandMain, _kaliningradCoordinates, ...russiaFinlandRest] = russiaFinlandCoordinates
-      const [_estoniaMain, ...estoniaRest] = estoniaCoordinates
-      const [_latviaMain, ...latviaRest] = latviaCoordinates
-      const [_lithuaniaMain, ...lithuaniaRest] = lithuaniaCoordinates
+  () => {
+    if (russiaBalticsUnion) {
       const russiaBaltics = {
         "name": "RussiaBaltics",
-        "coordinates": [...russiaBalticsUnion, ...russiaFinlandRest, ...estoniaRest, ...latviaRest, ...lithuaniaRest]
+        "coordinates": russiaBalticsUnion
       }
       return countryReplacement(['RussiaFinland', 'Estonia', 'Latvia', 'Lithuania'], [russiaBaltics])
     }
   },
-  ({ countries }) => {
-    const russiaBalticsCoordinates = countries.find(({ name }) => name === 'RussiaBaltics')?.coordinates
-    const belarusCoordinates = countries.find(({ name }) => name === 'Belarus')?.coordinates
-    if (russiaBelarusUnion && russiaBalticsCoordinates && belarusCoordinates) {
-      const [_russiaBalticsMain, ...russiaBalticsRest] = russiaBalticsCoordinates
-      const [_belarusMain, ...belarusRest] = belarusCoordinates
+  () => {
+    if (russiaBelarusUnion) {
       const russiaBelarus = {
         "name": "RussiaBelarus",
-        "coordinates": [...russiaBelarusUnion, ...russiaBalticsRest, ...belarusRest]
+        "coordinates": russiaBelarusUnion
       }
       return countryReplacement(['RussiaBaltics', 'Belarus'], [russiaBelarus])
     }
   },
-  ({ countries }) => {
-    const russiaBelarusCoordinates = countries.find(({ name }) => name === 'RussiaBelarus')?.coordinates
-    const ukraineCoordinates = countries.find(({ name }) => name === 'Ukraine')?.coordinates
-    const moldovaCoordinates = countries.find(({ name }) => name === 'Moldova')?.coordinates
-    if (russiaUkraineUnion && russiaBelarusCoordinates && ukraineCoordinates && moldovaCoordinates) {
-      const [_russiaBelarusMain, ...russiaBelarusRest] = russiaBelarusCoordinates
-      const [_ukraineMain, ...ukraineRest] = ukraineCoordinates
-      const [_moldovaMain, ...moldovaRest] = moldovaCoordinates
+  () => {
+    if (russiaUkraineUnion) {
       const russiaUkraine = {
         "name": "RussiaUkraine",
-        "coordinates": [...russiaUkraineUnion, ...russiaBelarusRest, ...ukraineRest, ...moldovaRest]
+        "coordinates": russiaUkraineUnion
       }
       return countryReplacement(['RussiaBelarus', 'Moldova'], [russiaUkraine])
     }
   },
-  ({ countries }) => {
-    const russiaUkraineCoordinates = countries.find(({ name }) => name === 'RussiaUkraine')?.coordinates
-    if (russiaPolandUnion && russiaUkraineCoordinates) {
-      const [_russiaUkraineMain, ...russiaUkraineRest] = russiaUkraineCoordinates
+  () => {
+    if (russiaPolandUnion) {
       const russiaPoland = {
         "name": "RussiaPoland",
-        "coordinates": [russiaPolandUnion, ...russiaUkraineRest]
+        "coordinates": russiaPolandUnion
       }
       return countryReplacement(['RussiaUkraine'], [russiaPoland])
     }
@@ -231,65 +240,70 @@ const transitions: MapTransitionList = [
       return countryReplacement(['AustriaHungary'], [austriaHungaryCZ])
     }
   },
-  ({ countries }) => {
-    const croatiaCoordinates = countries.find(({ name }) => name === 'Croatia')?.coordinates
-    if (ahBalkansUnion && croatiaCoordinates) {
-      const [_croatiaMain, _croatiaExclave, ...croatiaRest] = croatiaCoordinates
+  () => {
+    if (ahBalkansUnion) {
       const austriaHungaryBalkans = {
         "name": "AustriaHungaryBalkans",
-        "coordinates": [...ahBalkansUnion, ...croatiaRest]
+        "coordinates": ahBalkansUnion
       }
       return countryReplacement(['AustriaHungaryCZ', 'Slovenia', 'Croatia', 'Bosnia and Herz.'], [austriaHungaryBalkans])
     }
   },
-  ({ countries }) => {
-    const ahBalkansCoordinates = countries.find(({ name }) => name === 'AustriaHungaryBalkans')?.coordinates
-    if (ahItalyUnion && ahBalkansCoordinates) {
-      const [_ahBalkansMain, ...ahBalkansRest] = ahBalkansCoordinates
+  () => {
+    if (ahItalyUnion) {
       const austriaHungaryItaly = {
         "name": "AustriaHungaryItaly",
-        "coordinates": [...ahItalyUnion, ...ahBalkansRest]
+        "coordinates": ahItalyUnion
       }
       return countryReplacement(['AustriaHungaryBalkans'], [austriaHungaryItaly])
     }
   },
-  ({ countries }) => {
-    const ahItalyCoordinates = countries.find(({ name }) => name === 'AustriaHungaryItaly')?.coordinates
-    if (ahSerbiaUnion && ahItalyCoordinates) {
-      const [_ahItalyMain, ...ahItalyRest] = ahItalyCoordinates
+  () => {
+    if (ahSerbiaUnion) {
       const austriaHungarySerbia = {
         "name": "AustriaHungarySerbia",
-        "coordinates": [...ahSerbiaUnion, ...ahItalyRest]
+        "coordinates": ahSerbiaUnion
       }
       return countryReplacement(['AustriaHungaryItaly'], [austriaHungarySerbia])
     }
   },
-  ({ countries }) => {
-    const ahSerbiaCoordinates = countries.find(({ name }) => name === 'AustriaHungarySerbia')?.coordinates
-    const romaniaCoordinates = countries.find(({ name }) => name === 'Romania')?.coordinates
-    if (romaniaUnion && ahRomaniaUnion && ahSerbiaCoordinates && romaniaCoordinates) {
-      const [_romaniaMain, ...romaniaRest] = romaniaCoordinates
+  () => {
+    if (romaniaUnion && ahRomaniaUnion) {
       const origRomania = {
         "name": "NewRomania",
-        "coordinates": [...romaniaUnion, ...romaniaRest]
+        "coordinates": romaniaUnion
       }
-      const [_ahSerbiaMain, ...ahSerbiaRest] = ahSerbiaCoordinates
       const austriaHungaryRomania = {
         "name": "AustriaHungaryRomania",
-        "coordinates": [...ahRomaniaUnion, ...ahSerbiaRest]
+        "coordinates": ahRomaniaUnion
       }
       return countryReplacement(['AustriaHungarySerbia', 'Romania'], [origRomania, austriaHungaryRomania])
     }
   },
-  ({ countries }) => {
-    const ahRomaniaCoordinates = countries.find(({ name }) => name === 'AustriaHungaryRomania')?.coordinates
-    if (ahFinalUnion && ahRomaniaCoordinates) {
-      const [_ahRomaniaMain, ...ahRomaniaRest] = ahRomaniaCoordinates
+  () => {
+    if (ahFinalUnion) {
       const austriaHungaryFinal = {
         "name": "AustriaHungaryFinal",
-        "coordinates": [...ahFinalUnion, ...ahRomaniaRest]
+        "coordinates": ahFinalUnion
       }
       return countryReplacement(['AustriaHungaryRomania', 'Ukraine'], [austriaHungaryFinal])
+    }
+  },
+  () => {
+    if (romaniaBulgariaUnion && bulgariaUnion && turkeyEuropeUnion) {
+      const romaniaFinal = {
+        "name": "RomaniaFinal",
+        "coordinates": romaniaBulgariaUnion
+      }
+      const bulgariaFinal = {
+        "name": "BulgariaFinal",
+        "coordinates": bulgariaUnion
+      }
+      const turkeyEurope = {
+        "name": "TurkeyEurope",
+        "coordinates": turkeyEuropeUnion
+      }
+      return countryReplacement(['Bulgaria', 'NewRomania', 'Turkey'], [bulgariaFinal, turkeyEurope, romaniaFinal])
     }
   },
 ]
