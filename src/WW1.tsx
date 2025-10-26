@@ -4,6 +4,9 @@ import MapAnimation from "./MapAnimation";
 import { getCountriesHighRes } from "./countries";
 import { modernColorMap } from "./colors";
 import congressPolandJson from "./data/CongressPoland.json"
+import memellandJson from './data/Memelland.json'
+import alsaceLorraineJson from './data/AlsaceLorraine.json'
+import southJutlandJson from './data/SouthJutland.json'
 import trentinoSouthTyrolJson from "./data/TrentinoSouthTyrol.json"
 import vojvodinaJson from "./data/Vojvodina.json"
 import exRomaniaJson from "./data/exRomania.json"
@@ -40,7 +43,7 @@ function getRussiaBalticsUnion({ countries }: SteplessMapState) {
   const latviaCoordinates = countries.find(({ name }) => name === 'Latvia')?.coordinates
   const lithuaniaCoordinates = countries.find(({ name }) => name === 'Lithuania')?.coordinates
   if (russiaFinlandUnion && russiaCoordinates && estoniaCoordinates && latviaCoordinates && lithuaniaCoordinates) {
-    return union(russiaFinlandUnion, estoniaCoordinates, latviaCoordinates, lithuaniaCoordinates)
+    return union(russiaFinlandUnion, estoniaCoordinates, latviaCoordinates, difference(lithuaniaCoordinates, memellandJson))
   }
 }
 
@@ -75,6 +78,33 @@ function getRussiaPolandUnion({ countries }: SteplessMapState) {
 }
 
 const russiaPolandUnion = getRussiaPolandUnion(initialState)
+
+function getGermanyFranceDenmarkUnion({ countries }: SteplessMapState) {
+  const germanyCoordinates = countries.find(({ name }) => name === 'Germany')?.coordinates
+  if (germanyCoordinates) {
+    return union(germanyCoordinates, alsaceLorraineJson, southJutlandJson)
+  }
+}
+
+const germanyFranceDenmarkUnion = getGermanyFranceDenmarkUnion(initialState)
+
+function getGermanyPolandUnion({ countries }: SteplessMapState) {
+  const polandCoordinates = countries.find(({ name }) => name === 'Poland')?.coordinates
+  if (germanyFranceDenmarkUnion && russiaPolandUnion && polandCoordinates) {
+    return union(germanyFranceDenmarkUnion, difference(polandCoordinates, russiaPolandUnion, galiciaJson))
+  }
+}
+
+const germanyPolandUnion = getGermanyPolandUnion(initialState)
+
+function getGermanyFinalUnion({ countries }: SteplessMapState) {
+  const russiaCoordinates = countries.find(({ name }) => name === 'Russia')?.coordinates
+  if (germanyPolandUnion && russiaCoordinates) {
+    return union(germanyPolandUnion, memellandJson, russiaCoordinates.slice(1, 2))
+  }
+}
+
+const germanyFinalUnion = getGermanyFinalUnion(initialState)
 
 function getAustriaHungaryUnion({ countries }: SteplessMapState) {
   const austriaCoordinates = countries.find(({ name }) => name === 'Austria')?.coordinates
@@ -191,7 +221,7 @@ const transitions: MapTransitionList = [
         "name": "RussiaBaltics",
         "coordinates": russiaBalticsUnion
       }
-      return countryReplacement(['RussiaFinland', 'Estonia', 'Latvia', 'Lithuania'], [russiaBaltics])
+      return countryReplacement(['RussiaFinland', 'Estonia', 'Latvia'], [russiaBaltics])
     }
   },
   () => {
@@ -219,6 +249,34 @@ const transitions: MapTransitionList = [
         "coordinates": russiaPolandUnion
       }
       return countryReplacement(['RussiaUkraine'], [russiaPoland])
+    }
+  },
+  () => viewBoxChange(3, 58, 26, 46),
+  () => {
+    if (germanyFranceDenmarkUnion) {
+      const germanyFranceDenmark = {
+        "name": "GermanyFranceDenmark",
+        "coordinates": germanyFranceDenmarkUnion
+      }
+      return countryReplacement(['Germany'], [germanyFranceDenmark])
+    }
+  },
+  () => {
+    if (germanyPolandUnion) {
+      const germanyPoland = {
+        "name": "GermanyPoland",
+        "coordinates": germanyPolandUnion
+      }
+      return countryReplacement(['GermanyFranceDenmark'], [germanyPoland])
+    }
+  },
+  () => {
+    if (germanyFinalUnion) {
+      const germanyFinal = {
+        "name": "GermanyFinal",
+        "coordinates": germanyFinalUnion
+      }
+      return countryReplacement(['GermanyPoland', 'Lithuania'], [germanyFinal])
     }
   },
   () => viewBoxChange(7, 52, 19, 40),
@@ -286,7 +344,7 @@ const transitions: MapTransitionList = [
         "name": "AustriaHungaryFinal",
         "coordinates": ahFinalUnion
       }
-      return countryReplacement(['AustriaHungaryRomania', 'Ukraine'], [austriaHungaryFinal])
+      return countryReplacement(['AustriaHungaryRomania', 'Ukraine', 'Poland'], [austriaHungaryFinal])
     }
   },
   () => {
@@ -306,6 +364,7 @@ const transitions: MapTransitionList = [
       return countryReplacement(['Bulgaria', 'NewRomania', 'Turkey'], [bulgariaFinal, turkeyEurope, romaniaFinal])
     }
   },
+  () => viewBoxChange(-10, 72, 67, 34),
 ]
 
 function toWithPathProps(country: CountryDetails): CountryDetails {
