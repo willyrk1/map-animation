@@ -2,6 +2,7 @@ export const modernColorMap: Record<string, string> = {
   'Bosnia and Herz.': '#e6e000',
   'Croatia': 'green',
   'Serbia': '#00e6d2',
+  'SerbiaFinal': '#00e6d2',
   'Kosovo': 'green',
   'Montenegro': '#cc0012',
   'Albania': '#4d54ff',

@@ -22,6 +22,7 @@ import {
   getRussiaFinlandUnion,
   getRussiaPolandUnion,
   getRussiaUkraineUnion,
+  getSerbiaFinalUnion,
   getTurkeyEuropeUnion
 } from "./positionCalc";
 
@@ -49,6 +50,7 @@ const ahFinalUnion = getAHFinalUnion(initialState)
 const bulgariaUnion = getBulgariaUnion(initialState)
 const turkeyEuropeUnion = getTurkeyEuropeUnion(initialState)
 const romaniaBulgariaUnion = getRomaniaBulgariaUnion(initialState)
+const serbiaFinalUnion = getSerbiaFinalUnion(initialState)
 
 const transitions: MapTransitionList = [
   () => {
@@ -207,6 +209,15 @@ const transitions: MapTransitionList = [
         "coordinates": turkeyEuropeUnion
       }
       return countryReplacement(['Bulgaria', 'NewRomania', 'Turkey'], [bulgariaFinal, turkeyEurope, romaniaFinal])
+    }
+  },
+  () => {
+    if (serbiaFinalUnion) {
+      const serbiaFinal = {
+        "name": "SerbiaFinal",
+        "coordinates": serbiaFinalUnion
+      }
+      return countryReplacement(['Serbia', 'North Macdeonia', 'Kosovo'], [serbiaFinal])
     }
   },
   () => viewBoxChange(-10, 72, 67, 34),
