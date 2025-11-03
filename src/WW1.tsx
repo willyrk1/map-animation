@@ -20,6 +20,7 @@ import {
   getRussiaBalticsUnion,
   getRussiaBelarusUnion,
   getRussiaFinlandUnion,
+  getRussiaMiddleEastUnion,
   getRussiaPolandUnion,
   getRussiaUkraineUnion,
   getSerbiaFinalUnion,
@@ -36,6 +37,7 @@ const russiaBalticsUnion = getRussiaBalticsUnion(initialState)
 const russiaBelarusUnion = getRussiaBelarusUnion(initialState)
 const russiaUkraineUnion = getRussiaUkraineUnion(initialState)
 const russiaPolandUnion = getRussiaPolandUnion(initialState)
+const russiaMiddleEastUnion = getRussiaMiddleEastUnion(initialState)
 const germanyFranceDenmarkUnion = getGermanyFranceDenmarkUnion(initialState)
 const germanyPolandUnion = getGermanyPolandUnion(initialState)
 const germanyFinalUnion = getGermanyFinalUnion(initialState)
@@ -96,6 +98,15 @@ const transitions: MapTransitionList = [
         "coordinates": russiaPolandUnion
       }
       return countryReplacement(['RussiaUkraine'], [russiaPoland])
+    }
+  },
+  () => {
+    if (russiaMiddleEastUnion) {
+      const russiaMiddleEast = {
+        "name": "RussiaMiddleEast",
+        "coordinates": russiaMiddleEastUnion
+      }
+      return countryReplacement(['RussiaPoland', 'Armenia', 'Azerbaijan', 'Georgia'], [russiaMiddleEast])
     }
   },
   () => viewBoxChange(3, 58, 26, 46),
