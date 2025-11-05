@@ -24,7 +24,8 @@ import {
   getRussiaPolandUnion,
   getRussiaUkraineUnion,
   getSerbiaFinalUnion,
-  getTurkeyEuropeUnion
+  getOttomanEuropeUnion,
+  getOttomanMiddleEastUnion
 } from "./positionCalc";
 
 const initialState = {
@@ -50,9 +51,10 @@ const romaniaUnion = getRomaniaUnion(initialState)
 const ahRomaniaUnion = getAHRomaniaUnion(initialState)
 const ahFinalUnion = getAHFinalUnion(initialState)
 const bulgariaUnion = getBulgariaUnion(initialState)
-const turkeyEuropeUnion = getTurkeyEuropeUnion(initialState)
+const ottomanEuropeUnion = getOttomanEuropeUnion(initialState)
 const romaniaBulgariaUnion = getRomaniaBulgariaUnion(initialState)
 const serbiaFinalUnion = getSerbiaFinalUnion(initialState)
+const ottomanMiddleEastUnion = getOttomanMiddleEastUnion(initialState)
 
 const transitions: MapTransitionList = [
   () => {
@@ -206,7 +208,7 @@ const transitions: MapTransitionList = [
     }
   },
   () => {
-    if (romaniaBulgariaUnion && bulgariaUnion && turkeyEuropeUnion) {
+    if (romaniaBulgariaUnion && bulgariaUnion && ottomanEuropeUnion) {
       const romaniaFinal = {
         "name": "RomaniaFinal",
         "coordinates": romaniaBulgariaUnion
@@ -215,11 +217,11 @@ const transitions: MapTransitionList = [
         "name": "BulgariaFinal",
         "coordinates": bulgariaUnion
       }
-      const turkeyEurope = {
-        "name": "TurkeyEurope",
-        "coordinates": turkeyEuropeUnion
+      const ottomanEurope = {
+        "name": "OttomanEurope",
+        "coordinates": ottomanEuropeUnion
       }
-      return countryReplacement(['Bulgaria', 'NewRomania', 'Turkey'], [bulgariaFinal, turkeyEurope, romaniaFinal])
+      return countryReplacement(['Bulgaria', 'NewRomania', 'Turkey'], [bulgariaFinal, ottomanEurope, romaniaFinal])
     }
   },
   () => {
@@ -231,7 +233,16 @@ const transitions: MapTransitionList = [
       return countryReplacement(['Serbia', 'North Macdeonia', 'Kosovo'], [serbiaFinal])
     }
   },
-  () => viewBoxChange(-10, 72, 67, 34),
+  () => viewBoxChange(25, 44, 56, 8),
+  () => {
+    if (ottomanMiddleEastUnion) {
+      const ottomanMiddleEast = {
+        "name": "OttomanMiddleEast",
+        "coordinates": ottomanMiddleEastUnion
+      }
+      return countryReplacement(['OttomanEurope', 'Lebanon', 'Israel', 'Palestine'], [ottomanMiddleEast])
+    }
+  },
 ]
 
 function toWithPathProps(country: CountryDetails): CountryDetails {

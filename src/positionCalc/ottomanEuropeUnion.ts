@@ -3,12 +3,12 @@ import { SteplessMapState } from "../mapReducer"
 import { union } from "../utility"
 import ottomanWestThraceJson from '../data/OttomanWestThrace.json'
 
-let turkeyEuropeUnion: Array<Array<Position>> | undefined
+let ottomanEuropeUnion: Array<Array<Position>> | undefined
 
-export default function getTurkeyEuropeUnion({ countries }: SteplessMapState) {
-  if (turkeyEuropeUnion) return turkeyEuropeUnion
+export default function getOttomanEuropeUnion({ countries }: SteplessMapState) {
+  if (ottomanEuropeUnion) return ottomanEuropeUnion
   const turkeyCoordinates = countries.find(({ name }) => name === 'Turkey')?.coordinates
   if (turkeyCoordinates) {
-    return turkeyEuropeUnion = union(turkeyCoordinates, ottomanWestThraceJson)
+    return ottomanEuropeUnion = union(turkeyCoordinates, ottomanWestThraceJson)
   }
 }
