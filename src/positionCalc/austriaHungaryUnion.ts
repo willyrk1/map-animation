@@ -1,14 +1,12 @@
 import { Position } from "geojson"
 import { SteplessMapState } from "../mapReducer"
-import { union } from "../utility"
+import { getCountryByName, union } from "../utility"
 
-let austriaHungaryUnion: Array<Array<Position>> | undefined
+let austriaHungaryUnion: Array<Array<Position>>
 
 export default function getAustriaHungaryUnion({ countries }: SteplessMapState) {
   if (austriaHungaryUnion) return austriaHungaryUnion
-  const austriaCoordinates = countries.find(({ name }) => name === 'Austria')?.coordinates
-  const hungaryCoordinates = countries.find(({ name }) => name === 'Hungary')?.coordinates
-  if (austriaCoordinates && hungaryCoordinates) {
-    return austriaHungaryUnion = union(austriaCoordinates, hungaryCoordinates)
-  }
+  const austriaCoordinates = getCountryByName(countries, 'Austria').coordinates
+  const hungaryCoordinates = getCountryByName(countries, 'Hungary').coordinates
+  return austriaHungaryUnion = union(austriaCoordinates, hungaryCoordinates)
 }

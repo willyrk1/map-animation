@@ -27,17 +27,6 @@ export function xy2Position([x, y]: [number, number]): Position {
   return [x - 180, y2lat(180 - y)]
 }
 
-export function position2ViewBox(left: number, top: number, right: number, bottom: number) {
-  const bottomY = lat2y(bottom)
-  const topY = lat2y(top)
-  return `${left + 180} ${180 - topY} ${right - left} ${topY - bottomY}`
-}
-
-export function viewBoxFromString(viewBoxString: string) {
-  const [x, y, width, height] = viewBoxString.split(' ').map(v => +v)
-  return { x, y, width, height }
-}
-
 export function isPolygonFeature(feature: Feature | undefined): feature is Feature<Polygon> {
   return feature?.geometry.type === "Polygon";
 }
@@ -131,4 +120,8 @@ export function getDistanceFromPositionInMiles([lon1, lat1]: Position, [lon2, la
 
 export function safeGet<T>(ary: Array<T>, index: number) {
   return ary[((index % ary.length) + ary.length) % ary.length]
+}
+
+export function getCountryByName(countries: CountryDetails[], searchName: string) {
+  return countries.find(({ name }) => name === searchName)!
 }

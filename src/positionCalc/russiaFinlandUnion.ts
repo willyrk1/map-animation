@@ -1,14 +1,12 @@
 import { Position } from "geojson"
 import { SteplessMapState } from "../mapReducer"
-import { union } from "../utility"
+import { getCountryByName, union } from "../utility"
 
-let russiaFinlandUnion: Array<Array<Position>> | undefined
+let russiaFinlandUnion: Array<Array<Position>>
 
 export default function getRussiaFinlandUnion({ countries }: SteplessMapState) {
   if (russiaFinlandUnion) return russiaFinlandUnion
-  const russiaCoordinates = countries.find(({ name }) => name === 'Russia')?.coordinates
-  const finlandCoordinates = countries.find(({ name }) => name === 'Finland')?.coordinates
-  if (russiaCoordinates && finlandCoordinates) {
-    return russiaFinlandUnion = union(russiaCoordinates, finlandCoordinates)
-  }
+  const russiaCoordinates = getCountryByName(countries, 'Russia').coordinates
+  const finlandCoordinates = getCountryByName(countries, 'Finland').coordinates
+  return russiaFinlandUnion = union(russiaCoordinates, finlandCoordinates)
 }

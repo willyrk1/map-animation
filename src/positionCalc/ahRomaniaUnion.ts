@@ -4,12 +4,10 @@ import { union } from "../utility"
 import getAHSerbiaUnion from "./ahSerbiaUnion"
 import exRomaniaJson from "../data/exRomania.json"
 
-let ahRomaniaUnion: Array<Array<Position>> | undefined
+let ahRomaniaUnion: Array<Array<Position>>
 
 export default function getAHRomaniaUnion(state: SteplessMapState) {
   if (ahRomaniaUnion) return ahRomaniaUnion
   const ahSerbiaUnion = getAHSerbiaUnion(state)
-  if (ahSerbiaUnion) {
-    return ahRomaniaUnion = union(ahSerbiaUnion, exRomaniaJson)
-  }
+  return ahRomaniaUnion = union(ahSerbiaUnion, exRomaniaJson)
 }

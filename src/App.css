@@ -1,6 +1,8 @@
 .container {
   height: 100vh;
   position: relative;
+  /* Full Earth view looks best with this, but who cares? */
+  /* width: 140vh; */
 }
 
 .container svg {
@@ -15,26 +17,4 @@
 .controls > button {
   margin: 10px;
   padding: 10px;
-}
-
-.detail-link {
-  /* text-decoration: underline; */
-  cursor: pointer;
-}
-
-.detail {
-  background-color: white;
-  border: solid 1px black;
-  padding: 15px 15px;
-  width: 300px;
-}
-
-.detail h1 {
-  font-size: 20px;
-  margin: 0 0 10px;
-}
-
-.detail-timeline-link {
-  display: block;
-  margin-top: 10px;
 }

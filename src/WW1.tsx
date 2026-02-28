@@ -1,5 +1,5 @@
-import { countryReplacement, MapTransitionList, viewBoxChange } from "./mapReducer";
-import { CountryDetails, position2ViewBox } from "./utility";
+import { countryReplacement, MapTransitionList, viewCenterChange, zoomChange } from "./mapReducer";
+import { CountryDetails } from "./utility";
 import MapAnimation from "./MapAnimation";
 import { getCountriesHighRes } from "./countries";
 import { modernColorMap } from "./colors";
@@ -29,8 +29,9 @@ import {
 } from "./positionCalc";
 
 const initialState = {
-  viewBox: position2ViewBox(-10, 72, 67, 34),
-  countries: getCountriesHighRes()
+  countries: getCountriesHighRes(),
+  viewCenter: [28, 57],
+  zoom: 3.65,
 }
 
 const russiaFinlandUnion = getRussiaFinlandUnion(initialState)
@@ -58,190 +59,152 @@ const ottomanMiddleEastUnion = getOttomanMiddleEastUnion(initialState)
 
 const transitions: MapTransitionList = [
   () => {
-    if (russiaFinlandUnion) {
-      const russiaFinland = {
-        "name": "RussiaFinland",
-        "coordinates": russiaFinlandUnion
-      }
-      return countryReplacement(['Russia', 'Finland'], [russiaFinland])
+    const russiaFinland = {
+      "name": "RussiaFinland",
+      "coordinates": russiaFinlandUnion
     }
+    return countryReplacement(['Russia', 'Finland'], [russiaFinland])
   },
   () => {
-    if (russiaBalticsUnion) {
-      const russiaBaltics = {
-        "name": "RussiaBaltics",
-        "coordinates": russiaBalticsUnion
-      }
-      return countryReplacement(['RussiaFinland', 'Estonia', 'Latvia'], [russiaBaltics])
+    const russiaBaltics = {
+      "name": "RussiaBaltics",
+      "coordinates": russiaBalticsUnion
     }
+    return countryReplacement(['RussiaFinland', 'Estonia', 'Latvia'], [russiaBaltics])
   },
   () => {
-    if (russiaBelarusUnion) {
-      const russiaBelarus = {
-        "name": "RussiaBelarus",
-        "coordinates": russiaBelarusUnion
-      }
-      return countryReplacement(['RussiaBaltics', 'Belarus'], [russiaBelarus])
+    const russiaBelarus = {
+      "name": "RussiaBelarus",
+      "coordinates": russiaBelarusUnion
     }
+    return countryReplacement(['RussiaBaltics', 'Belarus'], [russiaBelarus])
   },
   () => {
-    if (russiaUkraineUnion) {
-      const russiaUkraine = {
-        "name": "RussiaUkraine",
-        "coordinates": russiaUkraineUnion
-      }
-      return countryReplacement(['RussiaBelarus', 'Moldova'], [russiaUkraine])
+    const russiaUkraine = {
+      "name": "RussiaUkraine",
+      "coordinates": russiaUkraineUnion
     }
+    return countryReplacement(['RussiaBelarus', 'Moldova'], [russiaUkraine])
   },
   () => {
-    if (russiaPolandUnion) {
-      const russiaPoland = {
-        "name": "RussiaPoland",
-        "coordinates": russiaPolandUnion
-      }
-      return countryReplacement(['RussiaUkraine'], [russiaPoland])
+    const russiaPoland = {
+      "name": "RussiaPoland",
+      "coordinates": russiaPolandUnion
     }
+    return countryReplacement(['RussiaUkraine'], [russiaPoland])
   },
   () => {
-    if (russiaMiddleEastUnion) {
-      const russiaMiddleEast = {
-        "name": "RussiaMiddleEast",
-        "coordinates": russiaMiddleEastUnion
-      }
-      return countryReplacement(['RussiaPoland', 'Armenia', 'Azerbaijan', 'Georgia'], [russiaMiddleEast])
+    const russiaMiddleEast = {
+      "name": "RussiaMiddleEast",
+      "coordinates": russiaMiddleEastUnion
     }
+    return countryReplacement(['RussiaPoland', 'Armenia', 'Azerbaijan', 'Georgia'], [russiaMiddleEast])
   },
-  () => viewBoxChange(3, 58, 26, 46),
+  () => [viewCenterChange(15, 52), zoomChange(13)],
   () => {
-    if (germanyFranceDenmarkUnion) {
-      const germanyFranceDenmark = {
-        "name": "GermanyFranceDenmark",
-        "coordinates": germanyFranceDenmarkUnion
-      }
-      return countryReplacement(['Germany'], [germanyFranceDenmark])
+    const germanyFranceDenmark = {
+      "name": "GermanyFranceDenmark",
+      "coordinates": germanyFranceDenmarkUnion
     }
+    return countryReplacement(['Germany'], [germanyFranceDenmark])
   },
   () => {
-    if (germanyPolandUnion) {
-      const germanyPoland = {
-        "name": "GermanyPoland",
-        "coordinates": germanyPolandUnion
-      }
-      return countryReplacement(['GermanyFranceDenmark'], [germanyPoland])
+    const germanyPoland = {
+      "name": "GermanyPoland",
+      "coordinates": germanyPolandUnion
     }
+    return countryReplacement(['GermanyFranceDenmark'], [germanyPoland])
   },
   () => {
-    if (germanyFinalUnion) {
-      const germanyFinal = {
-        "name": "GermanyFinal",
-        "coordinates": germanyFinalUnion
-      }
-      return countryReplacement(['GermanyPoland', 'Lithuania'], [germanyFinal])
+    const germanyFinal = {
+      "name": "GermanyFinal",
+      "coordinates": germanyFinalUnion
     }
+    return countryReplacement(['GermanyPoland', 'Lithuania'], [germanyFinal])
   },
-  () => viewBoxChange(7, 52, 19, 40),
+  () => [viewCenterChange(13, 46), zoomChange(14.7)],
   () => {
-    if (austriaHungaryUnion) {
-      const austriaHungary = {
-        "name": "AustriaHungary",
-        "coordinates": austriaHungaryUnion
-      }
-      return countryReplacement(['Austria', 'Hungary'], [austriaHungary])
+    const austriaHungary = {
+      "name": "AustriaHungary",
+      "coordinates": austriaHungaryUnion
     }
+    return countryReplacement(['Austria', 'Hungary'], [austriaHungary])
   },
   () => {
-    if (ahCzechUnion) {
-      const austriaHungaryCZ = {
-        "name": "AustriaHungaryCZ",
-        "coordinates": ahCzechUnion
-      }
-      return countryReplacement(['AustriaHungary'], [austriaHungaryCZ])
+    const austriaHungaryCZ = {
+      "name": "AustriaHungaryCZ",
+      "coordinates": ahCzechUnion
     }
+    return countryReplacement(['AustriaHungary'], [austriaHungaryCZ])
   },
   () => {
-    if (ahBalkansUnion) {
-      const austriaHungaryBalkans = {
-        "name": "AustriaHungaryBalkans",
-        "coordinates": ahBalkansUnion
-      }
-      return countryReplacement(['AustriaHungaryCZ', 'Slovenia', 'Croatia', 'Bosnia and Herz.'], [austriaHungaryBalkans])
+    const austriaHungaryBalkans = {
+      "name": "AustriaHungaryBalkans",
+      "coordinates": ahBalkansUnion
     }
+    return countryReplacement(['AustriaHungaryCZ', 'Slovenia', 'Croatia', 'Bosnia and Herz.'], [austriaHungaryBalkans])
   },
   () => {
-    if (ahItalyUnion) {
-      const austriaHungaryItaly = {
-        "name": "AustriaHungaryItaly",
-        "coordinates": ahItalyUnion
-      }
-      return countryReplacement(['AustriaHungaryBalkans'], [austriaHungaryItaly])
+    const austriaHungaryItaly = {
+      "name": "AustriaHungaryItaly",
+      "coordinates": ahItalyUnion
     }
+    return countryReplacement(['AustriaHungaryBalkans'], [austriaHungaryItaly])
   },
   () => {
-    if (ahSerbiaUnion) {
-      const austriaHungarySerbia = {
-        "name": "AustriaHungarySerbia",
-        "coordinates": ahSerbiaUnion
-      }
-      return countryReplacement(['AustriaHungaryItaly'], [austriaHungarySerbia])
+    const austriaHungarySerbia = {
+      "name": "AustriaHungarySerbia",
+      "coordinates": ahSerbiaUnion
     }
+    return countryReplacement(['AustriaHungaryItaly'], [austriaHungarySerbia])
   },
   () => {
-    if (romaniaUnion && ahRomaniaUnion) {
-      const origRomania = {
-        "name": "NewRomania",
-        "coordinates": romaniaUnion
-      }
-      const austriaHungaryRomania = {
-        "name": "AustriaHungaryRomania",
-        "coordinates": ahRomaniaUnion
-      }
-      return countryReplacement(['AustriaHungarySerbia', 'Romania'], [origRomania, austriaHungaryRomania])
+    const origRomania = {
+      "name": "NewRomania",
+      "coordinates": romaniaUnion
     }
+    const austriaHungaryRomania = {
+      "name": "AustriaHungaryRomania",
+      "coordinates": ahRomaniaUnion
+    }
+    return countryReplacement(['AustriaHungarySerbia', 'Romania'], [origRomania, austriaHungaryRomania])
   },
   () => {
-    if (ahFinalUnion) {
-      const austriaHungaryFinal = {
-        "name": "AustriaHungaryFinal",
-        "coordinates": ahFinalUnion
-      }
-      return countryReplacement(['AustriaHungaryRomania', 'Ukraine', 'Poland'], [austriaHungaryFinal])
+    const austriaHungaryFinal = {
+      "name": "AustriaHungaryFinal",
+      "coordinates": ahFinalUnion
     }
+    return countryReplacement(['AustriaHungaryRomania', 'Ukraine', 'Poland'], [austriaHungaryFinal])
   },
   () => {
-    if (romaniaBulgariaUnion && bulgariaUnion && ottomanEuropeUnion) {
-      const romaniaFinal = {
-        "name": "RomaniaFinal",
-        "coordinates": romaniaBulgariaUnion
-      }
-      const bulgariaFinal = {
-        "name": "BulgariaFinal",
-        "coordinates": bulgariaUnion
-      }
-      const ottomanEurope = {
-        "name": "OttomanEurope",
-        "coordinates": ottomanEuropeUnion
-      }
-      return countryReplacement(['Bulgaria', 'NewRomania', 'Turkey'], [bulgariaFinal, ottomanEurope, romaniaFinal])
+    const romaniaFinal = {
+      "name": "RomaniaFinal",
+      "coordinates": romaniaBulgariaUnion
     }
+    const bulgariaFinal = {
+      "name": "BulgariaFinal",
+      "coordinates": bulgariaUnion
+    }
+    const ottomanEurope = {
+      "name": "OttomanEurope",
+      "coordinates": ottomanEuropeUnion
+    }
+    return countryReplacement(['Bulgaria', 'NewRomania', 'Turkey'], [bulgariaFinal, ottomanEurope, romaniaFinal])
   },
   () => {
-    if (serbiaFinalUnion) {
-      const serbiaFinal = {
-        "name": "SerbiaFinal",
-        "coordinates": serbiaFinalUnion
-      }
-      return countryReplacement(['Serbia', 'North Macdeonia', 'Kosovo'], [serbiaFinal])
+    const serbiaFinal = {
+      "name": "SerbiaFinal",
+      "coordinates": serbiaFinalUnion
     }
+    return countryReplacement(['Serbia', 'North Macdeonia', 'Kosovo'], [serbiaFinal])
   },
-  () => viewBoxChange(25, 44, 56, 8),
+  () => [viewCenterChange(40, 29), zoomChange(6.2)],
   () => {
-    if (ottomanMiddleEastUnion) {
-      const ottomanMiddleEast = {
-        "name": "OttomanMiddleEast",
-        "coordinates": ottomanMiddleEastUnion
-      }
-      return countryReplacement(['OttomanEurope', 'Lebanon', 'Israel', 'Palestine'], [ottomanMiddleEast])
+    const ottomanMiddleEast = {
+      "name": "OttomanMiddleEast",
+      "coordinates": ottomanMiddleEastUnion
     }
+    return countryReplacement(['OttomanEurope', 'Lebanon', 'Israel', 'Palestine'], [ottomanMiddleEast])
   },
 ]
 

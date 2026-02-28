@@ -5,14 +5,12 @@ import southDobrujaJson from "../data/SouthDobruja.json"
 import getRomaniaUnion from "./romaniaUnion"
 import getAHFinalUnion from "./ahFinalUnion"
 
-let romaniaBulgariaUnion: Array<Array<Position>> | undefined
+let romaniaBulgariaUnion: Array<Array<Position>>
 
 export default function getRomaniaBulgariaUnion(state: SteplessMapState) {
   if (romaniaBulgariaUnion) return romaniaBulgariaUnion
   const romaniaUnion = getRomaniaUnion(state)
   const ahFinalUnion = getAHFinalUnion(state)
-  if (romaniaUnion && ahFinalUnion) {
-    const smallRomania = difference(romaniaUnion, ahFinalUnion)
-    return romaniaBulgariaUnion = union(smallRomania, southDobrujaJson)
-  }
+  const smallRomania = difference(romaniaUnion, ahFinalUnion)
+  return romaniaBulgariaUnion = union(smallRomania, southDobrujaJson)
 }

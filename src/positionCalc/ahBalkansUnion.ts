@@ -1,18 +1,16 @@
 import { Position } from "geojson"
 import getAHCzechUnion from "./ahCzechUnion"
 import { SteplessMapState } from "../mapReducer"
-import { union } from "../utility"
+import { getCountryByName, union } from "../utility"
 
-let ahBalkansUnion: Array<Array<Position>> | undefined
+let ahBalkansUnion: Array<Array<Position>>
 
 export default function getAHBalkansUnion(state: SteplessMapState) {
   if (ahBalkansUnion) return ahBalkansUnion
   const { countries } = state
-  const sloveniaCoordinates = countries.find(({ name }) => name === 'Slovenia')?.coordinates
-  const croatiaCoordinates = countries.find(({ name }) => name === 'Croatia')?.coordinates
-  const bosniaCoordinates = countries.find(({ name }) => name === 'Bosnia and Herz.')?.coordinates
+  const sloveniaCoordinates = getCountryByName(countries, 'Slovenia').coordinates
+  const croatiaCoordinates = getCountryByName(countries, 'Croatia').coordinates
+  const bosniaCoordinates = getCountryByName(countries, 'Bosnia and Herz.').coordinates
   const ahCzechUnion = getAHCzechUnion(state)
-  if (ahCzechUnion && sloveniaCoordinates && croatiaCoordinates && bosniaCoordinates) {
-    return ahBalkansUnion = union(ahCzechUnion, sloveniaCoordinates, croatiaCoordinates, bosniaCoordinates)
-  }
+  return ahBalkansUnion = union(ahCzechUnion, sloveniaCoordinates, croatiaCoordinates, bosniaCoordinates)
 }

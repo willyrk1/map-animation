@@ -1,8 +1,9 @@
 import React from 'react';
 import './App.css';
-import LongLatPath from "./paths/PositionPath.tsx";
-import { CountryDetails, position2ViewBox, viewBoxFromString } from "./utility.ts";
+import PositionPath from "./PositionPath.tsx";
+import { CountryDetails, lat2y } from "./utility.ts";
 import mapReducer, { countryReplacement, MapState, MapTransition, MapTransitionList } from './mapReducer.ts';
+import { Position } from 'geojson';
 
 interface MapAnimationProps {
   transitions: MapTransitionList
@@ -10,30 +11,43 @@ interface MapAnimationProps {
   toWithPathProps: (country: CountryDetails) => CountryDetails
 }
 
+const [northLat, southLat] = [85, -60]
+const WORLDHEIGHT = lat2y(northLat) - lat2y(southLat)
+
 export default function MapAnimation(props: MapAnimationProps) {
   const { transitions, initialState: { countries: initialCountries, ...initialRest }, toWithPathProps } = props
 
-  const [state, dispatch] = React.useReducer(mapReducer(transitions, toWithPathProps), { countries: initialCountries.map(toWithPathProps), ...initialRest, step: 0 })
-  const { countries, viewBox, step } = state
+  const [state, dispatch] = React.useReducer(
+    mapReducer(transitions, toWithPathProps),
+    { countries: initialCountries.map(toWithPathProps), ...initialRest, step: 0 }
+  )
+  const { countries, viewCenter, zoom, step } = state
+
+  const viewBox = React.useMemo(() => {
+    const height = WORLDHEIGHT / zoom
+    const [long, lat] = viewCenter
+    const [x, y] = [long + 180, 180 - lat2y(lat)]
+    return `${x - 1} ${y - height / 2} 2 ${height}`
+  }, [viewCenter, zoom])
 
   const animationRef = React.useRef<number>();
 
   const duration = 1000; // Duration in milliseconds (1 second)
 
-  function setViewBox(newViewBox: string) {
-    dispatch({ type: "setViewBox", newViewBox })
+  function animateViewCenterChange(startViewCenter: Position, targetViewCenter: Position) {
+    return function (t: number) {
+      const newLong = startViewCenter[0] + (targetViewCenter[0] - startViewCenter[0]) * t;
+      const newLat = startViewCenter[1] + (targetViewCenter[1] - startViewCenter[1]) * t;
+
+      dispatch({ type: "setViewCenter", newViewCenter: [newLong, newLat] })
+    }
   }
 
-  function animateViewBoxChange(startBoxString: string, targetBoxString: string) {
+  function animateZoomChange(startZoom: number, targetZoom: number) {
     return function (t: number) {
-      const startBox = viewBoxFromString(startBoxString)
-      const targetBox = viewBoxFromString(targetBoxString)
-      const x = startBox.x + (targetBox.x - startBox.x) * t;
-      const y = startBox.y + (targetBox.y - startBox.y) * t;
-      const width = startBox.width + (targetBox.width - startBox.width) * t;
-      const height = startBox.height + (targetBox.height - startBox.height) * t;
+      const newZoom = startZoom + (targetZoom - startZoom) * t;
 
-      setViewBox(`${x} ${y} ${width} ${height}`);
+      dispatch({ type: "setZoom", newZoom })
     }
   }
 
@@ -50,60 +64,61 @@ export default function MapAnimation(props: MapAnimationProps) {
 
   function animateCountryReplacement(fromCountryNames: Array<string>, toCountries: Array<CountryDetails>) {
     return function (t: number) {
-      dispatch({ ...countryReplacement(fromCountryNames, toCountries.map(toHiddenWithPathProps)), opacity: t})
+      dispatch({ ...countryReplacement(fromCountryNames, toCountries.map(toHiddenWithPathProps)), opacity: t })
     }
   }
 
-  function doAnimation(startTime: number, animateFn: (t: number) => void) {
+  function doAnimation(startTime: number, animateFns: Array<(t: number) => void>) {
     const now = performance.now();
     const elapsed = now - startTime;
     const t = Math.min(elapsed / duration, 1); // Normalized time, clamped to [0,1]
 
-    animateFn(t)
+    for (const animateFn of animateFns) {
+      animateFn(t)
+    }
 
     if (t < 1) {
-      animationRef.current = requestAnimationFrame(() => doAnimation(startTime, animateFn));
+      animationRef.current = requestAnimationFrame(() => doAnimation(startTime, animateFns));
     }
   }
 
-  function startAnimation(animateFn: (t: number) => void) {
+  function startAnimation(animateFns: Array<(t: number) => void>) {
     if (animationRef.current !== undefined)
       cancelAnimationFrame(animationRef.current);
-    animationRef.current = requestAnimationFrame(() => doAnimation(performance.now(), animateFn));
+    animationRef.current = requestAnimationFrame(() => doAnimation(performance.now(), animateFns));
   }
-
-  React.useEffect(() => {
-    // startViewboxAnimation()
-    // startOpacityAnimation()
-  }, [])
 
   function getAnimationFunction(transition: MapTransition) {
     switch (transition.type) {
       case "CountryReplacement":
         return animateCountryReplacement(transition.fromCountryNames, transition.toCountries)
-      case "ViewBoxChange":
-        return animateViewBoxChange(viewBox, position2ViewBox(transition.left, transition.top, transition.right, transition.bottom))
+      case "ViewCenterChange":
+        return animateViewCenterChange(viewCenter, [transition.long, transition.lat])
+      case "ZoomChange":
+        return animateZoomChange(zoom, transition.newZoom)
       default:
         const _exhaustiveCheck: never = transition;
         return _exhaustiveCheck;
     }
   }
 
+  function getAnimationFunctions(transitions: MapTransition | Array<MapTransition>) {
+    return Array.isArray(transitions) ? transitions.map(getAnimationFunction) : [getAnimationFunction(transitions)]
+  }
+
   function handleNext() {
     const transition = transitions[step](state);
-    if (transition) {
-      startAnimation(getAnimationFunction(transition))
-    }
+    startAnimation(getAnimationFunctions(transition))
 
     dispatch({ type: "incrementStep" })
   }
 
   function handleReInit() {
-    dispatch({ type: "reInit", countries: initialCountries.map(toWithPathProps), ...initialRest})
+    dispatch({ type: "reInit", countries: initialCountries.map(toWithPathProps), ...initialRest })
   }
 
   function handleDirectStep(newStep: number) {
-    dispatch({ type: "directStep", step: newStep, countries: initialCountries.map(toWithPathProps), ...initialRest})
+    dispatch({ type: "directStep", step: newStep, countries: initialCountries.map(toWithPathProps), ...initialRest })
   }
 
   return (
@@ -125,7 +140,7 @@ export default function MapAnimation(props: MapAnimationProps) {
       >
         {countries.map(({ name, coordinates, pathProps }) => {
           return coordinates.map((countryCoordinates, index) => (
-            <LongLatPath key={`${name}${index}`}
+            <PositionPath key={`${name}${index}`}
               countryName={name}
               countryCoordinates={countryCoordinates}
               pathProps={pathProps}

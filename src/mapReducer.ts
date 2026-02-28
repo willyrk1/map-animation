@@ -1,19 +1,14 @@
-import { CountryDetails, position2ViewBox } from "./utility";
+import { Position } from "geojson";
+import { CountryDetails } from "./utility";
 
 export interface MapState {
   countries: Array<CountryDetails>
-  viewBox: string
+  viewCenter: Position
+  zoom: number
   step: number
 }
 
 export type SteplessMapState = Omit<MapState, 'step'>
-
-export type MapActions =
-  | { type: 'setViewBox', newViewBox: string }
-  | (CountryReplacement & { opacity: number })
-  | { type: 'incrementStep' }
-  | ({ type: 'reInit' } & SteplessMapState)
-  | ({ type: 'directStep' } & MapState)
 
 interface CountryReplacement {
   type: "CountryReplacement"
@@ -21,35 +16,53 @@ interface CountryReplacement {
   toCountries: Array<CountryDetails>
 }
 
-interface ViewBoxChange {
-  type: "ViewBoxChange"
-  left: number
-  top: number
-  right: number
-  bottom: number
+export type MapActions =
+  | { type: 'setViewCenter', newViewCenter: Position }
+  | { type: 'setZoom', newZoom: number }
+  | (CountryReplacement & { opacity: number })
+  | { type: 'incrementStep' }
+  | ({ type: 'reInit' } & SteplessMapState)
+  | ({ type: 'directStep' } & MapState)
+
+
+interface ViewCenterChange {
+  type: 'ViewCenterChange'
+  long: number
+  lat: number
 }
 
-export type MapTransition = CountryReplacement | ViewBoxChange
+interface ZoomChange {
+  type: 'ZoomChange'
+  newZoom: number
+}
 
-export type MapTransitionList = Array<(state: SteplessMapState) => MapTransition | undefined>
+export type MapTransition = CountryReplacement | ViewCenterChange | ZoomChange
+
+export type MapTransitionList = Array<(state: SteplessMapState) => MapTransition | Array<MapTransition>>
 
 export function countryReplacement(fromCountryNames: Array<string>, toCountries: Array<CountryDetails>): CountryReplacement {
   return { type: "CountryReplacement", fromCountryNames, toCountries }
 }
 
-export function viewBoxChange(left: number, top: number, right: number, bottom: number): ViewBoxChange {
-  return { type: "ViewBoxChange", left, top, right, bottom }
+export function viewCenterChange(long: number, lat: number): ViewCenterChange {
+  return { type: "ViewCenterChange", long, lat }
+}
+
+export function zoomChange(newZoom: number): ZoomChange {
+  return { type: "ZoomChange", newZoom }
 }
 
 export default function reducer(transitions: MapTransitionList, toWithPathProps: (country: CountryDetails) => CountryDetails) {
   return function (state: MapState, action: MapActions) {
     switch (action.type) {
-      case 'setViewBox':
-        return { ...state, viewBox: action.newViewBox }
+      case 'setViewCenter':
+        return { ...state, viewCenter: action.newViewCenter }
+      case 'setZoom':
+        return { ...state, zoom: action.newZoom }
       case 'CountryReplacement':
         const newCountries = [...state.countries]
 
-        for (let toCountry of action.toCountries) {
+        for (const toCountry of action.toCountries) {
           const toCountryIndex = newCountries.findIndex(({ name }) => name === toCountry.name)
           const curToCountry = newCountries[toCountryIndex] ?? toCountry
           const newToCountry = {
@@ -86,25 +99,36 @@ export default function reducer(transitions: MapTransitionList, toWithPathProps:
       case "directStep": {
         const { type, step, ...newState } = action
         transitions.slice(0, action.step + 1).forEach((transitionFn) => {
-          const transition = transitionFn(newState)
-          if (transition) {
+          const transitionDefinition = transitionFn(newState)
+          const transitionDefinitions = Array.isArray(transitionDefinition) ? transitionDefinition : [transitionDefinition]
+          transitionDefinitions.forEach(transition => {
             switch (transition.type) {
               case "CountryReplacement":
-                newState.countries = [...newState.countries, ...transition.toCountries.map(toWithPathProps)].filter(({ name }) => !transition.fromCountryNames.includes(name))
+                newState.countries = [
+                  ...newState.countries,
+                  ...transition.toCountries.map(toWithPathProps)
+                ].filter(({ name }) => !transition.fromCountryNames.includes(name))
                 break;
-              case "ViewBoxChange":
-                newState.viewBox = position2ViewBox(transition.left, transition.top, transition.right, transition.bottom)
+              case "ViewCenterChange":
+                newState.viewCenter = [transition.long, transition.lat]
+                break;
+              case "ZoomChange":
+                newState.zoom = transition.newZoom
                 break;
               default:
                 const _exhaustiveCheck: never = transition;
                 console.log(_exhaustiveCheck)
                 break
             }
-          }
+          })
         })
 
         return { ...state, ...newState, step: step + 1 }
       }
+      default:
+        const _exhaustiveCheck: never = action
+        console.log(_exhaustiveCheck)
+        break;
     }
     return state
   }

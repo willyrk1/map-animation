@@ -1,4 +1,4 @@
-import {position2CSV} from "../utility"
+import {position2CSV} from "./utility"
 import React from "react";
 import {Position} from "geojson";
 
