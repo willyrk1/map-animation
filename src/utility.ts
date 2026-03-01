@@ -19,6 +19,10 @@ export function y2lat(y: number) {
   return 90 * (4 * Math.atan(Math.exp(y * Math.PI / 180)) / Math.PI - 1)
 }
 
+export function position2XY([long, lat]: Position) {
+  return [long + 180, 180 - lat2y(lat)]
+}
+
 export function position2CSV([long, lat]: Position) {
   return `${long + 180},${180 - lat2y(lat)}`
 }

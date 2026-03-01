@@ -1,8 +1,7 @@
 import { countryReplacement, MapTransitionList, viewCenterChange, zoomChange } from "./mapReducer";
 import { CountryDetails } from "./utility";
 import MapAnimation from "./MapAnimation";
-import { getCountriesHighRes } from "./countries";
-import { modernColorMap } from "./colors";
+import { getCountriesHighRes, getInitialMapText, modernColorMap } from "./countries";
 import {
   getAHBalkansUnion,
   getAHCzechUnion,
@@ -30,6 +29,7 @@ import {
 
 const initialState = {
   countries: getCountriesHighRes(),
+  textCollection: getInitialMapText(),
   viewCenter: [28, 57],
   zoom: 3.65,
 }

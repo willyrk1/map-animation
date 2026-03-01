@@ -3,6 +3,7 @@ import { CountryDetails } from "./utility";
 
 export interface MapState {
   countries: Array<CountryDetails>
+  textCollection: Array<MapText>
   viewCenter: Position
   zoom: number
   step: number
@@ -34,6 +35,13 @@ interface ViewCenterChange {
 interface ZoomChange {
   type: 'ZoomChange'
   newZoom: number
+}
+
+export interface MapText {
+  id: string
+  text: string | Array<string>
+  coordinates: Position
+  svgTextProps?: React.SVGTextElementAttributes<SVGTextElement>
 }
 
 export type MapTransition = CountryReplacement | ViewCenterChange | ZoomChange

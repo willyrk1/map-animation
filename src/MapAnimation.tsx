@@ -4,6 +4,7 @@ import PositionPath from "./PositionPath.tsx";
 import { CountryDetails, lat2y } from "./utility.ts";
 import mapReducer, { countryReplacement, MapState, MapTransition, MapTransitionList } from './mapReducer.ts';
 import { Position } from 'geojson';
+import SvgTextBox from './SvgTextBox.tsx';
 
 interface MapAnimationProps {
   transitions: MapTransitionList
@@ -21,7 +22,7 @@ export default function MapAnimation(props: MapAnimationProps) {
     mapReducer(transitions, toWithPathProps),
     { countries: initialCountries.map(toWithPathProps), ...initialRest, step: 0 }
   )
-  const { countries, viewCenter, zoom, step } = state
+  const { countries, textCollection, viewCenter, zoom, step } = state
 
   const viewBox = React.useMemo(() => {
     const height = WORLDHEIGHT / zoom
@@ -134,10 +135,7 @@ export default function MapAnimation(props: MapAnimationProps) {
           ))}
         </div>
       </div>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox={viewBox}
-      >
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox={viewBox}>
         {countries.map(({ name, coordinates, pathProps }) => {
           return coordinates.map((countryCoordinates, index) => (
             <PositionPath key={`${name}${index}`}
@@ -147,6 +145,11 @@ export default function MapAnimation(props: MapAnimationProps) {
             />
           ))
         })}
+        <g fontSize={8 / zoom}>
+          {textCollection.map(mapText => (
+            <SvgTextBox key={mapText.id} mapText={mapText} />
+          ))}
+        </g>
       </svg>
     </div>
   )
