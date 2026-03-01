@@ -12,9 +12,44 @@ export function getInitialMapText(): Array<MapText> {
     {
       id: 'Ukraine',
       coordinates: [31.00791766243967, 49.53499805741697],
-      text: 'Ukraine',
-    }
-  ]
+    },
+    {
+      id: 'Belarus',
+      coordinates: [27.8206206153948, 53],
+      svgTextProps: { fontSize: '90%' },
+    },
+    {
+      id: 'Russia',
+      coordinates: [40.64032191671039, 57.24804212417763],
+      svgTextProps: { fontSize: "200%" }
+    },
+    {
+      id: 'Finland',
+      coordinates: [26, 62.5902121295499],
+    },
+    {
+      id: 'EstoniaShort',
+      coordinates: [25.8, 58.6],
+      text: 'Es.',
+      svgTextProps: { fontSize: '75%' },
+    },
+    {
+      id: 'LatviaShort',
+      coordinates: [25.84680136704439, 56.83295731831097],
+      text: 'Lat.',
+      svgTextProps: { fontSize: '75%' },
+    },
+    {
+      id: 'LithuaniaShort',
+      coordinates: [24.074296892793875, 55.2510188544136],
+      text: 'Lit.',
+      svgTextProps: { fontSize: '75%' },
+    },
+  ].map(({ svgTextProps, ...mapText }) => ({
+    text: mapText.id,
+    svgTextProps: { fill: '#f2f2f2', ...svgTextProps },
+    ...mapText,
+  }))
 }
 
 export const modernColorMap: Record<string, string> = {
@@ -24,7 +59,7 @@ export const modernColorMap: Record<string, string> = {
   'SerbiaFinal': '#00e6d2',
   'Kosovo': 'green',
   'Montenegro': '#cc0012',
-  'Albania': '#4d54ff',
+  'Albania': '#A77FB1',
   'North Macedonia': '#e6e000',
   'Greece': '#cc0012',
   'Bulgaria': '#80ff8c',
@@ -32,13 +67,13 @@ export const modernColorMap: Record<string, string> = {
   'Romania': '#ffe600',
   'NewRomania': '#ffe600',
   'RomaniaFinal': '#ffe600',
-  'Turkey': '#4d54ff',
-  'OttomanEurope': '#4d54ff',
-  'OttomanMiddleEast': '#4d54ff',
+  'Turkey': '#A77FB1',
+  'OttomanEurope': '#A77FB1',
+  'OttomanMiddleEast': '#A77FB1',
   'Armenia': '#cc0012',
   'Azerbaijan': '#a600b3',
   'Moldova': '#991300',
-  'Ukraine': '#00b4ff',
+  'Ukraine': '#A77FB1',
   'Hungary': '#ff808b',
   'Slovenia': '#4d54ff',
   'Austria': '#e200ff',
@@ -86,7 +121,7 @@ export const modernColorMap: Record<string, string> = {
   'Andorra': '#e600d2',
   'Norway': '#ff0029',
   'Sweden': '#ffe31a',
-  'Finland': '#1adcff',
+  'Finland': '#A77FB1',
   'Israel': '#99a7ff',
   'Jordan': '#ff5d4d',
   'Lebanon': '#4dff8e',

@@ -214,7 +214,7 @@ function toWithPathProps(country: CountryDetails): CountryDetails {
     pathProps: {
       stroke: "black",
       strokeWidth: 0.03,
-      fill: modernColorMap[country.name ?? ''] ?? 'none',
+      fill: modernColorMap[country.name ?? ''] ?? '#dad5cf',
       ...country.pathProps
     }
   }

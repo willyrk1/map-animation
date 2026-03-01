@@ -145,7 +145,7 @@ export default function MapAnimation(props: MapAnimationProps) {
             />
           ))
         })}
-        <g fontSize={8 / zoom}>
+        <g fontSize={6 / zoom}>
           {textCollection.map(mapText => (
             <SvgTextBox key={mapText.id} mapText={mapText} />
           ))}
