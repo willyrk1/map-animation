@@ -24,6 +24,7 @@ export type MapActions =
   | { type: 'incrementStep' }
   | ({ type: 'reInit' } & SteplessMapState)
   | ({ type: 'directStep' } & MapState)
+  | (TextReplacement & { opacity: number })
 
 
 interface ViewCenterChange {
@@ -37,14 +38,23 @@ interface ZoomChange {
   newZoom: number
 }
 
+interface TextReplacement {
+  type: "TextReplacement"
+  fromTextIds: Array<string>
+  toTextCollection: Array<MapText>
+}
+
 export interface MapText {
   id: string
   text: string | Array<string>
   coordinates: Position
   svgTextProps?: React.SVGTextElementAttributes<SVGTextElement>
+  svgGProps?: React.SVGProps<SVGGElement>
+  svgRectProps?: React.SVGProps<SVGRectElement>
+  includeBackground?: boolean
 }
 
-export type MapTransition = CountryReplacement | ViewCenterChange | ZoomChange
+export type MapTransition = CountryReplacement | ViewCenterChange | ZoomChange | TextReplacement
 
 export type MapTransitionList = Array<(state: SteplessMapState) => MapTransition | Array<MapTransition>>
 
@@ -60,8 +70,12 @@ export function zoomChange(newZoom: number): ZoomChange {
   return { type: "ZoomChange", newZoom }
 }
 
+export function textReplacement(fromTextIds: Array<string>, toTextCollection: Array<MapText>): TextReplacement {
+  return { type: "TextReplacement", fromTextIds, toTextCollection }
+}
+
 export default function reducer(transitions: MapTransitionList, toWithPathProps: (country: CountryDetails) => CountryDetails) {
-  return function (state: MapState, action: MapActions) {
+  return function (state: MapState, action: MapActions): MapState {
     switch (action.type) {
       case 'setViewCenter':
         return { ...state, viewCenter: action.newViewCenter }
@@ -98,6 +112,52 @@ export default function reducer(transitions: MapTransitionList, toWithPathProps:
         }
 
         return { ...state, countries: newCountries }
+      case 'TextReplacement':
+        const newTextCollection = [...state.textCollection]
+
+        for (const toText of action.toTextCollection) {
+          const toTextIndex = newTextCollection.findIndex(({ id }) => id === toText.id)
+          const curToText = newTextCollection[toTextIndex] ?? toText
+          const newToText = {
+            ...curToText,
+            svgGProps: {
+              ...curToText.svgGProps,
+              opacity: action.opacity
+            }
+          }
+
+          newTextCollection.splice(
+            toTextIndex >= 0 ? toTextIndex : newTextCollection.length,
+            1,
+            newToText
+          )
+        }
+
+        if (action.opacity >= 1) {
+          for (const fromTextId of action.fromTextIds) {
+            const fromTextIndex = newTextCollection.findIndex(({ id }) => id === fromTextId)
+            if (fromTextIndex >= 0) {
+              newTextCollection.splice(fromTextIndex, 1)
+            }
+          }
+        }
+        else {
+          for (const fromTextId of action.fromTextIds) {
+            const fromTextIndex = newTextCollection.findIndex(({ id }) => id === fromTextId)
+            if (fromTextIndex >= 0) {
+              const fromText = newTextCollection[fromTextIndex]
+              newTextCollection.splice(fromTextIndex, 1, {
+                ...fromText,
+                svgGProps: {
+                  ...fromText.svgGProps,
+                  opacity: 1 - action.opacity,
+                }
+              })
+            }
+          }
+        }
+
+        return { ...state, textCollection: newTextCollection }
       case "incrementStep":
         return { ...state, step: state.step + 1 }
       case "reInit": {
@@ -122,6 +182,12 @@ export default function reducer(transitions: MapTransitionList, toWithPathProps:
                 break;
               case "ZoomChange":
                 newState.zoom = transition.newZoom
+                break;
+              case "TextReplacement":
+                newState.textCollection = [
+                  ...newState.textCollection,
+                  ...transition.toTextCollection
+                ].filter(({ id }) => !transition.fromTextIds.includes(id))
                 break;
               default:
                 const _exhaustiveCheck: never = transition;

@@ -2,7 +2,7 @@ import React from 'react';
 import './App.css';
 import PositionPath from "./PositionPath.tsx";
 import { CountryDetails, lat2y } from "./utility.ts";
-import mapReducer, { countryReplacement, MapState, MapTransition, MapTransitionList } from './mapReducer.ts';
+import mapReducer, { countryReplacement, MapState, MapText, MapTransition, MapTransitionList, textReplacement } from './mapReducer.ts';
 import { Position } from 'geojson';
 import SvgTextBox from './SvgTextBox.tsx';
 
@@ -69,6 +69,12 @@ export default function MapAnimation(props: MapAnimationProps) {
     }
   }
 
+  function animateTextReplacement(fromTextIds: Array<string>, toTextCollection: Array<MapText>) {
+    return function (t: number) {
+      dispatch({ ...textReplacement(fromTextIds, toTextCollection), opacity: t })
+    }
+  }
+
   function doAnimation(startTime: number, animateFns: Array<(t: number) => void>) {
     const now = performance.now();
     const elapsed = now - startTime;
@@ -97,6 +103,8 @@ export default function MapAnimation(props: MapAnimationProps) {
         return animateViewCenterChange(viewCenter, [transition.long, transition.lat])
       case "ZoomChange":
         return animateZoomChange(zoom, transition.newZoom)
+      case "TextReplacement":
+        return animateTextReplacement(transition.fromTextIds, transition.toTextCollection)
       default:
         const _exhaustiveCheck: never = transition;
         return _exhaustiveCheck;
@@ -147,7 +155,7 @@ export default function MapAnimation(props: MapAnimationProps) {
         })}
         <g fontSize={6 / zoom}>
           {textCollection.map(mapText => (
-            <SvgTextBox key={mapText.id} mapText={mapText} />
+            <SvgTextBox key={mapText.id} {...mapText} />
           ))}
         </g>
       </svg>

@@ -7,8 +7,28 @@ export function getCountriesHighRes() {
   return geoJson2CountryDetails(modernGeoJson as FeatureCollection)
 }
 
+type PartialMapText = Omit<MapText, 'text'> & { text?: string | Array<string> }
+
+export function globalTextMap({ svgTextProps, ...mapText }: PartialMapText): MapText {
+  return {
+    text: mapText.id,
+    svgTextProps: { fill: '#f2f2f2', ...svgTextProps },
+    ...mapText,
+  }
+}
+
+export function summaryText({ svgTextProps, ...mapText }: PartialMapText): MapText {
+  return {
+    includeBackground: true,
+    ...globalTextMap({
+      svgTextProps: { fill: 'black', fontSize: '150%', ...svgTextProps },
+      ...mapText
+    })
+  }
+}
+
 export function getInitialMapText(): Array<MapText> {
-  return [
+  const initialTextCollection: Array<PartialMapText> = [
     {
       id: 'Ukraine',
       coordinates: [31.00791766243967, 49.53499805741697],
@@ -21,7 +41,7 @@ export function getInitialMapText(): Array<MapText> {
     {
       id: 'Russia',
       coordinates: [40.64032191671039, 57.24804212417763],
-      svgTextProps: { fontSize: "200%" }
+      svgTextProps: { fontSize: "200%" },
     },
     {
       id: 'Finland',
@@ -45,11 +65,21 @@ export function getInitialMapText(): Array<MapText> {
       text: 'Lit.',
       svgTextProps: { fontSize: '75%' },
     },
-  ].map(({ svgTextProps, ...mapText }) => ({
-    text: mapText.id,
-    svgTextProps: { fill: '#f2f2f2', ...svgTextProps },
-    ...mapText,
-  }))
+  ]
+
+  return [
+    summaryText({
+      id: 'StartSummary',
+      coordinates: [49, 64],
+      text: [
+        'World War I began with',
+        'a map significantly different',
+        'from the map of today.',
+      ],
+      includeBackground: true,
+    }),
+    ...initialTextCollection.map(globalTextMap)
+  ]
 }
 
 export const modernColorMap: Record<string, string> = {

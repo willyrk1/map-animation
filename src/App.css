@@ -8,7 +8,15 @@
 .container svg {
   height: 100%;
   width: 100%;
-  background-color: #7CD4E9;
+}
+
+.svgText rect {
+  fill: #E7E7E7;
+}
+
+.svgText text {
+  text-anchor: middle;
+  dominant-baseline: middle;
 }
 
 .controls {

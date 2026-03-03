@@ -1,7 +1,7 @@
-import { countryReplacement, MapTransitionList, viewCenterChange, zoomChange } from "./mapReducer";
+import { countryReplacement, MapTransitionList, textReplacement, viewCenterChange, zoomChange } from "./mapReducer";
 import { CountryDetails } from "./utility";
 import MapAnimation from "./MapAnimation";
-import { getCountriesHighRes, getInitialMapText, modernColorMap } from "./countries";
+import { getCountriesHighRes, getInitialMapText, globalTextMap, modernColorMap, summaryText } from "./countries";
 import {
   getAHBalkansUnion,
   getAHCzechUnion,
@@ -58,6 +58,21 @@ const serbiaFinalUnion = getSerbiaFinalUnion(initialState)
 const ottomanMiddleEastUnion = getOttomanMiddleEastUnion(initialState)
 
 const transitions: MapTransitionList = [
+  () => textReplacement(['StartSummary', 'Russia'], [
+    summaryText({
+      id: 'RussianEmpireSummary',
+      coordinates: [51, 64],
+      text: [
+        'Russia had been an empire for',
+        'nearly two centuries.'
+      ]
+    }),
+    globalTextMap({
+      id: 'Russian Empire',
+      coordinates: [44, 57.24804212417763],
+      svgTextProps: { fontSize: "200%" },
+    }),
+  ]),
   () => {
     const russiaFinland = {
       "name": "RussiaFinland",
@@ -214,7 +229,7 @@ function toWithPathProps(country: CountryDetails): CountryDetails {
     pathProps: {
       stroke: "black",
       strokeWidth: 0.03,
-      fill: modernColorMap[country.name ?? ''] ?? '#dad5cf',
+      fill: modernColorMap[country.name ?? ''] ?? 'grey',
       ...country.pathProps
     }
   }
