@@ -2,7 +2,7 @@ import React from 'react';
 import './App.css';
 import PositionPath from "./PositionPath.tsx";
 import { CountryDetails, lat2y } from "./utility.ts";
-import mapReducer, { countryReplacement, MapState, MapText, MapTransition, MapTransitionList, textReplacement } from './mapReducer.ts';
+import mapReducer, { countryReplacement, MapAction, MapState, MapText, MapTransition, MapTransitionList, textReplacement } from './mapReducer.ts';
 import { Position } from 'geojson';
 import SvgTextBox from './SvgTextBox.tsx';
 
@@ -11,6 +11,8 @@ interface MapAnimationProps {
   initialState: Omit<MapState, 'step'>
   toWithPathProps: (country: CountryDetails) => CountryDetails
 }
+
+type MapActionAnimation = (t: number) => MapAction
 
 const [northLat, southLat] = [85, -60]
 const WORLDHEIGHT = lat2y(northLat) - lat2y(southLat)
@@ -36,19 +38,19 @@ export default function MapAnimation(props: MapAnimationProps) {
   const duration = 1000; // Duration in milliseconds (1 second)
 
   function animateViewCenterChange(startViewCenter: Position, targetViewCenter: Position) {
-    return function (t: number) {
+    return function (t: number): MapAction {
       const newLong = startViewCenter[0] + (targetViewCenter[0] - startViewCenter[0]) * t;
       const newLat = startViewCenter[1] + (targetViewCenter[1] - startViewCenter[1]) * t;
 
-      dispatch({ type: "setViewCenter", newViewCenter: [newLong, newLat] })
+      return { type: "setViewCenter", newViewCenter: [newLong, newLat] }
     }
   }
 
   function animateZoomChange(startZoom: number, targetZoom: number) {
-    return function (t: number) {
+    return function (t: number): MapAction {
       const newZoom = startZoom + (targetZoom - startZoom) * t;
 
-      dispatch({ type: "setZoom", newZoom })
+      return { type: "setZoom", newZoom }
     }
   }
 
@@ -64,38 +66,37 @@ export default function MapAnimation(props: MapAnimationProps) {
   }
 
   function animateCountryReplacement(fromCountryNames: Array<string>, toCountries: Array<CountryDetails>) {
-    return function (t: number) {
-      dispatch({ ...countryReplacement(fromCountryNames, toCountries.map(toHiddenWithPathProps)), opacity: t })
+    return function (t: number): MapAction {
+      return { ...countryReplacement(fromCountryNames, toCountries.map(toHiddenWithPathProps)), opacity: t }
     }
   }
 
   function animateTextReplacement(fromTextIds: Array<string>, toTextCollection: Array<MapText>) {
-    return function (t: number) {
-      dispatch({ ...textReplacement(fromTextIds, toTextCollection), opacity: t })
+    return function (t: number): MapAction {
+      return { ...textReplacement(fromTextIds, toTextCollection), opacity: t }
     }
   }
 
-  function doAnimation(startTime: number, animateFns: Array<(t: number) => void>) {
+  function doAnimation(startTime: number, animateFns: MapActionAnimation | Array<MapActionAnimation>) {
     const now = performance.now();
     const elapsed = now - startTime;
     const t = Math.min(elapsed / duration, 1); // Normalized time, clamped to [0,1]
 
-    for (const animateFn of animateFns) {
-      animateFn(t)
-    }
+    const action = Array.isArray(animateFns) ? animateFns.map(animateFn => animateFn(t)) : animateFns(t)
+    dispatch(action)
 
     if (t < 1) {
       animationRef.current = requestAnimationFrame(() => doAnimation(startTime, animateFns));
     }
   }
 
-  function startAnimation(animateFns: Array<(t: number) => void>) {
+  function startAnimation(animateFns: MapActionAnimation | Array<MapActionAnimation>) {
     if (animationRef.current !== undefined)
       cancelAnimationFrame(animationRef.current);
     animationRef.current = requestAnimationFrame(() => doAnimation(performance.now(), animateFns));
   }
 
-  function getAnimationFunction(transition: MapTransition) {
+  function getAnimationFunction(transition: MapTransition): MapActionAnimation {
     switch (transition.type) {
       case "CountryReplacement":
         return animateCountryReplacement(transition.fromCountryNames, transition.toCountries)
@@ -112,7 +113,7 @@ export default function MapAnimation(props: MapAnimationProps) {
   }
 
   function getAnimationFunctions(transitions: MapTransition | Array<MapTransition>) {
-    return Array.isArray(transitions) ? transitions.map(getAnimationFunction) : [getAnimationFunction(transitions)]
+    return Array.isArray(transitions) ? transitions.map(getAnimationFunction) : getAnimationFunction(transitions)
   }
 
   function handleNext() {

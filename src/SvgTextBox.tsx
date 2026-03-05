@@ -27,7 +27,7 @@ export default React.memo(function SvgTextBox(props: Readonly<MapText>) {
       {includeBackground && <rect ref={rectRef} {...svgRectProps} />}
       <text ref={textRef} x={x} y={y} {...svgTextProps}>
         {Array.isArray(text) ? text.map((line, index) => (
-          <tspan x={x} dy={index ? "1.2em" : `${0.6 * (1 - text.length)}em`}>{line}</tspan>
+          <tspan key={line} x={x} dy={index ? "1.2em" : `${0.6 * (1 - text.length)}em`}>{line}</tspan>
         )) : text}
       </text>
     </g>

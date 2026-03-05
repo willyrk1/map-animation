@@ -17,7 +17,7 @@ interface CountryReplacement {
   toCountries: Array<CountryDetails>
 }
 
-export type MapActions =
+export type MapAction =
   | { type: 'setViewCenter', newViewCenter: Position }
   | { type: 'setZoom', newZoom: number }
   | (CountryReplacement & { opacity: number })
@@ -74,8 +74,20 @@ export function textReplacement(fromTextIds: Array<string>, toTextCollection: Ar
   return { type: "TextReplacement", fromTextIds, toTextCollection }
 }
 
-export default function reducer(transitions: MapTransitionList, toWithPathProps: (country: CountryDetails) => CountryDetails) {
-  return function (state: MapState, action: MapActions): MapState {
+export default function reducer(
+  transitions: MapTransitionList,
+  toWithPathProps: (country: CountryDetails) => CountryDetails
+): (state: MapState, action: MapAction | Array<MapAction>) => MapState {
+  return function (state: MapState, actions: MapAction | Array<MapAction>): MapState {
+    if (Array.isArray(actions)) {
+      return actions.reduce(mapStateReducer, state)
+    }
+    else {
+      return mapStateReducer(state, actions)
+    }
+  }
+
+  function mapStateReducer(state: MapState, action: MapAction): MapState {
     switch (action.type) {
       case 'setViewCenter':
         return { ...state, viewCenter: action.newViewCenter }
