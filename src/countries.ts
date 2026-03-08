@@ -9,7 +9,7 @@ export function getCountriesHighRes() {
 
 type PartialMapText = Omit<MapText, 'text'> & { text?: string | Array<string> }
 
-export function globalTextMap({ svgTextProps, ...mapText }: PartialMapText): MapText {
+export function baseText({ svgTextProps, ...mapText }: PartialMapText): MapText {
   return {
     text: mapText.id,
     svgTextProps: { fill: '#f2f2f2', ...svgTextProps },
@@ -20,7 +20,7 @@ export function globalTextMap({ svgTextProps, ...mapText }: PartialMapText): Map
 export function summaryText({ svgTextProps, ...mapText }: PartialMapText): MapText {
   return {
     includeBackground: true,
-    ...globalTextMap({
+    ...baseText({
       svgTextProps: { fill: 'black', fontSize: '150%', ...svgTextProps },
       ...mapText
     })
@@ -78,7 +78,7 @@ export function getInitialMapText(): Array<MapText> {
       ],
       includeBackground: true,
     }),
-    ...initialTextCollection.map(globalTextMap)
+    ...initialTextCollection.map(baseText)
   ]
 }
 

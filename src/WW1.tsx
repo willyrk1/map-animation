@@ -1,7 +1,7 @@
-import { countryReplacement, MapTransitionList, textReplacement, viewCenterChange, zoomChange } from "./mapReducer";
+import { countryReplacement, MapTransitionList, textFadeIn, textFadeOut, viewCenterChange, zoomChange } from "./mapReducer";
 import { CountryDetails } from "./utility";
 import MapAnimation from "./MapAnimation";
-import { getCountriesHighRes, getInitialMapText, globalTextMap, modernColorMap, summaryText } from "./countries";
+import { getCountriesHighRes, getInitialMapText, baseText, modernColorMap, summaryText } from "./countries";
 import {
   getAHBalkansUnion,
   getAHCzechUnion,
@@ -58,21 +58,20 @@ const serbiaFinalUnion = getSerbiaFinalUnion(initialState)
 const ottomanMiddleEastUnion = getOttomanMiddleEastUnion(initialState)
 
 const transitions: MapTransitionList = [
-  () => textReplacement(['StartSummary', 'Russia'], [
-    summaryText({
+  () => [
+    textFadeOut('StartSummary'),
+    textFadeOut('Russia'),
+    textFadeIn(summaryText({
       id: 'RussianEmpireSummary',
       coordinates: [51, 64],
-      text: [
-        'Russia had been an empire for',
-        'nearly two centuries.'
-      ]
-    }),
-    globalTextMap({
+      text: ['Russia had been an empire for', 'nearly two centuries.']
+    })),
+    textFadeIn(baseText({
       id: 'Russian Empire',
       coordinates: [44, 57.24804212417763],
       svgTextProps: { fontSize: "200%" },
-    }),
-  ]),
+    }))
+  ],
   () => {
     const russiaFinland = {
       "name": "RussiaFinland",

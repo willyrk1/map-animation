@@ -2,7 +2,9 @@ import React from 'react';
 import './App.css';
 import PositionPath from "./PositionPath.tsx";
 import { CountryDetails, lat2y } from "./utility.ts";
-import mapReducer, { countryReplacement, MapAction, MapState, MapText, MapTransition, MapTransitionList, textReplacement } from './mapReducer.ts';
+import mapReducer, {
+  countryReplacement, MapAction, MapState, MapText, MapTransition, MapTransitionList, textFadeIn, textFadeOut
+} from './mapReducer.ts';
 import { Position } from 'geojson';
 import SvgTextBox from './SvgTextBox.tsx';
 
@@ -71,9 +73,15 @@ export default function MapAnimation(props: MapAnimationProps) {
     }
   }
 
-  function animateTextReplacement(fromTextIds: Array<string>, toTextCollection: Array<MapText>) {
+  function animateTextFadeIn(mapText: MapText) {
     return function (t: number): MapAction {
-      return { ...textReplacement(fromTextIds, toTextCollection), opacity: t }
+      return { ...textFadeIn(mapText), opacity: t }
+    }
+  }
+
+  function animateTextFadeOut(mapTextId: string) {
+    return function (t: number): MapAction {
+      return { ...textFadeOut(mapTextId), opacity: t }
     }
   }
 
@@ -104,8 +112,10 @@ export default function MapAnimation(props: MapAnimationProps) {
         return animateViewCenterChange(viewCenter, [transition.long, transition.lat])
       case "ZoomChange":
         return animateZoomChange(zoom, transition.newZoom)
-      case "TextReplacement":
-        return animateTextReplacement(transition.fromTextIds, transition.toTextCollection)
+      case 'TextFadeIn':
+        return animateTextFadeIn(transition.mapText)
+      case "TextFadeOut":
+        return animateTextFadeOut(transition.mapTextId)
       default:
         const _exhaustiveCheck: never = transition;
         return _exhaustiveCheck;

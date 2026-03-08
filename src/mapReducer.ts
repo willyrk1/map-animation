@@ -24,7 +24,8 @@ export type MapAction =
   | { type: 'incrementStep' }
   | ({ type: 'reInit' } & SteplessMapState)
   | ({ type: 'directStep' } & MapState)
-  | (TextReplacement & { opacity: number })
+  | (TextFadeIn & { opacity: number })
+  | (TextFadeOut & { opacity: number })
 
 
 interface ViewCenterChange {
@@ -38,10 +39,14 @@ interface ZoomChange {
   newZoom: number
 }
 
-interface TextReplacement {
-  type: "TextReplacement"
-  fromTextIds: Array<string>
-  toTextCollection: Array<MapText>
+interface TextFadeIn {
+  type: "TextFadeIn"
+  mapText: MapText
+}
+
+interface TextFadeOut {
+  type: "TextFadeOut"
+  mapTextId: string
 }
 
 export interface MapText {
@@ -54,7 +59,7 @@ export interface MapText {
   includeBackground?: boolean
 }
 
-export type MapTransition = CountryReplacement | ViewCenterChange | ZoomChange | TextReplacement
+export type MapTransition = CountryReplacement | ViewCenterChange | ZoomChange | TextFadeIn | TextFadeOut
 
 export type MapTransitionList = Array<(state: SteplessMapState) => MapTransition | Array<MapTransition>>
 
@@ -70,8 +75,12 @@ export function zoomChange(newZoom: number): ZoomChange {
   return { type: "ZoomChange", newZoom }
 }
 
-export function textReplacement(fromTextIds: Array<string>, toTextCollection: Array<MapText>): TextReplacement {
-  return { type: "TextReplacement", fromTextIds, toTextCollection }
+export function textFadeIn(mapText: MapText): TextFadeIn {
+  return { type: "TextFadeIn", mapText }
+}
+
+export function textFadeOut(mapTextId: string): TextFadeOut {
+  return { type: "TextFadeOut", mapTextId }
 }
 
 export default function reducer(
@@ -124,52 +133,52 @@ export default function reducer(
         }
 
         return { ...state, countries: newCountries }
-      case 'TextReplacement':
+      case 'TextFadeIn': {
         const newTextCollection = [...state.textCollection]
 
-        for (const toText of action.toTextCollection) {
-          const toTextIndex = newTextCollection.findIndex(({ id }) => id === toText.id)
-          const curToText = newTextCollection[toTextIndex] ?? toText
-          const newToText = {
-            ...curToText,
-            svgGProps: {
-              ...curToText.svgGProps,
-              opacity: action.opacity
-            }
+        const toTextIndex = newTextCollection.findIndex(({ id }) => id === action.mapText.id)
+        const curToText = newTextCollection[toTextIndex] ?? action.mapText
+        const newToText = {
+          ...curToText,
+          svgGProps: {
+            ...curToText.svgGProps,
+            opacity: action.opacity
           }
-
-          newTextCollection.splice(
-            toTextIndex >= 0 ? toTextIndex : newTextCollection.length,
-            1,
-            newToText
-          )
         }
 
+        newTextCollection.splice(
+          toTextIndex >= 0 ? toTextIndex : newTextCollection.length,
+          1,
+          newToText
+        )
+
+        return { ...state, textCollection: newTextCollection }
+      }
+      case 'TextFadeOut': {
+        const newTextCollection = [...state.textCollection]
+
         if (action.opacity >= 1) {
-          for (const fromTextId of action.fromTextIds) {
-            const fromTextIndex = newTextCollection.findIndex(({ id }) => id === fromTextId)
-            if (fromTextIndex >= 0) {
-              newTextCollection.splice(fromTextIndex, 1)
-            }
+          const fromTextIndex = newTextCollection.findIndex(({ id }) => id === action.mapTextId)
+          if (fromTextIndex >= 0) {
+            newTextCollection.splice(fromTextIndex, 1)
           }
         }
         else {
-          for (const fromTextId of action.fromTextIds) {
-            const fromTextIndex = newTextCollection.findIndex(({ id }) => id === fromTextId)
-            if (fromTextIndex >= 0) {
-              const fromText = newTextCollection[fromTextIndex]
-              newTextCollection.splice(fromTextIndex, 1, {
-                ...fromText,
-                svgGProps: {
-                  ...fromText.svgGProps,
-                  opacity: 1 - action.opacity,
-                }
-              })
-            }
+          const fromTextIndex = newTextCollection.findIndex(({ id }) => id === action.mapTextId)
+          if (fromTextIndex >= 0) {
+            const fromText = newTextCollection[fromTextIndex]
+            newTextCollection.splice(fromTextIndex, 1, {
+              ...fromText,
+              svgGProps: {
+                ...fromText.svgGProps,
+                opacity: 1 - action.opacity,
+              }
+            })
           }
         }
 
         return { ...state, textCollection: newTextCollection }
+      }
       case "incrementStep":
         return { ...state, step: state.step + 1 }
       case "reInit": {
@@ -195,11 +204,14 @@ export default function reducer(
               case "ZoomChange":
                 newState.zoom = transition.newZoom
                 break;
-              case "TextReplacement":
+              case "TextFadeIn":
                 newState.textCollection = [
                   ...newState.textCollection,
-                  ...transition.toTextCollection
-                ].filter(({ id }) => !transition.fromTextIds.includes(id))
+                  transition.mapText
+                ]
+                break;
+              case "TextFadeOut":
+                newState.textCollection = newState.textCollection.filter(({ id }) => id !== transition.mapTextId)
                 break;
               default:
                 const _exhaustiveCheck: never = transition;
