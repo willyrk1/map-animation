@@ -3,7 +3,9 @@ import './App.css';
 import PositionPath from "./PositionPath.tsx";
 import { CountryDetails, lat2y } from "./utility.ts";
 import mapReducer, {
-  countryReplacement, MapAction, MapState, MapText, MapTransition, MapTransitionList, textFadeIn, textFadeOut
+  countryFadeIn,
+  countryReplace,
+  MapAction, MapState, MapText, MapTransition, MapTransitionList, textFadeIn, textFadeOut
 } from './mapReducer.ts';
 import { Position } from 'geojson';
 import SvgTextBox from './SvgTextBox.tsx';
@@ -67,9 +69,15 @@ export default function MapAnimation(props: MapAnimationProps) {
     }
   }
 
-  function animateCountryReplacement(fromCountryNames: Array<string>, toCountries: Array<CountryDetails>) {
+  function animateCountryFadeIn(country: CountryDetails) {
     return function (t: number): MapAction {
-      return { ...countryReplacement(fromCountryNames, toCountries.map(toHiddenWithPathProps)), opacity: t }
+      return { ...countryFadeIn(toHiddenWithPathProps(country)), opacity: t }
+    }
+  }
+
+  function animateCountryReplace(name: string) {
+    return function (t: number): MapAction {
+      return { ...countryReplace(name), opacity: t }
     }
   }
 
@@ -106,8 +114,10 @@ export default function MapAnimation(props: MapAnimationProps) {
 
   function getAnimationFunction(transition: MapTransition): MapActionAnimation {
     switch (transition.type) {
-      case "CountryReplacement":
-        return animateCountryReplacement(transition.fromCountryNames, transition.toCountries)
+      case "CountryFadeIn":
+        return animateCountryFadeIn(transition.country)
+      case "CountryReplace":
+        return animateCountryReplace(transition.name)
       case "ViewCenterChange":
         return animateViewCenterChange(viewCenter, [transition.long, transition.lat])
       case "ZoomChange":

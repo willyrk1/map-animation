@@ -11,16 +11,21 @@ export interface MapState {
 
 export type SteplessMapState = Omit<MapState, 'step'>
 
-interface CountryReplacement {
-  type: "CountryReplacement"
-  fromCountryNames: Array<string>
-  toCountries: Array<CountryDetails>
+interface CountryReplace {
+  type: "CountryReplace"
+  name: string
+}
+
+interface CountryFadeIn {
+  type: "CountryFadeIn"
+  country: CountryDetails
 }
 
 export type MapAction =
   | { type: 'setViewCenter', newViewCenter: Position }
   | { type: 'setZoom', newZoom: number }
-  | (CountryReplacement & { opacity: number })
+  | (CountryReplace & { opacity: number })
+  | (CountryFadeIn & { opacity: number })
   | { type: 'incrementStep' }
   | ({ type: 'reInit' } & SteplessMapState)
   | ({ type: 'directStep' } & MapState)
@@ -59,12 +64,16 @@ export interface MapText {
   includeBackground?: boolean
 }
 
-export type MapTransition = CountryReplacement | ViewCenterChange | ZoomChange | TextFadeIn | TextFadeOut
+export type MapTransition = CountryReplace | CountryFadeIn | ViewCenterChange | ZoomChange | TextFadeIn | TextFadeOut
 
 export type MapTransitionList = Array<(state: SteplessMapState) => MapTransition | Array<MapTransition>>
 
-export function countryReplacement(fromCountryNames: Array<string>, toCountries: Array<CountryDetails>): CountryReplacement {
-  return { type: "CountryReplacement", fromCountryNames, toCountries }
+export function countryReplace(name: string): CountryReplace {
+  return { type: "CountryReplace", name }
+}
+
+export function countryFadeIn(country: CountryDetails): CountryFadeIn {
+  return { type: "CountryFadeIn", country }
 }
 
 export function viewCenterChange(long: number, lat: number): ViewCenterChange {
@@ -102,42 +111,38 @@ export default function reducer(
         return { ...state, viewCenter: action.newViewCenter }
       case 'setZoom':
         return { ...state, zoom: action.newZoom }
-      case 'CountryReplacement':
-        const newCountries = [...state.countries]
-
-        for (const toCountry of action.toCountries) {
-          const toCountryIndex = newCountries.findIndex(({ name }) => name === toCountry.name)
-          const curToCountry = newCountries[toCountryIndex] ?? toCountry
-          const newToCountry = {
-            ...curToCountry,
-            pathProps: {
-              ...curToCountry.pathProps,
-              opacity: action.opacity
-            }
+      case 'CountryFadeIn':
+        const toCountryIndex = state.countries.findIndex(({ name }) => name === action.country.name)
+        const curToCountry = state.countries[toCountryIndex] ?? action.country
+        const newToCountry = {
+          ...curToCountry,
+          pathProps: {
+            ...curToCountry.pathProps,
+            opacity: action.opacity
           }
+        }
 
-          newCountries.splice(
-            toCountryIndex >= 0 ? toCountryIndex : newCountries.length,
+        return {
+          ...state,
+          countries: state.countries.toSpliced(
+            toCountryIndex >= 0 ? toCountryIndex : state.countries.length,
             1,
             newToCountry
           )
         }
-
+      case 'CountryReplace':
         if (action.opacity >= 1) {
-          for (const fromCountryName of action.fromCountryNames) {
-            const fromCountryIndex = newCountries.findIndex(({ name }) => name === fromCountryName)
-            if (fromCountryIndex >= 0) {
-              newCountries.splice(fromCountryIndex, 1)
-            }
+          const fromCountryIndex = state.countries.findIndex(({ name }) => name === action.name)
+          return {
+            ...state,
+            countries: state.countries.toSpliced(fromCountryIndex, 1)
           }
         }
 
-        return { ...state, countries: newCountries }
-      case 'TextFadeIn': {
-        const newTextCollection = [...state.textCollection]
-
-        const toTextIndex = newTextCollection.findIndex(({ id }) => id === action.mapText.id)
-        const curToText = newTextCollection[toTextIndex] ?? action.mapText
+        return state
+      case 'TextFadeIn':
+        const toTextIndex = state.textCollection.findIndex(({ id }) => id === action.mapText.id)
+        const curToText = state.textCollection[toTextIndex] ?? action.mapText
         const newToText = {
           ...curToText,
           svgGProps: {
@@ -146,26 +151,22 @@ export default function reducer(
           }
         }
 
-        newTextCollection.splice(
-          toTextIndex >= 0 ? toTextIndex : newTextCollection.length,
-          1,
-          newToText
-        )
-
-        return { ...state, textCollection: newTextCollection }
-      }
+        return {
+          ...state,
+          textCollection: state.textCollection.toSpliced(
+            toTextIndex >= 0 ? toTextIndex : state.textCollection.length,
+            1,
+            newToText
+          )
+        }
       case 'TextFadeOut': {
-        const newTextCollection = [...state.textCollection]
-
-        if (action.opacity >= 1) {
-          const fromTextIndex = newTextCollection.findIndex(({ id }) => id === action.mapTextId)
-          if (fromTextIndex >= 0) {
+        const fromTextIndex = state.textCollection.findIndex(({ id }) => id === action.mapTextId)
+        if (fromTextIndex >= 0) {
+          const newTextCollection = [...state.textCollection]
+          if (action.opacity >= 1) {
             newTextCollection.splice(fromTextIndex, 1)
           }
-        }
-        else {
-          const fromTextIndex = newTextCollection.findIndex(({ id }) => id === action.mapTextId)
-          if (fromTextIndex >= 0) {
+          else {
             const fromText = newTextCollection[fromTextIndex]
             newTextCollection.splice(fromTextIndex, 1, {
               ...fromText,
@@ -175,9 +176,11 @@ export default function reducer(
               }
             })
           }
+
+          return { ...state, textCollection: newTextCollection }
         }
 
-        return { ...state, textCollection: newTextCollection }
+        return state
       }
       case "incrementStep":
         return { ...state, step: state.step + 1 }
@@ -185,18 +188,18 @@ export default function reducer(
         const { type, ...rest } = action
         return { ...state, ...rest, step: 0 }
       }
-      case "directStep": {
+      case "directStep":
         const { type, step, ...newState } = action
         transitions.slice(0, action.step + 1).forEach((transitionFn) => {
           const transitionDefinition = transitionFn(newState)
           const transitionDefinitions = Array.isArray(transitionDefinition) ? transitionDefinition : [transitionDefinition]
           transitionDefinitions.forEach(transition => {
             switch (transition.type) {
-              case "CountryReplacement":
-                newState.countries = [
-                  ...newState.countries,
-                  ...transition.toCountries.map(toWithPathProps)
-                ].filter(({ name }) => !transition.fromCountryNames.includes(name))
+              case "CountryFadeIn":
+                newState.countries = newState.countries.concat(toWithPathProps(transition.country))
+                break;
+              case "CountryReplace":
+                newState.countries = newState.countries.filter(({ name }) => name !== transition.name)
                 break;
               case "ViewCenterChange":
                 newState.viewCenter = [transition.long, transition.lat]
@@ -205,10 +208,7 @@ export default function reducer(
                 newState.zoom = transition.newZoom
                 break;
               case "TextFadeIn":
-                newState.textCollection = [
-                  ...newState.textCollection,
-                  transition.mapText
-                ]
+                newState.textCollection = newState.textCollection.concat(transition.mapText)
                 break;
               case "TextFadeOut":
                 newState.textCollection = newState.textCollection.filter(({ id }) => id !== transition.mapTextId)
@@ -222,7 +222,6 @@ export default function reducer(
         })
 
         return { ...state, ...newState, step: step + 1 }
-      }
       default:
         const _exhaustiveCheck: never = action
         console.log(_exhaustiveCheck)

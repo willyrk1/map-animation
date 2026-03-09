@@ -11,12 +11,20 @@
 }
 
 .svgText rect {
-  fill: #E7E7E7;
+  fill: #E5E5E0;
+  stroke: black;
+  stroke-width: 1%;
 }
 
 .svgText text {
   text-anchor: middle;
   dominant-baseline: middle;
+  fill: #f2f2f2;
+}
+
+text.summary {
+  fill: black;
+  font-size: 150%;
 }
 
 .controls {

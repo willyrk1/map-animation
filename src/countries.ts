@@ -9,19 +9,15 @@ export function getCountriesHighRes() {
 
 type PartialMapText = Omit<MapText, 'text'> & { text?: string | Array<string> }
 
-export function baseText({ svgTextProps, ...mapText }: PartialMapText): MapText {
-  return {
-    text: mapText.id,
-    svgTextProps: { fill: '#f2f2f2', ...svgTextProps },
-    ...mapText,
-  }
+export function baseText(mapText: PartialMapText): MapText {
+  return { text: mapText.id, ...mapText }
 }
 
 export function summaryText({ svgTextProps, ...mapText }: PartialMapText): MapText {
   return {
     includeBackground: true,
     ...baseText({
-      svgTextProps: { fill: 'black', fontSize: '150%', ...svgTextProps },
+      svgTextProps: { className: 'summary', ...svgTextProps },
       ...mapText
     })
   }
@@ -70,12 +66,8 @@ export function getInitialMapText(): Array<MapText> {
   return [
     summaryText({
       id: 'StartSummary',
-      coordinates: [49, 64],
-      text: [
-        'World War I began with',
-        'a map significantly different',
-        'from the map of today.',
-      ],
+      coordinates: [49, 62],
+      text: ['World War I began with', 'a map significantly different', 'from the map of today.'],
       includeBackground: true,
     }),
     ...initialTextCollection.map(baseText)
