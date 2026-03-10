@@ -26,40 +26,9 @@ export function summaryText({ svgTextProps, ...mapText }: PartialMapText): MapTe
 export function getInitialMapText(): Array<MapText> {
   const initialTextCollection: Array<PartialMapText> = [
     {
-      id: 'Ukraine',
-      coordinates: [31.00791766243967, 49.53499805741697],
-    },
-    {
-      id: 'Belarus',
-      coordinates: [27.8206206153948, 53],
-      svgTextProps: { fontSize: '90%' },
-    },
-    {
       id: 'Russia',
       coordinates: [40.64032191671039, 57.24804212417763],
       svgTextProps: { fontSize: "200%" },
-    },
-    {
-      id: 'Finland',
-      coordinates: [26, 62.5902121295499],
-    },
-    {
-      id: 'EstoniaShort',
-      coordinates: [25.8, 58.6],
-      text: 'Es.',
-      svgTextProps: { fontSize: '75%' },
-    },
-    {
-      id: 'LatviaShort',
-      coordinates: [25.84680136704439, 56.83295731831097],
-      text: 'Lat.',
-      svgTextProps: { fontSize: '75%' },
-    },
-    {
-      id: 'LithuaniaShort',
-      coordinates: [24.074296892793875, 55.2510188544136],
-      text: 'Lit.',
-      svgTextProps: { fontSize: '75%' },
     },
   ]
 

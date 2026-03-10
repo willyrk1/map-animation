@@ -23,8 +23,12 @@ export function position2XY([long, lat]: Position) {
   return [long + 180, 180 - lat2y(lat)]
 }
 
-export function position2CSV([long, lat]: Position) {
-  return `${long + 180},${180 - lat2y(lat)}`
+export function position2CSV(coordinates: Position) {
+  return position2XY(coordinates).join(',')
+}
+
+export function position2Spaced(coordinates: Position) {
+  return position2XY(coordinates).join(' ')
 }
 
 export function xy2Position([x, y]: [number, number]): Position {

@@ -1,5 +1,5 @@
 import { countryFadeIn, countryReplace, MapTransitionList, textFadeIn, textFadeOut, viewCenterChange, zoomChange } from "./mapReducer";
-import { CountryDetails } from "./utility";
+import { CountryDetails, position2Spaced } from "./utility";
 import MapAnimation from "./MapAnimation";
 import { getCountriesHighRes, getInitialMapText, baseText, modernColorMap, summaryText } from "./countries";
 import {
@@ -63,18 +63,22 @@ const transitions: MapTransitionList = [
     textFadeOut('Russia'),
     textFadeIn(summaryText({
       id: 'RussianEmpireSummary',
-      coordinates: [55, 62],
+      coordinates: [53, 62],
       text: [
         'Russia had been an empire for',
-        'nearly two centuries and encompassed',
-        'the modern-day countries of Finland...'
+        'nearly two centuries and',
+        'encompassed modern-day Finland...'
       ]
     })),
     textFadeIn(baseText({
       id: 'Russian Empire',
       coordinates: [44, 57.24804212417763],
       svgTextProps: { fontSize: "200%" },
-    }))
+    })),
+    textFadeIn(baseText({
+      id: 'Finland',
+      coordinates: [26, 62.5902121295499],
+    })),
   ],
   () => [
     textFadeOut('Finland'),
@@ -88,14 +92,41 @@ const transitions: MapTransitionList = [
     textFadeOut('RussianEmpireSummary'),
     textFadeIn(summaryText({
       id: 'RussiaBalticSummary',
-      coordinates: [40, 58],
+      coordinates: [34, 58],
       text: 'The Baltic states...'
+    })),
+    textFadeIn(baseText({
+      id: 'Estonia',
+      coordinates: [25.8, 58.6],
+    })),
+    textFadeIn(baseText({
+      id: 'Latvia',
+      coordinates: [25.84680136704439, 56.83295731831097],
+    })),
+    textFadeIn(baseText({
+      id: 'Lithuania',
+      coordinates: [24, 55.4],
+    })),
+    textFadeIn(baseText({
+      id: 'Ukraine',
+      coordinates: [31.00791766243967, 49.4],
+      svgTextProps: { fontSize: '150%' },
+    })),
+    textFadeIn(baseText({
+      id: 'Belarus',
+      coordinates: [27.8206206153948, 53.2],
+      svgTextProps: { fontSize: '130%' },
+    })),
+    textFadeIn(baseText({
+      id: 'Moldova',
+      coordinates: [28.5, 47.3],
+      svgTextProps: { fontSize: '85%', transform: `rotate(45 ${position2Spaced([28.5, 47.3])})` },
     })),
   ],
   () => [
-    textFadeOut('EstoniaShort'),
-    textFadeOut('LatviaShort'),
-    textFadeOut('LithuaniaShort'),
+    textFadeOut('Estonia'),
+    textFadeOut('Latvia'),
+    textFadeOut('Lithuania'),
     countryReplace('RussiaFinland'),
     countryReplace('Estonia'),
     countryReplace('Latvia'),
@@ -105,7 +136,7 @@ const transitions: MapTransitionList = [
     textFadeOut('RussiaBalticSummary'),
     textFadeIn(summaryText({
       id: 'RussiaBelarusSummary',
-      coordinates: [40, 54],
+      coordinates: [37, 54],
       text: 'Belarus...'
     })),
   ],
@@ -119,12 +150,13 @@ const transitions: MapTransitionList = [
     textFadeOut('RussiaBelarusSummary'),
     textFadeIn(summaryText({
       id: 'RussiaUkraineSummary',
-      coordinates: [40, 54],
+      coordinates: [35, 54],
       text: 'Moldova and most of Ukraine...'
     })),
   ],
   () => [
     textFadeOut('Ukraine'),
+    textFadeOut('Moldova'),
     countryReplace('RussiaBelarus'),
     countryReplace('Moldova'),
     countryFadeIn({ "name": "RussiaUkraine", "coordinates": russiaUkraineUnion })
