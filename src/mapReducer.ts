@@ -31,6 +31,7 @@ export type MapAction =
   | ({ type: 'directStep' } & MapState)
   | (TextFadeIn & { opacity: number })
   | (TextFadeOut & { opacity: number })
+  | TextMove
 
 
 interface ViewCenterChange {
@@ -54,6 +55,12 @@ interface TextFadeOut {
   mapTextId: string
 }
 
+interface TextMove {
+  type: "TextMove"
+  mapTextId: string
+  newCoordinates: Position
+}
+
 export interface MapText {
   id: string
   text: string | Array<string>
@@ -64,7 +71,7 @@ export interface MapText {
   includeBackground?: boolean
 }
 
-export type MapTransition = CountryReplace | CountryFadeIn | ViewCenterChange | ZoomChange | TextFadeIn | TextFadeOut
+export type MapTransition = CountryReplace | CountryFadeIn | ViewCenterChange | ZoomChange | TextFadeIn | TextFadeOut | TextMove
 
 export type MapTransitionList = Array<(state: SteplessMapState) => MapTransition | Array<MapTransition>>
 
@@ -90,6 +97,10 @@ export function textFadeIn(mapText: MapText): TextFadeIn {
 
 export function textFadeOut(mapTextId: string): TextFadeOut {
   return { type: "TextFadeOut", mapTextId }
+}
+
+export function textMove(mapTextId: string, long: number, lat: number): TextMove {
+  return { type: "TextMove", mapTextId, newCoordinates: [long, lat] }
 }
 
 export default function reducer(
@@ -159,7 +170,7 @@ export default function reducer(
             newToText
           )
         }
-      case 'TextFadeOut': {
+      case 'TextFadeOut':
         const fromTextIndex = state.textCollection.findIndex(({ id }) => id === action.mapTextId)
         if (fromTextIndex >= 0) {
           const newTextCollection = [...state.textCollection]
@@ -181,7 +192,20 @@ export default function reducer(
         }
 
         return state
-      }
+      case 'TextMove':
+        const moveTextIndex = state.textCollection.findIndex(({ id }) => id === action.mapTextId)
+        if (moveTextIndex >= 0) {
+          const newTextCollection = [...state.textCollection]
+          const moveText = newTextCollection[moveTextIndex]
+          newTextCollection.splice(moveTextIndex, 1, {
+            ...moveText,
+            coordinates: action.newCoordinates
+          })
+
+          return { ...state, textCollection: newTextCollection }
+        }
+
+        return state
       case "incrementStep":
         return { ...state, step: state.step + 1 }
       case "reInit": {
@@ -212,6 +236,16 @@ export default function reducer(
                 break;
               case "TextFadeOut":
                 newState.textCollection = newState.textCollection.filter(({ id }) => id !== transition.mapTextId)
+                break;
+              case "TextMove":
+                const moveTextIndex = newState.textCollection.findIndex(({ id }) => id === transition.mapTextId)
+                if (moveTextIndex >= 0) {
+                  const moveText = newState.textCollection[moveTextIndex]
+                  newState.textCollection = newState.textCollection.toSpliced(moveTextIndex, 1, {
+                    ...moveText,
+                    coordinates: transition.newCoordinates
+                  })
+                }
                 break;
               default:
                 const _exhaustiveCheck: never = transition;

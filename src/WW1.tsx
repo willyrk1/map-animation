@@ -1,4 +1,4 @@
-import { countryFadeIn, countryReplace, MapTransitionList, textFadeIn, textFadeOut, viewCenterChange, zoomChange } from "./mapReducer";
+import { countryFadeIn, countryReplace, MapTransitionList, textFadeIn, textFadeOut, textMove, viewCenterChange, zoomChange } from "./mapReducer";
 import { CountryDetails, position2Spaced } from "./utility";
 import MapAnimation from "./MapAnimation";
 import { getCountriesHighRes, getInitialMapText, baseText, modernColorMap, summaryText } from "./countries";
@@ -95,6 +95,7 @@ const transitions: MapTransitionList = [
       coordinates: [34, 58],
       text: 'The Baltic states...'
     })),
+    textMove('Russian Empire', 42, 54),
     textFadeIn(baseText({
       id: 'Estonia',
       coordinates: [25.8, 58.6],
@@ -122,6 +123,11 @@ const transitions: MapTransitionList = [
       coordinates: [28.5, 47.3],
       svgTextProps: { fontSize: '85%', transform: `rotate(45 ${position2Spaced([28.5, 47.3])})` },
     })),
+    textFadeIn(baseText({
+      id: 'Poland',
+      coordinates: [19.4, 52],
+      svgTextProps: { fontSize: '130%', style: { fill: 'black' } },
+    })),
   ],
   () => [
     textFadeOut('Estonia'),
@@ -134,6 +140,13 @@ const transitions: MapTransitionList = [
   ],
   () => [
     textFadeOut('RussiaBalticSummary'),
+    textFadeOut('Russian Empire'),
+    textFadeIn(baseText({
+      id: 'Russian Empire2',
+      text: 'Russian Empire',
+      coordinates: [36, 57],
+      svgTextProps: { fontSize: "200%" },
+    })),
     textFadeIn(summaryText({
       id: 'RussiaBelarusSummary',
       coordinates: [37, 54],
@@ -157,6 +170,12 @@ const transitions: MapTransitionList = [
   () => [
     textFadeOut('Ukraine'),
     textFadeOut('Moldova'),
+    textFadeIn(baseText({
+      id: 'Ukraine2',
+      text: 'Ukraine',
+      coordinates: [24.4, 49],
+      svgTextProps: { fontSize: '90%' },
+    })),
     countryReplace('RussiaBelarus'),
     countryReplace('Moldova'),
     countryFadeIn({ "name": "RussiaUkraine", "coordinates": russiaUkraineUnion })
@@ -165,24 +184,67 @@ const transitions: MapTransitionList = [
     textFadeOut('RussiaUkraineSummary'),
     textFadeIn(summaryText({
       id: 'RussiaPolandSummary',
-      coordinates: [36, 53],
+      coordinates: [31, 53],
       text: ['Eastern Poland', '(Congress Poland)...']
     })),
   ],
   () => [
+    textFadeOut('Poland'),
+    textFadeIn(baseText({
+      id: 'Poland2',
+      text: 'Poland',
+      coordinates: [16.5, 53.2],
+      svgTextProps: { fontSize: '120%', style: { fill: 'black' } },
+    })),
     countryReplace('RussiaUkraine'),
     countryFadeIn({
       "name": "RussiaPoland",
       "coordinates": russiaPolandUnion
-    })
+    }),
   ],
-  // () => {
-  //   const russiaMiddleEast = {
-  //     "name": "RussiaMiddleEast",
-  //     "coordinates": russiaMiddleEastUnion
-  //   }
-  //   return countryReplacement(['RussiaPoland', 'Armenia', 'Azerbaijan', 'Georgia'], [russiaMiddleEast])
-  // },
+  () => [
+    viewCenterChange(44.5, 43.8),
+    zoomChange(10),
+    textMove('Russian Empire2', 40, 49),
+    textFadeOut('RussiaPolandSummary'),
+    textFadeIn(summaryText({
+      id: 'RussiaCaucusus',
+      coordinates: [52.8, 44],
+      text: ['...and the Caucasus region']
+    })),
+    textFadeIn(baseText({
+      id: 'Georgia',
+      coordinates: [43.4, 42.1],
+      svgTextProps: { style: { fill: 'black' } },
+    })),
+    textFadeIn(baseText({
+      id: 'Azerbaijan',
+      coordinates: [47.6, 40.5],
+    })),
+    textFadeIn(baseText({
+      id: 'Armenia',
+      coordinates: [44.7, 40.4],
+      svgTextProps: { fontSize: '90%', transform: `rotate(45 ${position2Spaced([44.7, 40.4])})`  },
+    })),
+    textFadeIn(baseText({
+      id: 'Turkey',
+      coordinates: [35.3, 39],
+      svgTextProps: { fontSize: '150%'},
+    }))
+  ],
+  () => [
+    textFadeOut('Georgia'),
+    textFadeOut('Azerbaijan'),
+    textFadeOut('Armenia'),
+    countryReplace('RussiaPoland'),
+    countryReplace('Armenia'),
+    countryReplace('Azerbaijan'),
+    countryReplace('Georgia'),
+    countryFadeIn({
+      "name": "RussiaMiddleEast",
+      "coordinates": russiaMiddleEastUnion
+    }),
+  ],
   // () => [viewCenterChange(15, 52), zoomChange(13)],
   // () => {
   //   const germanyFranceDenmark = {

@@ -93,6 +93,16 @@ export default function MapAnimation(props: MapAnimationProps) {
     }
   }
 
+  function animateTextMove(mapTextId: string, targetCoordinates: Position) {
+    const startCoordinates = textCollection.find(({ id }: MapText) => id === mapTextId)!.coordinates
+    return function (t: number): MapAction {
+      const newLong = startCoordinates[0] + (targetCoordinates[0] - startCoordinates[0]) * t;
+      const newLat = startCoordinates[1] + (targetCoordinates[1] - startCoordinates[1]) * t;
+
+      return { type: "TextMove", mapTextId, newCoordinates: [newLong, newLat] }
+    }
+  }
+
   function doAnimation(startTime: number, animateFns: MapActionAnimation | Array<MapActionAnimation>) {
     const now = performance.now();
     const elapsed = now - startTime;
@@ -126,6 +136,8 @@ export default function MapAnimation(props: MapAnimationProps) {
         return animateTextFadeIn(transition.mapText)
       case "TextFadeOut":
         return animateTextFadeOut(transition.mapTextId)
+      case "TextMove":
+        return animateTextMove(transition.mapTextId, transition.newCoordinates)
       default:
         const _exhaustiveCheck: never = transition;
         return _exhaustiveCheck;
@@ -158,7 +170,11 @@ export default function MapAnimation(props: MapAnimationProps) {
         <div>
           <button onClick={handleReInit}>Start</button>
           {transitions.map((_t, index) => (
-            <button onClick={() => handleDirectStep(index)} key={`step${index}`}>
+            <button
+              onClick={() => handleDirectStep(index)}
+              className={index === step - 1 ? 'current' : ''}
+              key={`step${index}`}
+            >
               {index}
             </button>
           ))}

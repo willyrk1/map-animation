@@ -35,3 +35,7 @@ text.summary {
   margin: 10px;
   padding: 10px;
 }
+
+.controls .current {
+  background-color: yellow;
+}
