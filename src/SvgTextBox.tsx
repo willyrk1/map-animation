@@ -10,17 +10,16 @@ export default React.memo(function SvgTextBox(props: Readonly<MapText & { zoom: 
 
   const [x, y] = position2XY(coordinates)
 
-  const padding = 1
-
   React.useEffect(() => {
     if (textRef.current && rectRef.current) {
+      const padding = 3.5 / zoom
       const bbox = textRef.current.getBBox();
       rectRef.current.setAttribute('x', `${bbox.x - padding}`);
       rectRef.current.setAttribute('y', `${bbox.y - padding}`);
       rectRef.current.setAttribute('width', `${bbox.width + padding * 2}`);
       rectRef.current.setAttribute('height', `${bbox.height + padding * 2}`);
     }
-  }, [includeBackground, padding, text, coordinates, zoom]);
+  }, [includeBackground, text, coordinates, zoom]);
 
   return (
     <g className="svgText" {...svgGProps}>

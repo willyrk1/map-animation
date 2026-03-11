@@ -224,12 +224,12 @@ const transitions: MapTransitionList = [
     textFadeIn(baseText({
       id: 'Armenia',
       coordinates: [44.7, 40.4],
-      svgTextProps: { fontSize: '90%', transform: `rotate(45 ${position2Spaced([44.7, 40.4])})`  },
+      svgTextProps: { fontSize: '90%', transform: `rotate(45 ${position2Spaced([44.7, 40.4])})` },
     })),
     textFadeIn(baseText({
       id: 'Turkey',
       coordinates: [35.3, 39],
-      svgTextProps: { fontSize: '150%'},
+      svgTextProps: { fontSize: '150%' },
     }))
   ],
   () => [
@@ -245,28 +245,82 @@ const transitions: MapTransitionList = [
       "coordinates": russiaMiddleEastUnion
     }),
   ],
-  // () => [viewCenterChange(15, 52), zoomChange(13)],
-  // () => {
-  //   const germanyFranceDenmark = {
-  //     "name": "GermanyFranceDenmark",
-  //     "coordinates": germanyFranceDenmarkUnion
-  //   }
-  //   return countryReplacement(['Germany'], [germanyFranceDenmark])
-  // },
-  // () => {
-  //   const germanyPoland = {
-  //     "name": "GermanyPoland",
-  //     "coordinates": germanyPolandUnion
-  //   }
-  //   return countryReplacement(['GermanyFranceDenmark'], [germanyPoland])
-  // },
-  // () => {
-  //   const germanyFinal = {
-  //     "name": "GermanyFinal",
-  //     "coordinates": germanyFinalUnion
-  //   }
-  //   return countryReplacement(['GermanyPoland', 'Lithuania'], [germanyFinal])
-  // },
+  () => [
+    viewCenterChange(15, 52),
+    zoomChange(13),
+    textMove('Russian Empire2', 25, 52),
+    textFadeOut('RussiaCaucusus'),
+    textFadeIn(baseText({
+      id: 'German Empire',
+      coordinates: [10.5, 51.8],
+      svgTextProps: { fontSize: '150%' },
+    })),
+    textFadeIn(baseText({
+      id: 'Denmark',
+      coordinates: [9.2, 56.2],
+      svgTextProps: { fontSize: '80%' },
+    })),
+    textFadeIn(baseText({
+      id: 'France',
+      coordinates: [2.6, 48.1],
+      svgTextProps: { fontSize: '150%' },
+    })),
+    textFadeIn(summaryText({
+      id: 'GermanyInitial',
+      coordinates: [0.5, 54],
+      text: [
+        'Germany was also an empire after',
+        'unifying 43 years earlier. It',
+        'included South Jutland (Denmark),',
+        'Alsace-Lorraine (France)...'
+      ],
+    })),
+  ],
+  () => [
+    countryReplace('Germany'),
+    countryFadeIn({
+      "name": "GermanyFranceDenmark",
+      "coordinates": germanyFranceDenmarkUnion,
+    }),
+  ],
+  () => [
+    textFadeOut("GermanyInitial"),
+    textFadeIn(summaryText({
+      id: 'GermanyPoland',
+      coordinates: [15.4, 55.5],
+      text: ['Western and', 'northern Poland...'],
+    })),
+  ],
+  () => [
+    textFadeOut('Poland2'),
+    textFadeIn(baseText({
+      id: 'Poland',
+      coordinates: [21.4, 49.75],
+      svgTextProps: { fontSize: '120%', style: { fill: 'black' } },
+    })),
+    textMove('German Empire', 13, 52.3),
+    countryReplace('GermanyFranceDenmark'),
+    countryFadeIn({
+      "name": "GermanyPoland",
+      "coordinates": germanyPolandUnion
+    }),
+  ],
+  () => [
+    textFadeOut("GermanyPoland"),
+    textFadeIn(summaryText({
+      id: 'EastGermany',
+      coordinates: [16, 56],
+      text: ['...Kaliningrad (Russia)', 'and Memel (Lithuania).'],
+    })),
+  ],
+  () => [
+    countryReplace('GermanyPoland'),
+    countryReplace('Lithuania'),
+    countryFadeIn({
+      "name": "GermanyFinal",
+      "coordinates": germanyFinalUnion
+    }),
+  ],
   // () => [viewCenterChange(13, 46), zoomChange(14.7)],
   // () => {
   //   const austriaHungary = {
