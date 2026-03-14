@@ -3,7 +3,7 @@ import { position2XY } from "./utility";
 import { MapText } from "./mapReducer";
 
 export default React.memo(function SvgTextBox(props: Readonly<MapText & { zoom: number }>) {
-  const { coordinates, text, svgGProps, svgRectProps, svgTextProps, includeBackground = false, zoom } = props
+  const { id, coordinates, text = id, svgGProps, svgRectProps, svgTextProps, includeBackground = false, zoom } = props
 
   const textRef = React.useRef<SVGTextElement>(null)
   const rectRef = React.useRef<SVGRectElement>(null)

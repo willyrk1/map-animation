@@ -1,5 +1,5 @@
 import { FeatureCollection } from "geojson";
-import modernGeoJson from "./data/custom.hires.geo.json"
+import modernGeoJson from "./data/custom.midres.geo.json"
 import { geoJson2CountryDetails } from "./utility";
 import { MapText } from "./mapReducer";
 
@@ -7,24 +7,20 @@ export function getCountriesHighRes() {
   return geoJson2CountryDetails(modernGeoJson as FeatureCollection)
 }
 
-type PartialMapText = Omit<MapText, 'text'> & { text?: string | Array<string> }
-
-export function baseText(mapText: PartialMapText): MapText {
-  return { text: mapText.id, ...mapText }
+export function baseText(id: string, long: number, lat: number, mapText?: Omit<MapText, 'id' | 'coordinates'>): MapText {
+  return { id, coordinates: [long, lat], text: id, ...mapText }
 }
 
-export function summaryText({ svgTextProps, ...mapText }: PartialMapText): MapText {
+export function summaryText(id: string, long: number, lat: number, text: Required<MapText>['text'], mapText?: Omit<MapText, 'id' | 'coordinates' | 'text'>): MapText {
+  const { svgTextProps, ...rest } = mapText ?? {}
   return {
     includeBackground: true,
-    ...baseText({
-      svgTextProps: { className: 'summary', ...svgTextProps },
-      ...mapText
-    })
+    ...baseText(id, long, lat, { text, svgTextProps: { className: 'summary', ...svgTextProps }, ...rest })
   }
 }
 
 export function getInitialMapText(): Array<MapText> {
-  const initialTextCollection: Array<PartialMapText> = [
+  const initialTextCollection: Array<MapText> = [
     {
       id: 'Russia',
       coordinates: [40.64032191671039, 57.24804212417763],
@@ -33,13 +29,11 @@ export function getInitialMapText(): Array<MapText> {
   ]
 
   return [
-    summaryText({
-      id: 'StartSummary',
-      coordinates: [49, 62],
-      text: ['World War I began with', 'a map significantly different', 'from the map of today.'],
-      includeBackground: true,
-    }),
-    ...initialTextCollection.map(baseText)
+    summaryText('StartSummary', 49, 62,
+      ['World War I began with', 'a map significantly different', 'from the map of today.'],
+      { includeBackground: true },
+    ),
+    ...initialTextCollection.map(({ id, coordinates: [long, lat], ...maptext }: MapText) => baseText(id, long, lat, maptext))
   ]
 }
 
@@ -88,7 +82,7 @@ export const modernColorMap: Record<string, string> = {
   'RussiaMiddleEast': 'green',
   'Georgia': '#e6e000',
   'Belarus': '#cc0012',
-  'Lithuania': '#001fcc',
+  'Lithuania': 'pink',
   'Latvia': '#8400b3',
   'Estonia': '#aa4200',
   'Germany': '#002780',
@@ -97,7 +91,7 @@ export const modernColorMap: Record<string, string> = {
   'GermanyFinal': '#002780',
   'Switzerland': '#fff54d',
   'France': '#178000',
-  'Luxembourg': '#b30016',
+  'Luxembourg': 'pink',
   'Belgium': '#1afffd',
   'Netherlands': '#ffc833',
   'Spain': '#000eb3',

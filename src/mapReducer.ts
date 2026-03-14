@@ -63,7 +63,7 @@ interface TextMove {
 
 export interface MapText {
   id: string
-  text: string | Array<string>
+  text?: string | Array<string> // If undefined, use id instead.
   coordinates: Position
   svgTextProps?: React.SVGTextElementAttributes<SVGTextElement>
   svgGProps?: React.SVGProps<SVGGElement>
@@ -79,8 +79,8 @@ export function countryReplace(name: string): CountryReplace {
   return { type: "CountryReplace", name }
 }
 
-export function countryFadeIn(country: CountryDetails): CountryFadeIn {
-  return { type: "CountryFadeIn", country }
+export function countryFadeIn(name: string, coordinates: Position[][], country?: Omit<CountryDetails, 'name' | 'coordinates'>): CountryFadeIn {
+  return { type: "CountryFadeIn", country: { name, coordinates, ...country } }
 }
 
 export function viewCenterChange(long: number, lat: number): ViewCenterChange {

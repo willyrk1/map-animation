@@ -71,7 +71,7 @@ export default function MapAnimation(props: MapAnimationProps) {
 
   function animateCountryFadeIn(country: CountryDetails) {
     return function (t: number): MapAction {
-      return { ...countryFadeIn(toHiddenWithPathProps(country)), opacity: t }
+      return { ...countryFadeIn('', [], toHiddenWithPathProps(country)), opacity: t }
     }
   }
 
