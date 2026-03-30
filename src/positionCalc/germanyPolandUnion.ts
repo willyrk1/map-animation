@@ -11,7 +11,5 @@ export default function getGermanyPolandUnion(state: SteplessMapState) {
   if (germanyPolandUnion) return germanyPolandUnion
   const { countries } = state
   const polandCoordinates = getCountryByName(countries, 'Poland').coordinates
-  const germanyFranceDenmarkUnion = getGermanyFranceDenmarkUnion(state)
-  const russiaPolandUnion = getRussiaPolandUnion(state)
-  return germanyPolandUnion = union(germanyFranceDenmarkUnion, difference(polandCoordinates, russiaPolandUnion, galiciaJson))
+  return germanyPolandUnion = union(getGermanyFranceDenmarkUnion(state), difference(polandCoordinates, getRussiaPolandUnion(state), galiciaJson))
 }

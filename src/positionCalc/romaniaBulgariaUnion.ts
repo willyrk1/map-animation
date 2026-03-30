@@ -9,8 +9,6 @@ let romaniaBulgariaUnion: Array<Array<Position>>
 
 export default function getRomaniaBulgariaUnion(state: SteplessMapState) {
   if (romaniaBulgariaUnion) return romaniaBulgariaUnion
-  const romaniaUnion = getRomaniaUnion(state)
-  const ahFinalUnion = getAHFinalUnion(state)
-  const smallRomania = difference(romaniaUnion, ahFinalUnion)
+  const smallRomania = difference(getRomaniaUnion(state), getAHFinalUnion(state))
   return romaniaBulgariaUnion = union(smallRomania, southDobrujaJson)
 }

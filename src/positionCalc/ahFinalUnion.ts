@@ -9,6 +9,5 @@ let ahFinalUnion: Array<Array<Position>>
 
 export default function getAHFinalUnion(state: SteplessMapState) {
   if (ahFinalUnion) return ahFinalUnion
-  const ahRomaniaUnion = getAHRomaniaUnion(state)
-  return ahFinalUnion = union(ahRomaniaUnion, galiciaJson, bukovinaJson)
+  return ahFinalUnion = union(getAHRomaniaUnion(state), galiciaJson, bukovinaJson)
 }

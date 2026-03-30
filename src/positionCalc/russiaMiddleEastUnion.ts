@@ -12,6 +12,5 @@ export default function getRussiaMiddleEastUnion(state: SteplessMapState) {
   const armeniaCoordinates = getCountryByName(countries, 'Armenia').coordinates
   const azerbaijanCoordinates = getCountryByName(countries, 'Azerbaijan').coordinates
   const georgiaCoordinates = getCountryByName(countries, 'Georgia').coordinates
-  const russiaPolandUnion = getRussiaPolandUnion(state)
-  return russiaMiddleEastUnion = union(russiaPolandUnion, armeniaCoordinates, azerbaijanCoordinates, georgiaCoordinates, karsJson)
+  return russiaMiddleEastUnion = union(getRussiaPolandUnion(state), armeniaCoordinates, azerbaijanCoordinates, georgiaCoordinates, karsJson)
 }

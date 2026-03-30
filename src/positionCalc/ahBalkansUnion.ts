@@ -11,6 +11,5 @@ export default function getAHBalkansUnion(state: SteplessMapState) {
   const sloveniaCoordinates = getCountryByName(countries, 'Slovenia').coordinates
   const croatiaCoordinates = getCountryByName(countries, 'Croatia').coordinates
   const bosniaCoordinates = getCountryByName(countries, 'Bosnia and Herz.').coordinates
-  const ahCzechUnion = getAHCzechUnion(state)
-  return ahBalkansUnion = union(ahCzechUnion, sloveniaCoordinates, croatiaCoordinates, bosniaCoordinates)
+  return ahBalkansUnion = union(getAHCzechUnion(state), sloveniaCoordinates, croatiaCoordinates, bosniaCoordinates)
 }

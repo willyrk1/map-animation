@@ -8,6 +8,5 @@ let ahItalyUnion: Array<Array<Position>>
 
 export default function getAHItalyUnion(state: SteplessMapState) {
   if (ahItalyUnion) return ahItalyUnion
-  const ahBalkansUnion = getAHBalkansUnion(state)
-  return ahItalyUnion = union(ahBalkansUnion, trentinoSouthTyrolJson)
+  return ahItalyUnion = union(getAHBalkansUnion(state), trentinoSouthTyrolJson)
 }

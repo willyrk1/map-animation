@@ -195,7 +195,7 @@ const transitions: MapTransitionList = [
   // ------------------------------------------------------------------- 16
   () => [
     textFadeOut('GermanyPoland'),
-    textFadeIn(summaryText('EastGermany', 16, 56, ['...Kaliningrad (Russia)', 'and Memel (Lithuania).'])),
+    textFadeIn(summaryText('EastGermany', 16, 56, ['...Kaliningrad (Russia),', 'and Memel (Lithuania).'])),
   ],
   // ------------------------------------------------------------------- 17
   () => [
@@ -211,13 +211,24 @@ const transitions: MapTransitionList = [
     textMove('German Empire', 9.3, 50.4),
     textMove('Russian Empire2', 29, 51),
     textFadeIn(baseText('Austria', 14.7, 47.6, { svgTextProps: { fontSize: '140%' } })),
+    textFadeIn(baseText('Hungary', 19.1, 47.1, { svgTextProps: { fontSize: '140%', style: { fill: 'black' } } })),
     textFadeIn(baseText('Czechia', 15.5, 49.6, { svgTextProps: { fontSize: '140%' } })),
     textFadeIn(baseText('Slovakia', 19.5, 48.75, { svgTextProps: { fontSize: '140%', style: { fill: 'black' } } })),
     textFadeIn(baseText('Slovenia', 14.6, 46)),
     textFadeIn(baseText('Croatia', 16.6, 45.6)),
     textFadeIn(baseText('Bosnia', 17.8, 44.3, { text: ['Bosnia and', 'Herzegovina'], svgTextProps: { style: { fill: 'black' } } })),
+    textFadeIn(baseText('Italy', 10.1, 45, { svgTextProps: { fontSize: '140%' } })),
+    textFadeIn(baseText('Switzerland', 8.2, 46.8, { svgTextProps: { style: { fill: 'black' } } })),
+    textFadeIn(baseText('Romania', 24.9, 45.8, { svgTextProps: { fontSize: '140%', style: { fill: 'black' } } })),
+    textFadeIn(baseText('Serbia', 21, 44, { svgTextProps: { fontSize: '140%', style: { fill: 'black' } } })),
+    textFadeIn(baseText('Bulgaria', 25.1, 42.6, { svgTextProps: { fontSize: '140%', style: { fill: 'black' } } })),
+    textFadeIn(baseText('Montenegro', 19.2, 42.9, { text: ['Monte-', 'negro'], svgTextProps: { fontSize: '75%' } })),
+    textFadeIn(baseText('Kosovo', 20.9, 42.5, { svgTextProps: { fontSize: '80%' } })),
+    textFadeIn(baseText('North Macedonia', 21.7, 41.6, { text: ['North', 'Macedonia'], svgTextProps: { fontSize: '90%', style: { fill: 'black' } } })),
+    textFadeIn(baseText('Greece', 21.6, 39.9, { svgTextProps: { fontSize: '120%' } })),
+    textFadeIn(baseText('Albania', 20.15, 40.7, { svgTextProps: { fontSize: '90%' } })),
     textFadeOut('EastGermany'),
-    textFadeIn(summaryText('AustriaEmpire', 16, 44.5, ['In central Europe, Austria and Hungary are joined in', 'an empire led by the centuries-old Habsburg dynasty.']))
+    textFadeIn(summaryText('AustriaEmpire', 16, 44.5, ['In central Europe, Austria and Hungary are joined in', 'an empire led by the centuries-old Habsburg dynasty.'])),
   ],
   // ------------------------------------------------------------------- 19
   () => [
@@ -225,12 +236,13 @@ const transitions: MapTransitionList = [
     countryReplace('Hungary'),
     countryFadeIn('AustriaHungary', austriaHungaryUnion),
     textFadeOut('Austria'),
+    textFadeOut('Hungary'),
     textFadeIn(baseText('Austria-Hungary', 17, 47.3, { svgTextProps: { fontSize: '140%' } })),
   ],
   // ------------------------------------------------------------------- 20
   () => [
     textFadeOut('AustriaEmpire'),
-    textFadeIn(summaryText('AHCzechoslovakia', 16, 44.8, ['It included its neighbors to the north...'])),
+    textFadeIn(summaryText('AHCzechoslovakia', 16, 44.8, 'It included its neighbors to the north...')),
   ],
   // ------------------------------------------------------------------- 21
   () => [
@@ -245,7 +257,7 @@ const transitions: MapTransitionList = [
   // ------------------------------------------------------------------- 22
   () => [
     textFadeOut('AHCzechoslovakia'),
-    textFadeIn(summaryText('AHBalkans', 24, 44.8, ['The western Balkan states...'])),
+    textFadeIn(summaryText('AHBalkans', 24, 44.8, 'The western Balkan states...')),
   ],
   // ------------------------------------------------------------------- 23
   () => [
@@ -259,68 +271,121 @@ const transitions: MapTransitionList = [
     textFadeOut('Bosnia'),
     textMove('Austria-Hungary', 17.2, 47.2),
   ],
-  // () => {
-  //   const austriaHungaryItaly = {
-  //     'name': 'AustriaHungaryItaly',
-  //     'coordinates': ahItalyUnion
-  //   }
-  //   return countryReplacement(['AustriaHungaryBalkans'], [austriaHungaryItaly])
-  // },
-  // () => {
-  //   const austriaHungarySerbia = {
-  //     'name': 'AustriaHungarySerbia',
-  //     'coordinates': ahSerbiaUnion
-  //   }
-  //   return countryReplacement(['AustriaHungaryItaly'], [austriaHungarySerbia])
-  // },
-  // () => {
-  //   const origRomania = {
-  //     'name': 'NewRomania',
-  //     'coordinates': romaniaUnion
-  //   }
-  //   const austriaHungaryRomania = {
-  //     'name': 'AustriaHungaryRomania',
-  //     'coordinates': ahRomaniaUnion
-  //   }
-  //   return countryReplacement(['AustriaHungarySerbia', 'Romania'], [origRomania, austriaHungaryRomania])
-  // },
-  // () => {
-  //   const austriaHungaryFinal = {
-  //     'name': 'AustriaHungaryFinal',
-  //     'coordinates': ahFinalUnion
-  //   }
-  //   return countryReplacement(['AustriaHungaryRomania', 'Ukraine', 'Poland'], [austriaHungaryFinal])
-  // },
-  // () => {
-  //   const romaniaFinal = {
-  //     'name': 'RomaniaFinal',
-  //     'coordinates': romaniaBulgariaUnion
-  //   }
-  //   const bulgariaFinal = {
-  //     'name': 'BulgariaFinal',
-  //     'coordinates': bulgariaUnion
-  //   }
-  //   const ottomanEurope = {
-  //     'name': 'OttomanEurope',
-  //     'coordinates': ottomanEuropeUnion
-  //   }
-  //   return countryReplacement(['Bulgaria', 'NewRomania', 'Turkey'], [bulgariaFinal, ottomanEurope, romaniaFinal])
-  // },
-  // () => {
-  //   const serbiaFinal = {
-  //     'name': 'SerbiaFinal',
-  //     'coordinates': serbiaFinalUnion
-  //   }
-  //   return countryReplacement(['Serbia', 'North Macdeonia', 'Kosovo'], [serbiaFinal])
-  // },
-  // () => [viewCenterChange(40, 29), zoomChange(6.2)],
-  // () => {
-  //   const ottomanMiddleEast = {
-  //     'name': 'OttomanMiddleEast',
-  //     'coordinates': ottomanMiddleEastUnion
-  //   }
-  //   return countryReplacement(['OttomanEurope', 'Lebanon', 'Israel', 'Palestine'], [ottomanMiddleEast])
-  // },
+  // ------------------------------------------------------------------- 24
+  () => [
+    textFadeOut('AHBalkans'),
+    textFadeIn(summaryText('Trentino', 10.9, 48.4, 'Trentino and South Tyrol (Italy)...')),
+  ],
+  // ------------------------------------------------------------------- 25
+  () => [
+    countryReplace('AustriaHungaryBalkans'),
+    countryFadeIn('AustriaHungaryItaly', ahItalyUnion),
+  ],
+  // ------------------------------------------------------------------- 26
+  () => [
+    textFadeOut('Trentino'),
+    textFadeIn(summaryText('Vojvodina', 24.7, 45.7, 'Vojvodina (Serbia)...')),
+  ],
+  // ------------------------------------------------------------------- 27
+  () => [
+    countryReplace('AustriaHungaryItaly'),
+    countryFadeIn('AustriaHungarySerbia', ahSerbiaUnion),
+    textMove('Serbia', 21, 43.8),
+  ],
+  // ------------------------------------------------------------------- 28
+  () => [
+    textFadeOut('Vojvodina'),
+    textFadeIn(summaryText('AHRomania', 26, 49, 'Much of Romania...')),
+  ],
+  // ------------------------------------------------------------------- 29
+  () => [
+    countryReplace('AustriaHungarySerbia'),
+    countryReplace('Romania'),
+    countryFadeIn('NewRomania', romaniaUnion),
+    countryFadeIn('AustriaHungaryRomania', ahRomaniaUnion),
+    textMove('Romania', 25.8, 44.7),
+    textMove('Austria-Hungary', 19, 47),
+  ],
+  // ------------------------------------------------------------------- 30
+  () => [
+    textFadeOut('AHRomania'),
+    textFadeIn(summaryText('GaliciaBukovina', 23.5, 51.3, 'Galicia, and Bukovina.')),
+  ],
+  // ------------------------------------------------------------------- 31
+  () => [
+    countryReplace('AustriaHungaryRomania'),
+    countryReplace('Ukraine'),
+    countryReplace('Poland'),
+    countryFadeIn('AustriaHungaryFinal', ahFinalUnion),
+    textFadeOut('Poland'),
+    textFadeOut('Ukraine2'),
+    textMove('Austria-Hungary', 19.5, 47.3),
+  ],
+  // ------------------------------------------------------------------- 32
+  () => [
+    viewCenterChange(24.2, 43.2),
+    zoomChange(16),
+    textFadeOut('GaliciaBukovina'),
+    textFadeIn(summaryText('Bulgaria changes', 32.5, 43.5, ['The Balkan Wars of prior', 'years shaped the borders', 'of Bulgaria...'])),
+  ],
+  // ------------------------------------------------------------------- 33
+  () => [
+    countryReplace('Bulgaria'),
+    countryReplace('NewRomania'),
+    countryReplace('Turkey'),
+    countryFadeIn('RomaniaFinal', romaniaBulgariaUnion),
+    countryFadeIn('OttomanEurope', ottomanEuropeUnion),
+    countryFadeIn('BulgariaFinal', bulgariaUnion),
+    textMove('North Macedonia', 21.55, 41.6),
+  ],
+  // ------------------------------------------------------------------- 34
+  () => [
+    textFadeOut('Bulgaria changes'),
+    textFadeIn(summaryText('Serbia union', 25.7, 43.5, ['...as well as Serbia'])),
+  ],
+  // ------------------------------------------------------------------- 35
+  () => [
+    countryReplace('Serbia'),
+    countryReplace('North Macdeonia'),
+    countryReplace('Kosovo'),
+    countryFadeIn('SerbiaFinal', serbiaFinalUnion),
+    textFadeOut('Kosovo'),
+    textFadeOut('North Macedonia'),
+    textMove('Serbia', 21.3, 43),
+  ],
+  // ------------------------------------------------------------------- 36
+  () => [
+    viewCenterChange(40, 29),
+    zoomChange(6.2),
+    textFadeOut('Serbia union'),
+    textFadeOut('Greece'),
+    textFadeOut('Albania'),
+    textFadeOut('Montenegro'),
+    textFadeOut('Romania'),
+    textFadeOut('Bulgaria'),
+    textFadeOut('Serbia'),
+    textFadeIn(summaryText('Middle East', 61, 35, ['In the Middle East, the Turkish', 'Ottoman Empire controlled many sea', 'coasts and the Holy Land.'])),
+    textFadeIn(baseText('Syria', 38.4, 35.2, { svgTextProps: { style: { fill: 'black' } } })),
+    textFadeIn(baseText('Iraq', 43.3, 33.1, { svgTextProps: { fontSize: '120%' } })),
+    textFadeIn(baseText('Jordan', 36.5, 30.7, { svgTextProps: { fontSize: '70%' } })),
+    textFadeIn(baseText('Saudi Arabia', 43.6, 24.3, { svgTextProps: { fontSize: '120%', style: { fill: 'black' } } })),
+    textFadeIn(baseText('Yemen', 47.1, 15.9)),
+  ],
+  // ------------------------------------------------------------------- 37
+  () => [
+    countryReplace('OttomanEurope'),
+    countryReplace('Lebanon'),
+    countryReplace('Israel'),
+    countryReplace('Palestine'),
+    countryFadeIn('OttomanMiddleEast', ottomanMiddleEastUnion),
+    textFadeOut('Iraq'),
+    textFadeOut('Jordan'),
+    textFadeOut('Syria'),
+    textFadeOut('Turkey'),
+    textFadeIn(baseText('Ottoman Empire', 39.5, 38, { text: ['Ottoman', 'Empire'], svgTextProps: { fontSize: '150%' } })),
+    textMove('Saudi Arabia', 46, 23.5),
+    textMove('Yemen', 49.3, 16.3),
+  ]
 ]
 
 function toWithPathProps(country: CountryDetails): CountryDetails {

@@ -12,7 +12,6 @@ export default function getRussiaUkraineUnion(state: SteplessMapState) {
   const { countries } = state
   const ukraineCoordinates = getCountryByName(countries, 'Ukraine').coordinates
   const moldovaCoordinates = getCountryByName(countries, 'Moldova').coordinates
-  const russiaBelarusUnion = getRussiaBelarusUnion(state)
   const eastUkraineCoordinates = difference(ukraineCoordinates, galiciaJson, bukovinaJson)
-  return russiaUkraineUnion = union(russiaBelarusUnion, moldovaCoordinates, eastUkraineCoordinates)
+  return russiaUkraineUnion = union(getRussiaBelarusUnion(state), moldovaCoordinates, eastUkraineCoordinates)
 }

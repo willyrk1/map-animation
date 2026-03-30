@@ -10,6 +10,5 @@ export default function getGermanyFinalUnion(state: SteplessMapState) {
   if (germanyFinalUnion) return germanyFinalUnion
   const { countries } = state
   const russiaCoordinates = getCountryByName(countries, 'Russia').coordinates
-  const germanyPolandUnion = getGermanyPolandUnion(state)
-  return germanyFinalUnion = union(germanyPolandUnion, memellandJson, russiaCoordinates.slice(-2, -1))
+  return germanyFinalUnion = union(getGermanyPolandUnion(state), memellandJson, russiaCoordinates.slice(-2, -1))
 }
