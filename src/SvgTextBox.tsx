@@ -7,23 +7,39 @@ export default React.memo(function SvgTextBox(props: Readonly<MapText & { zoom: 
 
   const textRef = React.useRef<SVGTextElement>(null)
   const rectRef = React.useRef<SVGRectElement>(null)
+  const shadowRectRef = React.useRef<SVGRectElement>(null)
 
   const [x, y] = position2XY(coordinates)
+  const cornerRadius = 2.2 / zoom
+  const shadowOffset = 1.1 / zoom
 
   React.useEffect(() => {
     if (textRef.current && rectRef.current) {
       const padding = 3.5 / zoom
       const bbox = textRef.current.getBBox();
-      rectRef.current.setAttribute('x', `${bbox.x - padding}`);
-      rectRef.current.setAttribute('y', `${bbox.y - padding}`);
-      rectRef.current.setAttribute('width', `${bbox.width + padding * 2}`);
-      rectRef.current.setAttribute('height', `${bbox.height + padding * 2}`);
+      const rectX = bbox.x - padding;
+      const rectY = bbox.y - padding;
+      const rectWidth = bbox.width + padding * 2;
+      const rectHeight = bbox.height + padding * 2;
+      rectRef.current.setAttribute('x', `${rectX}`);
+      rectRef.current.setAttribute('y', `${rectY}`);
+      rectRef.current.setAttribute('width', `${rectWidth}`);
+      rectRef.current.setAttribute('height', `${rectHeight}`);
+      if (shadowRectRef.current) {
+        shadowRectRef.current.setAttribute('x', `${rectX + shadowOffset}`);
+        shadowRectRef.current.setAttribute('y', `${rectY + shadowOffset}`);
+        shadowRectRef.current.setAttribute('width', `${rectWidth}`);
+        shadowRectRef.current.setAttribute('height', `${rectHeight}`);
+      }
     }
-  }, [includeBackground, text, coordinates, zoom]);
+  }, [includeBackground, text, coordinates, zoom, shadowOffset]);
 
   return (
     <g className="svgText" {...svgGProps}>
-      {includeBackground && <rect ref={rectRef} {...svgRectProps} />}
+      {includeBackground && (
+        <rect ref={shadowRectRef} className="svgTextShadow" rx={cornerRadius} ry={cornerRadius} />
+      )}
+      {includeBackground && <rect ref={rectRef} rx={cornerRadius} ry={cornerRadius} {...svgRectProps} />}
       <text ref={textRef} x={x} y={y} {...svgTextProps}>
         {Array.isArray(text) ? text.map((line, index) => (
           <tspan key={line} x={x} dy={index ? "1.2em" : `${0.6 * (1 - text.length)}em`}>{line}</tspan>

@@ -164,38 +164,40 @@ export default function MapAnimation(props: MapAnimationProps) {
   }
 
   return (
-    <div className='container'>
-      <div className='controls'>
-        <button onClick={handleNext}>NEXT</button>
-        <div>
-          <button onClick={handleReInit}>Start</button>
-          {transitions.map((_t, index) => (
-            <button
-              onClick={() => handleDirectStep(index)}
-              className={index === step - 1 ? 'current' : ''}
-              key={`step${index}`}
-            >
-              {index}
-            </button>
-          ))}
+    <div className='viewport'>
+      <div className='container'>
+        <div className='controls'>
+          <button onClick={handleNext}>NEXT</button>
+          <div>
+            <button onClick={handleReInit}>Start</button>
+            {transitions.map((_t, index) => (
+              <button
+                onClick={() => handleDirectStep(index)}
+                className={index === step - 1 ? 'current' : ''}
+                key={`step${index}`}
+              >
+                {index}
+              </button>
+            ))}
+          </div>
         </div>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox={viewBox}>
+          {countries.map(({ name, coordinates, pathProps }) => {
+            return coordinates.map((countryCoordinates, index) => (
+              <PositionPath key={`${name}${index}`}
+                countryName={name}
+                countryCoordinates={countryCoordinates}
+                pathProps={pathProps}
+              />
+            ))
+          })}
+          <g fontSize={6 / zoom}>
+            {textCollection.map(mapText => (
+              <SvgTextBox key={mapText.id} {...mapText} zoom={zoom} />
+            ))}
+          </g>
+        </svg>
       </div>
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox={viewBox}>
-        {countries.map(({ name, coordinates, pathProps }) => {
-          return coordinates.map((countryCoordinates, index) => (
-            <PositionPath key={`${name}${index}`}
-              countryName={name}
-              countryCoordinates={countryCoordinates}
-              pathProps={pathProps}
-            />
-          ))
-        })}
-        <g fontSize={6 / zoom}>
-          {textCollection.map(mapText => (
-            <SvgTextBox key={mapText.id} {...mapText} zoom={zoom} />
-          ))}
-        </g>
-      </svg>
     </div>
   )
 }

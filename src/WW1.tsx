@@ -27,7 +27,7 @@ import {
   getOttomanMiddleEastUnion
 } from './positionCalc';
 
-const initialState = {
+export const initialState = {
   countries: getCountriesHighRes(),
   textCollection: getInitialMapText(),
   viewCenter: [28, 57],
@@ -57,13 +57,13 @@ const romaniaBulgariaUnion = getRomaniaBulgariaUnion(initialState)
 const serbiaFinalUnion = getSerbiaFinalUnion(initialState)
 const ottomanMiddleEastUnion = getOttomanMiddleEastUnion(initialState)
 
-const transitions: MapTransitionList = [
+export const transitions: MapTransitionList = [
   // ------------------------------------------------------------------- 0
   () => [
     textFadeOut('StartSummary'),
     textFadeOut('Russia'),
-    textFadeIn(summaryText('RussianEmpireSummary', 53, 62, ['Russia had been an empire for', 'nearly two centuries and', 'encompassed modern-day Finland...'])),
-    textFadeIn(baseText('Russian Empire', 44, 57.24804212417763, { svgTextProps: { fontSize: '200%' } })),
+    textFadeIn(summaryText('RussianEmpireSummary', 53, 63, ['Russia had been an empire for', 'nearly two centuries and', 'encompassed modern-day Finland...'])),
+    textFadeIn(baseText('Russian Empire', 44, 57.24804212417763, { text: ['Russian', 'Empire'], svgTextProps: { fontSize: '200%' } })),
     textFadeIn(baseText('Finland', 26, 62.5902121295499)),
   ],
   // ------------------------------------------------------------------- 1
@@ -79,7 +79,7 @@ const transitions: MapTransitionList = [
     zoomChange(8),
     textFadeOut('RussianEmpireSummary'),
     textFadeIn(summaryText('RussiaBalticSummary', 34, 58, 'The Baltic states...')),
-    textMove('Russian Empire', 42, 54),
+    textMove('Russian Empire', 38, 54),
     textFadeIn(baseText('Estonia', 25.8, 58.6)),
     textFadeIn(baseText('Latvia', 25.84680136704439, 56.83295731831097)),
     textFadeIn(baseText('Lithuania', 24, 55.4, { svgTextProps: { style: { fill: 'black' } } })),
@@ -115,7 +115,7 @@ const transitions: MapTransitionList = [
   // ------------------------------------------------------------------- 6
   () => [
     textFadeOut('RussiaBelarusSummary'),
-    textFadeIn(summaryText('RussiaUkraineSummary', 35, 54, 'Moldova and most of Ukraine...')),
+    textFadeIn(summaryText('RussiaUkraineSummary', 33.5, 54, 'Moldova and most of Ukraine...')),
   ],
   // ------------------------------------------------------------------- 7
   () => [
@@ -170,8 +170,8 @@ const transitions: MapTransitionList = [
     textFadeIn(baseText('German Empire', 10.5, 51.8, { svgTextProps: { fontSize: '150%' } })),
     textFadeIn(baseText('Denmark', 9.2, 56.2, { svgTextProps: { fontSize: '80%' } })),
     textFadeIn(baseText('France', 2.6, 48.1, { svgTextProps: { fontSize: '150%' } })),
-    textFadeIn(summaryText('GermanyInitial', 0.5, 54, [
-      'Germany was also an empire after', 'unifying 43 years earlier. It', 'included South Jutland (Denmark),', 'Alsace-Lorraine (France)...'
+    textFadeIn(summaryText('GermanyInitial', 3, 54, [
+      'Germany was also an empire', 'after unifying 43 years', 'earlier. It included South', 'Jutland (Denmark),', 'Alsace-Lorraine (France)...'
     ])),
   ],
   // ------------------------------------------------------------------- 13
@@ -327,6 +327,8 @@ const transitions: MapTransitionList = [
     zoomChange(16),
     textFadeOut('GaliciaBukovina'),
     textFadeIn(summaryText('Bulgaria changes', 32.5, 43.5, ['The Balkan Wars of prior', 'years shaped the borders', 'of Bulgaria...'])),
+    textMove('Italy', 12.16, 43),
+    textMove('Turkey', 33, 39),
   ],
   // ------------------------------------------------------------------- 33
   () => [
@@ -385,14 +387,26 @@ const transitions: MapTransitionList = [
     textFadeIn(baseText('Ottoman Empire', 39.5, 38, { text: ['Ottoman', 'Empire'], svgTextProps: { fontSize: '150%' } })),
     textMove('Saudi Arabia', 46, 23.5),
     textMove('Yemen', 49.3, 16.3),
-  ]
+  ],
+  // ------------------------------------------------------------------- 38
+  () => [
+    viewCenterChange(18.39, 43.86),
+    zoomChange(40),
+    textMove('Austria-Hungary', 17.6, 43.85),
+    textMove('Italy', 13.4, 42.5),
+    textFadeIn(baseText('Serbia', 21.06, 43.3, { svgTextProps: { fontSize: '140%', style: { fill: 'black' } } })),
+    textFadeIn(baseText('Montenegro', 19.2, 42.9)),
+    textFadeIn(baseText('Bulgaria', 23.22, 42.6, { svgTextProps: { fontSize: '140%', style: { fill: 'black' } } })),
+    textFadeIn(baseText('Romania', 23.37, 44.55, { svgTextProps: { fontSize: '140%', style: { fill: 'black' } } })),
+    textFadeIn(baseText('Albania', 19.93, 42.08, { svgTextProps: { fontSize: '90%' } })),
+  ],
 ]
 
 function toWithPathProps(country: CountryDetails): CountryDetails {
   return {
     ...country,
     pathProps: {
-      stroke: 'black',
+      stroke: '#3d2a1a',
       strokeWidth: 0.03,
       fill: modernColorMap[country.name ?? ''] ?? 'grey',
       ...country.pathProps

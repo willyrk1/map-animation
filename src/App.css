@@ -1,8 +1,25 @@
-.container {
+.viewport {
+  width: 100vw;
   height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  /* Faint aged-map sea tone instead of stark white — shows through wherever
+     no country polygon is drawn (open water) and doubles as the letterbox
+     color outside the locked 16:9 content, so neither looks like a gap. */
+  background: #c9d6d2;
+}
+
+.container {
   position: relative;
-  /* Full Earth view looks best with this, but who cares? */
-  /* width: 140vh; */
+  aspect-ratio: 16 / 9;
+  /* Always exactly 16:9, scaled to fit the window — whichever dimension is
+     tighter (vh or vw) determines the size, so the map shrinks proportionally
+     instead of the viewBox math (see MapAnimation.tsx) picking up whatever
+     aspect ratio the window happens to be. */
+  width: min(100vw, 100vh * 16 / 9);
+  height: min(100vh, 100vw * 9 / 16);
 }
 
 .container svg {
@@ -11,20 +28,47 @@
 }
 
 .svgText rect {
-  fill: #E5E5E0;
-  stroke: black;
-  stroke-width: 1%;
+  fill: #f6ecd8;
+  stroke: #5c4326;
+  stroke-width: 1.1%;
+}
+
+.svgText rect.svgTextShadow {
+  fill: rgba(20, 12, 4, 0.28);
+  stroke: none;
 }
 
 .svgText text {
   text-anchor: middle;
   dominant-baseline: middle;
   fill: #f2f2f2;
+  font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
+  font-style: italic;
+  font-weight: bold;
+  letter-spacing: 0.02em;
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.45);
+  stroke-width: 0.4%;
+  stroke-linejoin: round;
+}
+
+/* Labels with an inline fill:black override (dark text on light countries)
+   already have plenty of contrast — the bold weight and dark stroke added for
+   the light-fill labels just makes black-on-black look smudgy on these, so
+   give them back the plain italic-serif treatment instead. */
+.svgText text[style*="fill: black"] {
+  font-weight: normal;
+  stroke: none;
 }
 
 text.summary {
-  fill: black;
+  fill: #2b1b0e;
   font-size: 150%;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: normal;
+  font-weight: normal;
+  letter-spacing: 0.01em;
+  stroke: none;
 }
 
 .controls {
