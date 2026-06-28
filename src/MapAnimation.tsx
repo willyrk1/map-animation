@@ -116,6 +116,16 @@ export default function MapAnimation(props: MapAnimationProps) {
     }
   }
 
+  function animateTextFontSize(mapTextId: string, targetFontSize: string) {
+    const startFontSize = parseFloat(textCollection.find(({ id }: MapText) => id === mapTextId)!.svgTextProps?.fontSize as string ?? '100%')
+    const targetSize = parseFloat(targetFontSize)
+    return function (t: number): MapAction {
+      const newSize = startFontSize + (targetSize - startFontSize) * t;
+
+      return { type: "TextFontSize", mapTextId, newFontSize: `${newSize}%` }
+    }
+  }
+
   function doAnimation(startTime: number, animateFns: MapActionAnimation | Array<MapActionAnimation>) {
     const now = performance.now();
     const elapsed = now - startTime;
@@ -151,6 +161,8 @@ export default function MapAnimation(props: MapAnimationProps) {
         return animateTextFadeOut(transition.mapTextId)
       case "TextMove":
         return animateTextMove(transition.mapTextId, transition.newCoordinates)
+      case "TextFontSize":
+        return animateTextFontSize(transition.mapTextId, transition.newFontSize)
       case "HighlightFadeIn":
         return animateHighlightFadeIn(transition.highlight)
       case "HighlightFadeOut":

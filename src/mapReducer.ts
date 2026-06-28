@@ -33,6 +33,7 @@ export type MapAction =
   | (TextFadeIn & { opacity: number })
   | (TextFadeOut & { opacity: number })
   | TextMove
+  | TextFontSize
   | (HighlightFadeIn & { opacity: number })
   | (HighlightFadeOut & { opacity: number })
 
@@ -62,6 +63,12 @@ interface TextMove {
   type: "TextMove"
   mapTextId: string
   newCoordinates: Position
+}
+
+interface TextFontSize {
+  type: "TextFontSize"
+  mapTextId: string
+  newFontSize: string
 }
 
 export interface MapText {
@@ -98,7 +105,7 @@ export interface MapHighlight {
   svgPathProps?: React.SVGProps<SVGPathElement>
 }
 
-export type MapTransition = CountryReplace | CountryFadeIn | ViewCenterChange | ZoomChange | TextFadeIn | TextFadeOut | TextMove | HighlightFadeIn | HighlightFadeOut
+export type MapTransition = CountryReplace | CountryFadeIn | ViewCenterChange | ZoomChange | TextFadeIn | TextFadeOut | TextMove | TextFontSize | HighlightFadeIn | HighlightFadeOut
 
 export type MapTransitionList = Array<(state: SteplessMapState) => MapTransition | Array<MapTransition>>
 
@@ -128,6 +135,10 @@ export function textFadeOut(mapTextId: string): TextFadeOut {
 
 export function textMove(mapTextId: string, long: number, lat: number): TextMove {
   return { type: "TextMove", mapTextId, newCoordinates: [long, lat] }
+}
+
+export function textFontSize(mapTextId: string, newFontSize: string): TextFontSize {
+  return { type: "TextFontSize", mapTextId, newFontSize }
 }
 
 export function highlightFadeIn(highlight: MapHighlight): HighlightFadeIn {
@@ -241,6 +252,23 @@ export default function reducer(
         }
 
         return state
+      case 'TextFontSize':
+        const fontSizeTextIndex = state.textCollection.findIndex(({ id }) => id === action.mapTextId)
+        if (fontSizeTextIndex >= 0) {
+          const newTextCollection = [...state.textCollection]
+          const fontSizeText = newTextCollection[fontSizeTextIndex]
+          newTextCollection.splice(fontSizeTextIndex, 1, {
+            ...fontSizeText,
+            svgTextProps: {
+              ...fontSizeText.svgTextProps,
+              fontSize: action.newFontSize
+            }
+          })
+
+          return { ...state, textCollection: newTextCollection }
+        }
+
+        return state
       case 'HighlightFadeIn':
         const toHighlightIndex = state.highlightCollection.findIndex(({ id }) => id === action.highlight.id)
         const curToHighlight = state.highlightCollection[toHighlightIndex] ?? action.highlight
@@ -320,6 +348,19 @@ export default function reducer(
                   newState.textCollection = newState.textCollection.toSpliced(moveTextIndex, 1, {
                     ...moveText,
                     coordinates: transition.newCoordinates
+                  })
+                }
+                break;
+              case "TextFontSize":
+                const fontSizeTextIndex = newState.textCollection.findIndex(({ id }) => id === transition.mapTextId)
+                if (fontSizeTextIndex >= 0) {
+                  const fontSizeText = newState.textCollection[fontSizeTextIndex]
+                  newState.textCollection = newState.textCollection.toSpliced(fontSizeTextIndex, 1, {
+                    ...fontSizeText,
+                    svgTextProps: {
+                      ...fontSizeText.svgTextProps,
+                      fontSize: transition.newFontSize
+                    }
                   })
                 }
                 break;

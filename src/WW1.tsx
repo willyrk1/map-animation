@@ -1,4 +1,4 @@
-import { countryFadeIn, countryReplace, MapTransitionList, textFadeIn, textFadeOut, textMove, viewCenterChange, zoomChange, highlightFadeIn, highlightFadeOut } from './mapReducer';
+import { countryFadeIn, countryReplace, MapTransitionList, textFadeIn, textFadeOut, textMove, textFontSize, viewCenterChange, zoomChange, highlightFadeIn, highlightFadeOut } from './mapReducer';
 import { CountryDetails, position2Spaced } from './utility';
 import MapAnimation from './MapAnimation';
 import { getCountriesHighRes, getInitialMapText, baseText, modernColorMap, summaryText, countryHighlight, areaHighlight } from './countries';
@@ -112,6 +112,20 @@ export const transitions: MapTransitionList = [
     textFadeIn(baseText('Belarus', 27.8206206153948, 53.2, { svgTextProps: { fontSize: '130%' } })),
     textFadeIn(baseText('Moldova', 28.5, 47.3, { svgTextProps: { fontSize: '85%', transform: `rotate(45 ${position2Spaced([28.5, 47.3])})` } })),
     textFadeIn(baseText('Poland', 19.4, 52, { svgTextProps: { fontSize: '130%', style: { fill: 'black' } } })),
+    textFadeIn(baseText('France', 2.6, 48.1, { svgTextProps: { fontSize: '150%' } })),
+    textFadeIn(baseText('Germany', 10.5, 51.8, { svgTextProps: { fontSize: '150%', style: { fill: 'white' } } })),
+    textFadeIn(baseText('United Kingdom', -1.8, 52.6, { text: ['United', 'Kingdom'], svgTextProps: { fontSize: '90%' } })),
+    textFadeIn(baseText('Spain', -2.8, 42)),
+    textFadeIn(baseText('Italy', 10.1, 45)),
+    textFadeIn(baseText('Sweden', 14.2, 57.9, { svgTextProps: { style: { fill: 'black' } } })),
+    textFadeIn(baseText('Romania', 24.9, 45.8, { svgTextProps: { style: { fill: 'black' } } })),
+    textFadeIn(baseText('Bulgaria', 25.1, 42.6)),
+    textFadeIn(baseText('Norway', 8.4, 59.6)),
+    textFadeIn(baseText('Ireland', -7.8, 53, { svgTextProps: { fontSize: '85%' } })),
+    textFadeIn(baseText('Czechia', 15.5, 49.6)),
+    textFadeIn(baseText('Austria', 14.7, 47.6)),
+    textFadeIn(baseText('Hungary', 19.1, 47.1)),
+    textFadeIn(baseText('Serbia', 21, 44)),
   ],
   // ------------------------------------------------------------------- 3
   () => [
@@ -166,9 +180,9 @@ export const transitions: MapTransitionList = [
   ],
   // ------------------------------------------------------------------- 9
   () => [
-    textFadeOut('Poland'),
     highlightFadeOut('Poland'),
-    textFadeIn(baseText('Poland2', 16.5, 53.2, { text: 'Poland', svgTextProps: { fontSize: '120%', style: { fill: 'black' } } })),
+    textMove('Poland', 16.5, 53.2),
+    textFontSize('Poland', '120%'),
     countryReplace('RussiaUkraine'),
     countryFadeIn('RussiaPoland', russiaPolandUnion),
   ],
@@ -203,13 +217,20 @@ export const transitions: MapTransitionList = [
     zoomChange(13),
     textMove('Russian Empire2', 25, 52),
     textFadeOut('RussiaCaucusus'),
+    textFadeOut('Germany'),
     textFadeIn(baseText('German Empire', 10.5, 51.8, { svgTextProps: { fontSize: '150%' } })),
     textFadeIn(baseText('Denmark', 9.2, 56.2, { svgTextProps: { fontSize: '80%' } })),
-    textFadeIn(baseText('France', 2.6, 48.1, { svgTextProps: { fontSize: '150%' } })),
     textFadeIn(summaryText('GermanyInitial', 3, 54, [
       'Germany was also an empire', 'after unifying 43 years', 'earlier. It included South', 'Jutland (Denmark),', 'Alsace-Lorraine (France)...'
     ])),
     highlightFadeIn(areaHighlight('AlsaceLorraineSouthJutland', alsaceLorraineSouthJutlandUnion)),
+    textFadeIn(baseText('Slovakia', 19.5, 48.75, { svgTextProps: { fontSize: '140%', style: { fill: 'black' } } })),
+    textFadeIn(baseText('Switzerland', 8.2, 46.8, { svgTextProps: { style: { fill: 'black' } } })),
+    textFadeIn(baseText('Belgium', 4.7, 50.6, { svgTextProps: { style: { fill: 'black' } } })),
+    textFontSize('Austria', '140%'),
+    textFontSize('Hungary', '140%'),
+    textFontSize('Czechia', '140%'),
+    textFontSize('Romania', '140%'),
   ],
   // ------------------------------------------------------------------- 13
   () => [
@@ -226,8 +247,7 @@ export const transitions: MapTransitionList = [
   // ------------------------------------------------------------------- 15
   () => [
     highlightFadeOut('PolandWestNorth'),
-    textFadeOut('Poland2'),
-    textFadeIn(baseText('Poland', 21.4, 49.75, { svgTextProps: { fontSize: '120%', style: { fill: 'black' } } })),
+    textMove('Poland', 21.4, 49.75),
     textMove('German Empire', 13, 52.3),
     countryReplace('GermanyFranceDenmark'),
     countryFadeIn('GermanyPoland', germanyPolandUnion),
@@ -252,18 +272,12 @@ export const transitions: MapTransitionList = [
     textMove('France', 4, 46.9),
     textMove('German Empire', 9.3, 50.4),
     textMove('Russian Empire2', 29, 51),
-    textFadeIn(baseText('Austria', 14.7, 47.6, { svgTextProps: { fontSize: '140%' } })),
-    textFadeIn(baseText('Hungary', 19.1, 47.1, { svgTextProps: { fontSize: '140%', style: { fill: 'black' } } })),
-    textFadeIn(baseText('Czechia', 15.5, 49.6, { svgTextProps: { fontSize: '140%' } })),
-    textFadeIn(baseText('Slovakia', 19.5, 48.75, { svgTextProps: { fontSize: '140%', style: { fill: 'black' } } })),
+    textFontSize('Serbia', '140%'),
+    textFontSize('Bulgaria', '140%'),
+    textFontSize('Italy', '140%'),
     textFadeIn(baseText('Slovenia', 14.6, 46)),
     textFadeIn(baseText('Croatia', 16.6, 45.6)),
     textFadeIn(baseText('Bosnia', 17.8, 44.3, { text: ['Bosnia and', 'Herzegovina'], svgTextProps: { style: { fill: 'black' } } })),
-    textFadeIn(baseText('Italy', 10.1, 45, { svgTextProps: { fontSize: '140%' } })),
-    textFadeIn(baseText('Switzerland', 8.2, 46.8, { svgTextProps: { style: { fill: 'black' } } })),
-    textFadeIn(baseText('Romania', 24.9, 45.8, { svgTextProps: { fontSize: '140%', style: { fill: 'black' } } })),
-    textFadeIn(baseText('Serbia', 21, 44, { svgTextProps: { fontSize: '140%', style: { fill: 'black' } } })),
-    textFadeIn(baseText('Bulgaria', 25.1, 42.6, { svgTextProps: { fontSize: '140%', style: { fill: 'black' } } })),
     textFadeIn(baseText('Montenegro', 19.2, 42.9, { text: ['Monte-', 'negro'], svgTextProps: { fontSize: '75%' } })),
     textFadeIn(baseText('Kosovo', 20.9, 42.5, { svgTextProps: { fontSize: '80%' } })),
     textFadeIn(baseText('North Macedonia', 21.7, 41.6, { text: ['North', 'Macedonia'], svgTextProps: { fontSize: '90%', style: { fill: 'black' } } })),
@@ -456,9 +470,9 @@ export const transitions: MapTransitionList = [
     zoomChange(40),
     textMove('Austria-Hungary', 17.6, 43.85),
     textMove('Italy', 13.4, 42.5),
-    textFadeIn(baseText('Serbia', 21.06, 43.3, { svgTextProps: { fontSize: '140%', style: { fill: 'black' } } })),
+    textFadeIn(baseText('Serbia', 21.06, 43.3, { svgTextProps: { fontSize: '140%' } })),
     textFadeIn(baseText('Montenegro', 19.2, 42.9)),
-    textFadeIn(baseText('Bulgaria', 23.22, 42.6, { svgTextProps: { fontSize: '140%', style: { fill: 'black' } } })),
+    textFadeIn(baseText('Bulgaria', 23.22, 42.6, { svgTextProps: { fontSize: '140%' } })),
     textFadeIn(baseText('Romania', 23.37, 44.55, { svgTextProps: { fontSize: '140%', style: { fill: 'black' } } })),
     textFadeIn(baseText('Albania', 19.93, 42.08, { svgTextProps: { fontSize: '90%' } })),
   ],
