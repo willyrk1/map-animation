@@ -2,12 +2,11 @@ import { Position } from "geojson"
 import { SteplessMapState } from "../mapReducer"
 import { union } from "../utility"
 import getAHRomaniaUnion from "./ahRomaniaUnion"
-import galiciaJson from "../data/Galicia.json"
-import bukovinaJson from "../data/Bukovina.json"
+import getGaliciaBukovinaUnion from "./galiciaBukovinaUnion"
 
 let ahFinalUnion: Array<Array<Position>>
 
 export default function getAHFinalUnion(state: SteplessMapState) {
   if (ahFinalUnion) return ahFinalUnion
-  return ahFinalUnion = union(getAHRomaniaUnion(state), galiciaJson, bukovinaJson)
+  return ahFinalUnion = union(getAHRomaniaUnion(state), getGaliciaBukovinaUnion())
 }

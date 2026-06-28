@@ -1,7 +1,7 @@
 import { FeatureCollection } from "geojson";
 import modernGeoJson from "./data/custom.midres.geo.json"
 import { geoJson2CountryDetails } from "./utility";
-import { MapText } from "./mapReducer";
+import { MapHighlight, MapText } from "./mapReducer";
 
 export function getCountriesHighRes() {
   return geoJson2CountryDetails(modernGeoJson as FeatureCollection)
@@ -17,6 +17,22 @@ export function summaryText(id: string, long: number, lat: number, text: Require
     includeBackground: true,
     ...baseText(id, long, lat, { text, svgTextProps: { className: 'summary', ...svgTextProps }, ...rest })
   }
+}
+
+// Builds a MapHighlight that outlines an existing country's current shape
+// (looked up by name from state.countries at render time). Used to draw the
+// reader's eye to whichever country is about to change in the next step.
+export function countryHighlight(countryName: string, svgPathProps?: MapHighlight['svgPathProps']): MapHighlight {
+  return { id: countryName, svgPathProps }
+}
+
+// Builds a MapHighlight that outlines an arbitrary custom shape instead of a
+// single existing country — e.g. a precomputed union of several countries'
+// borders, to preview an upcoming merge whose combined outline doesn't match
+// any one country's current shape (such as the *Union variables already
+// computed in WW1.tsx for the matching countryFadeIn call).
+export function areaHighlight(id: string, coordinates: Required<MapHighlight>['coordinates'], svgPathProps?: MapHighlight['svgPathProps']): MapHighlight {
+  return { id, coordinates, svgPathProps }
 }
 
 export function getInitialMapText(): Array<MapText> {

@@ -4,6 +4,7 @@ import { CountryDetails } from "./utility";
 export interface MapState {
   countries: Array<CountryDetails>
   textCollection: Array<MapText>
+  highlightCollection: Array<MapHighlight>
   viewCenter: Position
   zoom: number
   step: number
@@ -32,6 +33,8 @@ export type MapAction =
   | (TextFadeIn & { opacity: number })
   | (TextFadeOut & { opacity: number })
   | TextMove
+  | (HighlightFadeIn & { opacity: number })
+  | (HighlightFadeOut & { opacity: number })
 
 
 interface ViewCenterChange {
@@ -71,7 +74,31 @@ export interface MapText {
   includeBackground?: boolean
 }
 
-export type MapTransition = CountryReplace | CountryFadeIn | ViewCenterChange | ZoomChange | TextFadeIn | TextFadeOut | TextMove
+interface HighlightFadeIn {
+  type: "HighlightFadeIn"
+  highlight: MapHighlight
+}
+
+interface HighlightFadeOut {
+  type: "HighlightFadeOut"
+  id: string
+}
+
+// An outline traced around either:
+//   - an existing country's current shape, looked up by name (`id`) from
+//     state.countries at render time, so it automatically tracks whatever
+//     that country's geometry currently is — or
+//   - an arbitrary custom shape, when `coordinates` is provided directly
+//     (e.g. a precomputed union of several countries' borders, to preview an
+//     upcoming merge that doesn't match any single country's current shape).
+// Used to draw the reader's eye to whatever is about to change next.
+export interface MapHighlight {
+  id: string
+  coordinates?: Position[][]
+  svgPathProps?: React.SVGProps<SVGPathElement>
+}
+
+export type MapTransition = CountryReplace | CountryFadeIn | ViewCenterChange | ZoomChange | TextFadeIn | TextFadeOut | TextMove | HighlightFadeIn | HighlightFadeOut
 
 export type MapTransitionList = Array<(state: SteplessMapState) => MapTransition | Array<MapTransition>>
 
@@ -101,6 +128,14 @@ export function textFadeOut(mapTextId: string): TextFadeOut {
 
 export function textMove(mapTextId: string, long: number, lat: number): TextMove {
   return { type: "TextMove", mapTextId, newCoordinates: [long, lat] }
+}
+
+export function highlightFadeIn(highlight: MapHighlight): HighlightFadeIn {
+  return { type: "HighlightFadeIn", highlight }
+}
+
+export function highlightFadeOut(id: string): HighlightFadeOut {
+  return { type: "HighlightFadeOut", id }
 }
 
 export default function reducer(
@@ -206,6 +241,47 @@ export default function reducer(
         }
 
         return state
+      case 'HighlightFadeIn':
+        const toHighlightIndex = state.highlightCollection.findIndex(({ id }) => id === action.highlight.id)
+        const curToHighlight = state.highlightCollection[toHighlightIndex] ?? action.highlight
+        const newToHighlight = {
+          ...curToHighlight,
+          svgPathProps: {
+            ...curToHighlight.svgPathProps,
+            opacity: action.opacity
+          }
+        }
+
+        return {
+          ...state,
+          highlightCollection: state.highlightCollection.toSpliced(
+            toHighlightIndex >= 0 ? toHighlightIndex : state.highlightCollection.length,
+            1,
+            newToHighlight
+          )
+        }
+      case 'HighlightFadeOut':
+        const fromHighlightIndex = state.highlightCollection.findIndex(({ id }) => id === action.id)
+        if (fromHighlightIndex >= 0) {
+          const newHighlightCollection = [...state.highlightCollection]
+          if (action.opacity >= 1) {
+            newHighlightCollection.splice(fromHighlightIndex, 1)
+          }
+          else {
+            const fromHighlight = newHighlightCollection[fromHighlightIndex]
+            newHighlightCollection.splice(fromHighlightIndex, 1, {
+              ...fromHighlight,
+              svgPathProps: {
+                ...fromHighlight.svgPathProps,
+                opacity: 1 - action.opacity,
+              }
+            })
+          }
+
+          return { ...state, highlightCollection: newHighlightCollection }
+        }
+
+        return state
       case "incrementStep":
         return { ...state, step: state.step + 1 }
       case "reInit": {
@@ -246,6 +322,12 @@ export default function reducer(
                     coordinates: transition.newCoordinates
                   })
                 }
+                break;
+              case "HighlightFadeIn":
+                newState.highlightCollection = newState.highlightCollection.concat(transition.highlight)
+                break;
+              case "HighlightFadeOut":
+                newState.highlightCollection = newState.highlightCollection.filter(({ id }) => id !== transition.id)
                 break;
               default:
                 const _exhaustiveCheck: never = transition;

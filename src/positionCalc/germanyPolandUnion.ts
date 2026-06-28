@@ -1,15 +1,12 @@
 import { Position } from "geojson"
 import getGermanyFranceDenmarkUnion from "./germanyFranceDenmarkUnion"
-import getRussiaPolandUnion from "./russiaPolandUnion"
+import getPolandWestNorthUnion from "./polandWestNorthUnion"
 import { SteplessMapState } from "../mapReducer"
-import { difference, getCountryByName, union } from "../utility"
-import galiciaJson from "../data/Galicia.json"
+import { union } from "../utility"
 
 let germanyPolandUnion: Array<Array<Position>>
 
 export default function getGermanyPolandUnion(state: SteplessMapState) {
   if (germanyPolandUnion) return germanyPolandUnion
-  const { countries } = state
-  const polandCoordinates = getCountryByName(countries, 'Poland').coordinates
-  return germanyPolandUnion = union(getGermanyFranceDenmarkUnion(state), difference(polandCoordinates, getRussiaPolandUnion(state), galiciaJson))
+  return germanyPolandUnion = union(getGermanyFranceDenmarkUnion(state), getPolandWestNorthUnion(state))
 }

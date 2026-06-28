@@ -5,10 +5,11 @@ import { CountryDetails, lat2y } from "./utility.ts";
 import mapReducer, {
   countryFadeIn,
   countryReplace,
-  MapAction, MapState, MapText, MapTransition, MapTransitionList, textFadeIn, textFadeOut
+  MapAction, MapHighlight, MapState, MapText, MapTransition, MapTransitionList, textFadeIn, textFadeOut, highlightFadeIn, highlightFadeOut
 } from './mapReducer.ts';
 import { Position } from 'geojson';
 import SvgTextBox from './SvgTextBox.tsx';
+import CountryHighlight from './CountryHighlight.tsx';
 
 interface MapAnimationProps {
   transitions: MapTransitionList
@@ -28,7 +29,7 @@ export default function MapAnimation(props: MapAnimationProps) {
     mapReducer(transitions, toWithPathProps),
     { countries: initialCountries.map(toWithPathProps), ...initialRest, step: 0 }
   )
-  const { countries, textCollection, viewCenter, zoom, step } = state
+  const { countries, textCollection, highlightCollection, viewCenter, zoom, step } = state
 
   const viewBox = React.useMemo(() => {
     const height = WORLDHEIGHT / zoom
@@ -93,6 +94,18 @@ export default function MapAnimation(props: MapAnimationProps) {
     }
   }
 
+  function animateHighlightFadeIn(highlight: MapHighlight) {
+    return function (t: number): MapAction {
+      return { ...highlightFadeIn(highlight), opacity: t }
+    }
+  }
+
+  function animateHighlightFadeOut(id: string) {
+    return function (t: number): MapAction {
+      return { ...highlightFadeOut(id), opacity: t }
+    }
+  }
+
   function animateTextMove(mapTextId: string, targetCoordinates: Position) {
     const startCoordinates = textCollection.find(({ id }: MapText) => id === mapTextId)!.coordinates
     return function (t: number): MapAction {
@@ -138,6 +151,10 @@ export default function MapAnimation(props: MapAnimationProps) {
         return animateTextFadeOut(transition.mapTextId)
       case "TextMove":
         return animateTextMove(transition.mapTextId, transition.newCoordinates)
+      case "HighlightFadeIn":
+        return animateHighlightFadeIn(transition.highlight)
+      case "HighlightFadeOut":
+        return animateHighlightFadeOut(transition.id)
       default:
         const _exhaustiveCheck: never = transition;
         return _exhaustiveCheck;
@@ -191,6 +208,13 @@ export default function MapAnimation(props: MapAnimationProps) {
               />
             ))
           })}
+          <g>
+            {highlightCollection.map(highlight => {
+              const coordinates = highlight.coordinates ?? countries.find(({ name }) => name === highlight.id)?.coordinates
+              if (!coordinates) return null
+              return <CountryHighlight key={highlight.id} highlight={highlight} coordinates={coordinates} zoom={zoom} />
+            })}
+          </g>
           <g fontSize={6 / zoom}>
             {textCollection.map(mapText => (
               <SvgTextBox key={mapText.id} {...mapText} zoom={zoom} />
