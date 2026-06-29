@@ -1,4 +1,4 @@
-import { countryFadeIn, countryReplace, MapTransitionList, textFadeIn, textFadeOut, textMove, textFontSize, viewCenterChange, zoomChange, highlightFadeIn, highlightFadeOut } from './mapReducer';
+import { countryFadeIn, countryReplace, mapStep, MapSteps, textFadeIn, textFadeOut, textMove, textFontSize, viewCenterChange, zoomChange, highlightFadeIn, highlightFadeOut } from './mapReducer';
 import { CountryDetails, position2Spaced } from './utility';
 import MapAnimation from './MapAnimation';
 import { getCountriesHighRes, getInitialMapText, baseText, modernColorMap, summaryText, countryHighlight, areaHighlight } from './countries';
@@ -79,26 +79,26 @@ const serbiaFinalUnion = getSerbiaFinalUnion(initialState)
 const ottomanMiddleEastUnion = getOttomanMiddleEastUnion(initialState)
 const levantUnion = getLevantUnion(initialState)
 
-export const transitions: MapTransitionList = [
+export const steps: MapSteps = [
   // ------------------------------------------------------------------- 0
-  () => [
+  mapStep([
     textFadeOut('StartSummary'),
     textFadeOut('Russia'),
     textFadeIn(summaryText('RussianEmpireSummary', 53, 63, ['Russia had been an empire for', 'nearly two centuries and', 'encompassed modern-day Finland...'])),
     textFadeIn(baseText('Russian Empire', 44, 57.24804212417763, { text: ['Russian', 'Empire'], svgTextProps: { fontSize: '200%' } })),
     textFadeIn(baseText('Finland', 26, 62.5902121295499)),
     highlightFadeIn(countryHighlight('Finland')),
-  ],
+  ], 4000),
   // ------------------------------------------------------------------- 1
-  () => [
+  mapStep([
     textFadeOut('Finland'),
     highlightFadeOut('Finland'),
     countryReplace('Russia'),
     countryReplace('Finland'),
     countryFadeIn('RussiaFinland', russiaFinlandUnion)
-  ],
+  ]),
   // ------------------------------------------------------------------- 2
-  () => [
+  mapStep([
     viewCenterChange(15, 52),
     zoomChange(8),
     textFadeOut('RussianEmpireSummary'),
@@ -126,9 +126,9 @@ export const transitions: MapTransitionList = [
     textFadeIn(baseText('Austria', 14.7, 47.6)),
     textFadeIn(baseText('Hungary', 19.1, 47.1)),
     textFadeIn(baseText('Serbia', 21, 44)),
-  ],
+  ], 1900),
   // ------------------------------------------------------------------- 3
-  () => [
+  mapStep([
     textFadeOut('Estonia'),
     textFadeOut('Latvia'),
     textFadeOut('Lithuania'),
@@ -137,32 +137,32 @@ export const transitions: MapTransitionList = [
     countryReplace('Estonia'),
     countryReplace('Latvia'),
     countryFadeIn('RussiaBaltics', russiaBalticsUnion)
-  ],
+  ]),
   // ------------------------------------------------------------------- 4
-  () => [
+  mapStep([
     textFadeOut('RussiaBalticSummary'),
     textFadeOut('Russian Empire'),
     textFadeIn(baseText('Russian Empire2', 36, 57, { text: 'Russian Empire', svgTextProps: { fontSize: '200%' } })),
     textFadeIn(summaryText('RussiaBelarusSummary', 37, 54, 'Belarus...')),
     highlightFadeIn(countryHighlight('Belarus')),
-  ],
+  ], 1500),
   // ------------------------------------------------------------------- 5
-  () => [
+  mapStep([
     textFadeOut('Belarus'),
     highlightFadeOut('Belarus'),
     countryReplace('RussiaBaltics'),
     countryReplace('Belarus'),
     countryFadeIn('RussiaBelarus', russiaBelarusUnion)
-  ],
+  ]),
   // ------------------------------------------------------------------- 6
-  () => [
+  mapStep([
     textFadeOut('RussiaBelarusSummary'),
     textFadeIn(summaryText('RussiaUkraineSummary', 33.5, 54, 'Moldova and most of Ukraine...')),
     highlightFadeIn(countryHighlight('Ukraine')),
     highlightFadeIn(countryHighlight('Moldova')),
-  ],
+  ], 2500),
   // ------------------------------------------------------------------- 7
-  () => [
+  mapStep([
     textFadeOut('Ukraine'),
     textFadeOut('Moldova'),
     highlightFadeOut('Ukraine'),
@@ -171,23 +171,23 @@ export const transitions: MapTransitionList = [
     countryReplace('RussiaBelarus'),
     countryReplace('Moldova'),
     countryFadeIn('RussiaUkraine', russiaUkraineUnion)
-  ],
+  ]),
   // ------------------------------------------------------------------- 8
-  () => [
+  mapStep([
     textFadeOut('RussiaUkraineSummary'),
     textFadeIn(summaryText('RussiaPolandSummary', 31, 53, ['Eastern Poland', '(Congress Poland)...'])),
     highlightFadeIn(countryHighlight('Poland')),
-  ],
+  ], 2100),
   // ------------------------------------------------------------------- 9
-  () => [
+  mapStep([
     highlightFadeOut('Poland'),
     textMove('Poland', 16.5, 53.2),
     textFontSize('Poland', '120%'),
     countryReplace('RussiaUkraine'),
     countryFadeIn('RussiaPoland', russiaPolandUnion),
-  ],
+  ]),
   // ------------------------------------------------------------------- 10
-  () => [
+  mapStep([
     viewCenterChange(44.5, 43.8),
     zoomChange(10),
     textMove('Russian Empire2', 40, 49),
@@ -198,9 +198,9 @@ export const transitions: MapTransitionList = [
     textFadeIn(baseText('Armenia', 44.7, 40.4, { svgTextProps: { fontSize: '90%', transform: `rotate(45 ${position2Spaced([44.7, 40.4])})` } })),
     textFadeIn(baseText('Turkey', 35.3, 39, { svgTextProps: { fontSize: '150%' } })),
     highlightFadeIn(areaHighlight('Caucasus', caucasusUnion)),
-  ],
+  ], 2300),
   // ------------------------------------------------------------------- 11
-  () => [
+  mapStep([
     textFadeOut('Georgia'),
     textFadeOut('Azerbaijan'),
     textFadeOut('Armenia'),
@@ -210,9 +210,9 @@ export const transitions: MapTransitionList = [
     countryReplace('Azerbaijan'),
     countryReplace('Georgia'),
     countryFadeIn('RussiaMiddleEast', russiaMiddleEastUnion),
-  ],
+  ]),
   // ------------------------------------------------------------------- 12
-  () => [
+  mapStep([
     viewCenterChange(15, 52),
     zoomChange(13),
     textMove('Russian Empire2', 25, 52),
@@ -231,42 +231,42 @@ export const transitions: MapTransitionList = [
     textFontSize('Hungary', '140%'),
     textFontSize('Czechia', '140%'),
     textFontSize('Romania', '140%'),
-  ],
+  ], 7000),
   // ------------------------------------------------------------------- 13
-  () => [
+  mapStep([
     highlightFadeOut('AlsaceLorraineSouthJutland'),
     countryReplace('Germany'),
     countryFadeIn('GermanyFranceDenmark', germanyFranceDenmarkUnion),
-  ],
+  ]),
   // ------------------------------------------------------------------- 14
-  () => [
+  mapStep([
     textFadeOut('GermanyInitial'),
     textFadeIn(summaryText('GermanyPoland', 15.4, 55.5, ['Western and', 'northern Poland...'])),
     highlightFadeIn(areaHighlight('PolandWestNorth', polandWestNorthUnion)),
-  ],
+  ], 2100),
   // ------------------------------------------------------------------- 15
-  () => [
+  mapStep([
     highlightFadeOut('PolandWestNorth'),
     textMove('Poland', 21.4, 49.75),
     textMove('German Empire', 13, 52.3),
     countryReplace('GermanyFranceDenmark'),
     countryFadeIn('GermanyPoland', germanyPolandUnion),
-  ],
+  ]),
   // ------------------------------------------------------------------- 16
-  () => [
+  mapStep([
     textFadeOut('GermanyPoland'),
     textFadeIn(summaryText('EastGermany', 16, 56, ['...Kaliningrad (Russia),', 'and Memel (Lithuania).'])),
     highlightFadeIn(areaHighlight('KaliningradMemel', kaliningradMemelUnion)),
-  ],
+  ], 2300),
   // ------------------------------------------------------------------- 17
-  () => [
+  mapStep([
     highlightFadeOut('KaliningradMemel'),
     countryReplace('GermanyPoland'),
     countryReplace('Lithuania'),
     countryFadeIn('GermanyFinal', germanyFinalUnion),
-  ],
+  ]),
   // ------------------------------------------------------------------- 18
-  () => [
+  mapStep([
     viewCenterChange(20.7, 46.8),
     zoomChange(14.7),
     textMove('France', 4, 46.9),
@@ -286,9 +286,9 @@ export const transitions: MapTransitionList = [
     textFadeOut('EastGermany'),
     textFadeIn(summaryText('AustriaEmpire', 16, 44.5, ['In central Europe, Austria and Hungary are joined in', 'an empire led by the centuries-old Habsburg dynasty.'])),
     highlightFadeIn(areaHighlight('AustriaHungary', austriaHungaryUnion)),
-  ],
+  ], 5400),
   // ------------------------------------------------------------------- 19
-  () => [
+  mapStep([
     highlightFadeOut('AustriaHungary'),
     countryReplace('Austria'),
     countryReplace('Hungary'),
@@ -296,15 +296,15 @@ export const transitions: MapTransitionList = [
     textFadeOut('Austria'),
     textFadeOut('Hungary'),
     textFadeIn(baseText('Austria-Hungary', 17, 47.3, { svgTextProps: { fontSize: '140%' } })),
-  ],
+  ]),
   // ------------------------------------------------------------------- 20
-  () => [
+  mapStep([
     textFadeOut('AustriaEmpire'),
     textFadeIn(summaryText('AHCzechoslovakia', 16, 44.8, 'It included its neighbors to the north...')),
     highlightFadeIn(areaHighlight('CzechSlovakia', czechSlovakiaUnion)),
-  ],
+  ], 2700),
   // ------------------------------------------------------------------- 21
-  () => [
+  mapStep([
     highlightFadeOut('CzechSlovakia'),
     countryReplace('AustriaHungary'),
     countryReplace('Czechia'),
@@ -313,15 +313,15 @@ export const transitions: MapTransitionList = [
     textFadeOut('Czechia'),
     textFadeOut('Slovakia'),
     textMove('Austria-Hungary', 17.3, 48.1),
-  ],
+  ]),
   // ------------------------------------------------------------------- 22
-  () => [
+  mapStep([
     textFadeOut('AHCzechoslovakia'),
     textFadeIn(summaryText('AHBalkans', 24, 44.8, 'The western Balkan states...')),
     highlightFadeIn(areaHighlight('BalkanTrio', balkanTrioUnion)),
-  ],
+  ], 2100),
   // ------------------------------------------------------------------- 23
-  () => [
+  mapStep([
     highlightFadeOut('BalkanTrio'),
     countryReplace('AustriaHungaryCZ'),
     countryReplace('Slovenia'),
@@ -332,40 +332,40 @@ export const transitions: MapTransitionList = [
     textFadeOut('Croatia'),
     textFadeOut('Bosnia'),
     textMove('Austria-Hungary', 17.2, 47.2),
-  ],
+  ]),
   // ------------------------------------------------------------------- 24
-  () => [
+  mapStep([
     textFadeOut('AHBalkans'),
     textFadeIn(summaryText('Trentino', 10.9, 48.4, 'Trentino and South Tyrol (Italy)...')),
     highlightFadeIn(areaHighlight('Trentino', trentinoSouthTyrolJson)),
-  ],
+  ], 2500),
   // ------------------------------------------------------------------- 25
-  () => [
+  mapStep([
     highlightFadeOut('Trentino'),
     countryReplace('AustriaHungaryBalkans'),
     countryFadeIn('AustriaHungaryItaly', ahItalyUnion),
-  ],
+  ]),
   // ------------------------------------------------------------------- 26
-  () => [
+  mapStep([
     textFadeOut('Trentino'),
     textFadeIn(summaryText('Vojvodina', 24.7, 45.7, 'Vojvodina (Serbia)...')),
     highlightFadeIn(areaHighlight('Vojvodina', vojvodinaJson)),
-  ],
+  ], 1700),
   // ------------------------------------------------------------------- 27
-  () => [
+  mapStep([
     highlightFadeOut('Vojvodina'),
     countryReplace('AustriaHungaryItaly'),
     countryFadeIn('AustriaHungarySerbia', ahSerbiaUnion),
     textMove('Serbia', 21, 43.8),
-  ],
+  ]),
   // ------------------------------------------------------------------- 28
-  () => [
+  mapStep([
     textFadeOut('Vojvodina'),
     textFadeIn(summaryText('AHRomania', 26, 49, 'Much of Romania...')),
     highlightFadeIn(areaHighlight('ExRomania', exRomaniaJson)),
-  ],
+  ], 1900),
   // ------------------------------------------------------------------- 29
-  () => [
+  mapStep([
     highlightFadeOut('ExRomania'),
     countryReplace('AustriaHungarySerbia'),
     countryReplace('Romania'),
@@ -373,15 +373,15 @@ export const transitions: MapTransitionList = [
     countryFadeIn('AustriaHungaryRomania', ahRomaniaUnion),
     textMove('Romania', 25.8, 44.7),
     textMove('Austria-Hungary', 19, 47),
-  ],
+  ]),
   // ------------------------------------------------------------------- 30
-  () => [
+  mapStep([
     textFadeOut('AHRomania'),
     textFadeIn(summaryText('GaliciaBukovina', 23.5, 51.3, 'Galicia, and Bukovina.')),
     highlightFadeIn(areaHighlight('GaliciaBukovina', galiciaBukovinaUnion)),
-  ],
+  ], 1900),
   // ------------------------------------------------------------------- 31
-  () => [
+  mapStep([
     highlightFadeOut('GaliciaBukovina'),
     countryReplace('AustriaHungaryRomania'),
     countryReplace('Ukraine'),
@@ -390,9 +390,9 @@ export const transitions: MapTransitionList = [
     textFadeOut('Poland'),
     textFadeOut('Ukraine2'),
     textMove('Austria-Hungary', 19.5, 47.3),
-  ],
+  ]),
   // ------------------------------------------------------------------- 32
-  () => [
+  mapStep([
     viewCenterChange(24.2, 43.2),
     zoomChange(16),
     textFadeOut('GaliciaBukovina'),
@@ -400,9 +400,9 @@ export const transitions: MapTransitionList = [
     textMove('Italy', 12.16, 43),
     textMove('Turkey', 33, 39),
     highlightFadeIn(countryHighlight('Bulgaria')),
-  ],
+  ], 3800),
   // ------------------------------------------------------------------- 33
-  () => [
+  mapStep([
     highlightFadeOut('Bulgaria'),
     countryReplace('Bulgaria'),
     countryReplace('NewRomania'),
@@ -411,15 +411,15 @@ export const transitions: MapTransitionList = [
     countryFadeIn('OttomanEurope', ottomanEuropeUnion),
     countryFadeIn('BulgariaFinal', bulgariaUnion),
     textMove('North Macedonia', 21.55, 41.6),
-  ],
+  ]),
   // ------------------------------------------------------------------- 34
-  () => [
+  mapStep([
     textFadeOut('Bulgaria changes'),
     textFadeIn(summaryText('Serbia union', 25.7, 43.5, ['...as well as Serbia'])),
     highlightFadeIn(areaHighlight('SerbiaFinal', serbiaFinalUnion)),
-  ],
+  ], 2100),
   // ------------------------------------------------------------------- 35
-  () => [
+  mapStep([
     highlightFadeOut('SerbiaFinal'),
     countryReplace('Serbia'),
     countryReplace('North Macdeonia'),
@@ -428,9 +428,9 @@ export const transitions: MapTransitionList = [
     textFadeOut('Kosovo'),
     textFadeOut('North Macedonia'),
     textMove('Serbia', 21.3, 43),
-  ],
+  ]),
   // ------------------------------------------------------------------- 36
-  () => [
+  mapStep([
     viewCenterChange(40, 29),
     zoomChange(6.2),
     textFadeOut('Serbia union'),
@@ -447,9 +447,9 @@ export const transitions: MapTransitionList = [
     textFadeIn(baseText('Saudi Arabia', 43.6, 24.3, { svgTextProps: { fontSize: '120%', style: { fill: 'black' } } })),
     textFadeIn(baseText('Yemen', 47.1, 15.9)),
     highlightFadeIn(areaHighlight('Levant', levantUnion)),
-  ],
+  ], 5200),
   // ------------------------------------------------------------------- 37
-  () => [
+  mapStep([
     highlightFadeOut('Levant'),
     countryReplace('OttomanEurope'),
     countryReplace('Lebanon'),
@@ -463,9 +463,9 @@ export const transitions: MapTransitionList = [
     textFadeIn(baseText('Ottoman Empire', 39.5, 38, { text: ['Ottoman', 'Empire'], svgTextProps: { fontSize: '150%' } })),
     textMove('Saudi Arabia', 46, 23.5),
     textMove('Yemen', 49.3, 16.3),
-  ],
+  ]),
   // ------------------------------------------------------------------- 38
-  () => [
+  mapStep([
     viewCenterChange(18.39, 43.86),
     zoomChange(40),
     textMove('Austria-Hungary', 17.6, 43.85),
@@ -475,7 +475,7 @@ export const transitions: MapTransitionList = [
     textFadeIn(baseText('Bulgaria', 23.22, 42.6, { svgTextProps: { fontSize: '140%' } })),
     textFadeIn(baseText('Romania', 23.37, 44.55, { svgTextProps: { fontSize: '140%', style: { fill: 'black' } } })),
     textFadeIn(baseText('Albania', 19.93, 42.08, { svgTextProps: { fontSize: '90%' } })),
-  ],
+  ]),
 ]
 
 function toWithPathProps(country: CountryDetails): CountryDetails {
@@ -491,5 +491,5 @@ function toWithPathProps(country: CountryDetails): CountryDetails {
 }
 
 export default function WW1() {
-  return <MapAnimation transitions={transitions} initialState={initialState} toWithPathProps={toWithPathProps} />
+  return <MapAnimation steps={steps} initialState={initialState} toWithPathProps={toWithPathProps} />
 }

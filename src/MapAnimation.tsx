@@ -5,14 +5,15 @@ import { CountryDetails, lat2y } from "./utility.ts";
 import mapReducer, {
   countryFadeIn,
   countryReplace,
-  MapAction, MapHighlight, MapState, MapText, MapTransition, MapTransitionList, textFadeIn, textFadeOut, highlightFadeIn, highlightFadeOut
+  getStepDisplayMs,
+  MapAction, MapHighlight, MapState, MapSteps, MapText, MapTransition, textFadeIn, textFadeOut, highlightFadeIn, highlightFadeOut
 } from './mapReducer.ts';
 import { Position } from 'geojson';
 import SvgTextBox from './SvgTextBox.tsx';
 import CountryHighlight from './CountryHighlight.tsx';
 
 interface MapAnimationProps {
-  transitions: MapTransitionList
+  steps: MapSteps
   initialState: Omit<MapState, 'step'>
   toWithPathProps: (country: CountryDetails) => CountryDetails
 }
@@ -23,13 +24,22 @@ const [northLat, southLat] = [85, -60]
 const WORLDHEIGHT = lat2y(northLat) - lat2y(southLat)
 
 export default function MapAnimation(props: MapAnimationProps) {
-  const { transitions, initialState: { countries: initialCountries, ...initialRest }, toWithPathProps } = props
+  const { steps, initialState: { countries: initialCountries, ...initialRest }, toWithPathProps } = props
 
   const [state, dispatch] = React.useReducer(
-    mapReducer(transitions, toWithPathProps),
+    mapReducer(steps, toWithPathProps),
     { countries: initialCountries.map(toWithPathProps), ...initialRest, step: 0 }
   )
   const { countries, textCollection, highlightCollection, viewCenter, zoom, step } = state
+
+  // handleNext is captured by autostepping's setTimeout right after the
+  // previous step's incrementStep dispatch — before that step's fade-in
+  // animation has actually written its new text into state via
+  // requestAnimationFrame. animateTextMove/animateTextFontSize need the
+  // latest textCollection (not that stale render's), so they read through
+  // this ref instead of the destructured `textCollection` above.
+  const stateRef = React.useRef(state)
+  stateRef.current = state
 
   const viewBox = React.useMemo(() => {
     const height = WORLDHEIGHT / zoom
@@ -39,8 +49,13 @@ export default function MapAnimation(props: MapAnimationProps) {
   }, [viewCenter, zoom])
 
   const animationRef = React.useRef<number>();
+  const playTimerRef = React.useRef<number>();
+
+  const [isPlaying, setIsPlaying] = React.useState(false)
+  const [showSteps, setShowSteps] = React.useState(import.meta.env.DEV)
 
   const duration = 1000; // Duration in milliseconds (1 second)
+  const DEFAULT_PLAY_DELAY = 500; // Fallback pause when there's no prior step to read
 
   function animateViewCenterChange(startViewCenter: Position, targetViewCenter: Position) {
     return function (t: number): MapAction {
@@ -107,7 +122,7 @@ export default function MapAnimation(props: MapAnimationProps) {
   }
 
   function animateTextMove(mapTextId: string, targetCoordinates: Position) {
-    const startCoordinates = textCollection.find(({ id }: MapText) => id === mapTextId)!.coordinates
+    const startCoordinates = stateRef.current.textCollection.find(({ id }: MapText) => id === mapTextId)!.coordinates
     return function (t: number): MapAction {
       const newLong = startCoordinates[0] + (targetCoordinates[0] - startCoordinates[0]) * t;
       const newLat = startCoordinates[1] + (targetCoordinates[1] - startCoordinates[1]) * t;
@@ -117,7 +132,7 @@ export default function MapAnimation(props: MapAnimationProps) {
   }
 
   function animateTextFontSize(mapTextId: string, targetFontSize: string) {
-    const startFontSize = parseFloat(textCollection.find(({ id }: MapText) => id === mapTextId)!.svgTextProps?.fontSize as string ?? '100%')
+    const startFontSize = parseFloat(stateRef.current.textCollection.find(({ id }: MapText) => id === mapTextId)!.svgTextProps?.fontSize as string ?? '100%')
     const targetSize = parseFloat(targetFontSize)
     return function (t: number): MapAction {
       const newSize = startFontSize + (targetSize - startFontSize) * t;
@@ -152,9 +167,9 @@ export default function MapAnimation(props: MapAnimationProps) {
       case "CountryReplace":
         return animateCountryReplace(transition.name)
       case "ViewCenterChange":
-        return animateViewCenterChange(viewCenter, [transition.long, transition.lat])
+        return animateViewCenterChange(stateRef.current.viewCenter, [transition.long, transition.lat])
       case "ZoomChange":
-        return animateZoomChange(zoom, transition.newZoom)
+        return animateZoomChange(stateRef.current.zoom, transition.newZoom)
       case 'TextFadeIn':
         return animateTextFadeIn(transition.mapText)
       case "TextFadeOut":
@@ -178,37 +193,93 @@ export default function MapAnimation(props: MapAnimationProps) {
   }
 
   function handleNext() {
-    const transition = transitions[step](state);
-    startAnimation(getAnimationFunctions(transition))
+    if (step >= steps.length) return
+    startAnimation(getAnimationFunctions(steps[step].transitions))
 
     dispatch({ type: "incrementStep" })
   }
 
   function handleReInit() {
+    setIsPlaying(false)
     dispatch({ type: "reInit", countries: initialCountries.map(toWithPathProps), ...initialRest })
   }
 
   function handleDirectStep(newStep: number) {
+    setIsPlaying(false)
     dispatch({ type: "directStep", step: newStep, countries: initialCountries.map(toWithPathProps), ...initialRest })
   }
+
+  function handlePlayToggle() {
+    if (isPlaying) {
+      setIsPlaying(false)
+      return
+    }
+    if (step >= steps.length) return
+    handleNext()
+    setIsPlaying(true)
+  }
+
+  React.useEffect(() => {
+    if (!isPlaying) return
+
+    if (step >= steps.length) {
+      setIsPlaying(false)
+      return
+    }
+
+    const justRanStep = steps[step - 1]
+    const displayMs = justRanStep ? getStepDisplayMs(justRanStep) : DEFAULT_PLAY_DELAY
+    playTimerRef.current = window.setTimeout(handleNext, duration + displayMs)
+    return () => window.clearTimeout(playTimerRef.current)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPlaying, step])
 
   return (
     <div className='viewport'>
       <div className='container'>
         <div className='controls'>
-          <button onClick={handleNext}>NEXT</button>
-          <div>
-            <button onClick={handleReInit}>Start</button>
-            {transitions.map((_t, index) => (
-              <button
-                onClick={() => handleDirectStep(index)}
-                className={index === step - 1 ? 'current' : ''}
-                key={`step${index}`}
-              >
-                {index}
-              </button>
-            ))}
+          <div className='controlsBar'>
+            <button className='iconButton' onClick={handleReInit} title="Restart" aria-label="Restart">⟲</button>
+            <button
+              className='iconButton playButton'
+              onClick={handlePlayToggle}
+              disabled={!isPlaying && step >= steps.length}
+              title={isPlaying ? 'Stop' : 'Play'}
+              aria-label={isPlaying ? 'Stop' : 'Play'}
+            >
+              {isPlaying ? '⏹' : '▶'}
+            </button>
+            <button
+              className='iconButton'
+              onClick={handleNext}
+              disabled={step >= steps.length}
+              title="Next step"
+              aria-label="Next step"
+            >
+              {'⏭'}
+            </button>
+            <button
+              className={`iconButton stepsToggle ${showSteps ? 'active' : ''}`}
+              onClick={() => setShowSteps(show => !show)}
+              title="Toggle step picker"
+              aria-label="Toggle step picker"
+            >
+              {'•••'}
+            </button>
           </div>
+          {showSteps && (
+            <div className='stepPicker'>
+              {steps.map((_t, index) => (
+                <button
+                  onClick={() => handleDirectStep(index)}
+                  className={index === step - 1 ? 'current' : ''}
+                  key={`step${index}`}
+                >
+                  {index}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox={viewBox}>
           {countries.map(({ name, coordinates, pathProps }) => {

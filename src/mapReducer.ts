@@ -107,7 +107,24 @@ export interface MapHighlight {
 
 export type MapTransition = CountryReplace | CountryFadeIn | ViewCenterChange | ZoomChange | TextFadeIn | TextFadeOut | TextMove | TextFontSize | HighlightFadeIn | HighlightFadeOut
 
-export type MapTransitionList = Array<(state: SteplessMapState) => MapTransition | Array<MapTransition>>
+// displayMs is how long autostepping mode pauses on this step (so the user
+// has time to read it) before moving on to the next one.
+export interface MapStep {
+  transitions: Array<MapTransition>
+  displayMs?: number
+}
+
+export type MapSteps = Array<MapStep>
+
+export const DEFAULT_STEP_DISPLAY_MS = 1200
+
+export function mapStep(transitions: Array<MapTransition>, displayMs?: number): MapStep {
+  return { transitions, displayMs }
+}
+
+export function getStepDisplayMs(step: MapStep): number {
+  return step.displayMs ?? DEFAULT_STEP_DISPLAY_MS
+}
 
 export function countryReplace(name: string): CountryReplace {
   return { type: "CountryReplace", name }
@@ -150,7 +167,7 @@ export function highlightFadeOut(id: string): HighlightFadeOut {
 }
 
 export default function reducer(
-  transitions: MapTransitionList,
+  steps: MapSteps,
   toWithPathProps: (country: CountryDetails) => CountryDetails
 ): (state: MapState, action: MapAction | Array<MapAction>) => MapState {
   return function (state: MapState, actions: MapAction | Array<MapAction>): MapState {
@@ -318,10 +335,8 @@ export default function reducer(
       }
       case "directStep":
         const { type, step, ...newState } = action
-        transitions.slice(0, action.step + 1).forEach((transitionFn) => {
-          const transitionDefinition = transitionFn(newState)
-          const transitionDefinitions = Array.isArray(transitionDefinition) ? transitionDefinition : [transitionDefinition]
-          transitionDefinitions.forEach(transition => {
+        steps.slice(0, action.step + 1).forEach((mapStepItem) => {
+          mapStepItem.transitions.forEach(transition => {
             switch (transition.type) {
               case "CountryFadeIn":
                 newState.countries = newState.countries.concat(toWithPathProps(transition.country))
