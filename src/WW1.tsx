@@ -1,4 +1,4 @@
-import { countryFadeIn, countryReplace, mapStep, MapSteps, textFadeIn, textFadeOut, textMove, textFontSize, viewCenterChange, zoomChange, highlightFadeIn, highlightFadeOut } from './mapReducer';
+import { countryFadeIn, countryReplace, mapStep, MapSteps, textFadeIn, textFadeOut, textMove, textFontSize, textRotate, viewCenterChange, zoomChange, highlightFadeIn, highlightFadeOut } from './mapReducer';
 import { CountryDetails, position2Spaced } from './utility';
 import MapAnimation from './MapAnimation';
 import { getCountriesHighRes, getInitialMapText, baseText, modernColorMap, summaryText, countryHighlight, areaHighlight } from './countries';
@@ -78,6 +78,7 @@ const romaniaBulgariaUnion = getRomaniaBulgariaUnion(initialState)
 const serbiaFinalUnion = getSerbiaFinalUnion(initialState)
 const ottomanMiddleEastUnion = getOttomanMiddleEastUnion(initialState)
 const levantUnion = getLevantUnion(initialState)
+const bosniaCoordinates = initialState.countries.find(c => c.name === 'Bosnia and Herz.')?.coordinates ?? []
 
 export const steps: MapSteps = [
   // ------------------------------------------------------------------- 0
@@ -141,8 +142,7 @@ export const steps: MapSteps = [
   // ------------------------------------------------------------------- 4
   mapStep([
     textFadeOut('RussiaBalticSummary'),
-    textFadeOut('Russian Empire'),
-    textFadeIn(baseText('Russian Empire2', 36, 57, { text: 'Russian Empire', svgTextProps: { fontSize: '200%' } })),
+    textMove('Russian Empire', 36, 57),
     textFadeIn(summaryText('RussiaBelarusSummary', 37, 54, 'Belarus...')),
     highlightFadeIn(countryHighlight('Belarus')),
   ], 1500),
@@ -190,7 +190,7 @@ export const steps: MapSteps = [
   mapStep([
     viewCenterChange(44.5, 43.8),
     zoomChange(10),
-    textMove('Russian Empire2', 40, 49),
+    textMove('Russian Empire', 40, 49),
     textFadeOut('RussiaPolandSummary'),
     textFadeIn(summaryText('RussiaCaucusus', 52.8, 44, '...and the Caucasus region.')),
     textFadeIn(baseText('Georgia', 43.4, 42.1, { svgTextProps: { style: { fill: 'black' } } })),
@@ -215,7 +215,7 @@ export const steps: MapSteps = [
   mapStep([
     viewCenterChange(15, 52),
     zoomChange(13),
-    textMove('Russian Empire2', 25, 52),
+    textMove('Russian Empire', 25, 52),
     textFadeOut('RussiaCaucusus'),
     textFadeOut('Germany'),
     textFadeIn(baseText('German Empire', 10.5, 51.8, { svgTextProps: { fontSize: '150%' } })),
@@ -271,7 +271,7 @@ export const steps: MapSteps = [
     zoomChange(14.7),
     textMove('France', 4, 46.9),
     textMove('German Empire', 9.3, 50.4),
-    textMove('Russian Empire2', 29, 51),
+    textMove('Russian Empire', 29, 51),
     textFontSize('Serbia', '140%'),
     textFontSize('Bulgaria', '140%'),
     textFontSize('Italy', '140%'),
@@ -284,7 +284,7 @@ export const steps: MapSteps = [
     textFadeIn(baseText('Greece', 21.6, 39.9, { svgTextProps: { fontSize: '120%' } })),
     textFadeIn(baseText('Albania', 20.15, 40.7, { svgTextProps: { fontSize: '90%' } })),
     textFadeOut('EastGermany'),
-    textFadeIn(summaryText('AustriaEmpire', 16, 44.5, ['In central Europe, Austria and Hungary are joined in', 'an empire led by the centuries-old Habsburg dynasty.'])),
+    textFadeIn(summaryText('AustriaEmpire', 16, 44.5, ['In central Europe, Austria and Hungary were joined in', 'an empire led by the centuries-old Habsburg dynasty.'])),
     highlightFadeIn(areaHighlight('AustriaHungary', austriaHungaryUnion)),
   ], 5400),
   // ------------------------------------------------------------------- 19
@@ -433,12 +433,14 @@ export const steps: MapSteps = [
   mapStep([
     viewCenterChange(40, 29),
     zoomChange(6.2),
+    textMove('Turkey', 36, 39),
     textFadeOut('Serbia union'),
     textFadeOut('Greece'),
     textFadeOut('Albania'),
     textFadeOut('Montenegro'),
     textFadeOut('Romania'),
     textFadeOut('Bulgaria'),
+    textFadeOut('Italy'),
     textFadeOut('Serbia'),
     textFadeIn(summaryText('Middle East', 61, 35, ['In the Middle East, the Turkish', 'Ottoman Empire controlled many sea', 'coasts and the Holy Land.'])),
     textFadeIn(baseText('Syria', 38.4, 35.2, { svgTextProps: { style: { fill: 'black' } } })),
@@ -461,20 +463,59 @@ export const steps: MapSteps = [
     textFadeOut('Syria'),
     textFadeOut('Turkey'),
     textFadeIn(baseText('Ottoman Empire', 39.5, 38, { text: ['Ottoman', 'Empire'], svgTextProps: { fontSize: '150%' } })),
-    textMove('Saudi Arabia', 46, 23.5),
+    textFadeOut('Saudi Arabia'),
+    textFadeIn(baseText('Arabia', 46, 23.5, { svgTextProps: { fontSize: '120%', style: { fill: 'black' } } })),
     textMove('Yemen', 49.3, 16.3),
   ]),
   // ------------------------------------------------------------------- 38
   mapStep([
+    viewCenterChange(18, 42),
+    zoomChange(4.6),
+    textFadeOut('Middle East'),
+    textFadeOut('Spain'),
+    textFadeOut('Denmark'),
+    textFadeOut('Ireland'),
+    textFadeOut('Switzerland'),
+    textFadeOut('Belgium'),
+    textFontSize('Ottoman Empire', '100%'),
+    textFontSize('Russian Empire', '100%'),
+    textFontSize('German Empire', '100%'),
+    textFontSize('Austria-Hungary', '100%'),
+    textFontSize('France', '100%'),
+    textFontSize('United Kingdom', '70%'),
+    textMove('France', 2.5, 46.9),
+    textMove('German Empire', 13, 52.5),
+    textMove('Russian Empire', 28, 52),
+    textFadeIn(summaryText('WWIClimate', -5, 35, [
+      'By 1914, Europe was divided into rival', 'alliances, and old empires strained under', 'rising nationalism. The Balkan Wars of', '1912-13 had just redrawn borders in the', 'region, leaving the area especially volatile.'
+    ])),
+  ], 5500),
+  // ------------------------------------------------------------------- 39
+  mapStep([
     viewCenterChange(18.39, 43.86),
     zoomChange(40),
-    textMove('Austria-Hungary', 17.6, 43.85),
-    textMove('Italy', 13.4, 42.5),
+    textFadeOut('WWIClimate'),
+    textMove('Austria-Hungary', 17.9, 45.2),
+    textFadeIn(baseText('Bosnia', 17.6, 44.2, { svgTextProps: { fontSize: '140%' } })),
+    textFontSize('Austria-Hungary', '300%'),
+    textRotate('Austria-Hungary', -20),
     textFadeIn(baseText('Serbia', 21.06, 43.3, { svgTextProps: { fontSize: '140%' } })),
     textFadeIn(baseText('Montenegro', 19.2, 42.9)),
     textFadeIn(baseText('Bulgaria', 23.22, 42.6, { svgTextProps: { fontSize: '140%' } })),
     textFadeIn(baseText('Romania', 23.37, 44.55, { svgTextProps: { fontSize: '140%', style: { fill: 'black' } } })),
     textFadeIn(baseText('Albania', 19.93, 42.08, { svgTextProps: { fontSize: '90%' } })),
+    highlightFadeIn(areaHighlight('Bosnia', bosniaCoordinates, { strokeDasharray: `${4 / 40} ${2.5 / 40}`, strokeWidth: 0.8 / 40, opacity: 0.55 })),
+    textFadeIn(baseText('SarajevoMarker', 18.413, 43.856, { text: '★', svgTextProps: { fontSize: '200%', style: { fill: '#e8c84a' } } })),
+    textFadeIn(baseText('Sarajevo', 18, 43.856, { svgTextProps: { fontSize: '90%', style: { fill: '#e8c84a' } } })),
+    textFadeIn(summaryText('Assassination', 14.8, 42.85, [
+      'Tensions boiled over on June 28, 1914',
+      'when a Bosnian Serb nationalist',
+      'assassinated the heir to the throne',
+      'of Austria-Hungary, Archduke Franz',
+      'Ferdinand, and his wife, while they',
+      'visited the Bosnian provincial',
+      'capital of Sarajevo.',
+    ])),
   ]),
 ]
 

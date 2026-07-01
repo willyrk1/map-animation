@@ -3,7 +3,7 @@ import { position2XY } from "./utility";
 import { MapText } from "./mapReducer";
 
 export default React.memo(function SvgTextBox(props: Readonly<MapText & { zoom: number }>) {
-  const { id, coordinates, text = id, svgGProps, svgRectProps, svgTextProps, includeBackground = false, zoom } = props
+  const { id, coordinates, text = id, rotation, svgGProps, svgRectProps, svgTextProps, includeBackground = false, zoom } = props
 
   const textRef = React.useRef<SVGTextElement>(null)
   const rectRef = React.useRef<SVGRectElement>(null)
@@ -35,7 +35,7 @@ export default React.memo(function SvgTextBox(props: Readonly<MapText & { zoom: 
   }, [includeBackground, text, coordinates, zoom, shadowOffset]);
 
   return (
-    <g className="svgText" {...svgGProps}>
+    <g className="svgText" transform={rotation ? `rotate(${rotation}, ${x}, ${y})` : undefined} {...svgGProps}>
       {includeBackground && (
         <rect ref={shadowRectRef} className="svgTextShadow" rx={cornerRadius} ry={cornerRadius} />
       )}

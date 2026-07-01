@@ -6,7 +6,7 @@ import mapReducer, {
   countryFadeIn,
   countryReplace,
   getStepDisplayMs,
-  MapAction, MapHighlight, MapState, MapSteps, MapText, MapTransition, textFadeIn, textFadeOut, highlightFadeIn, highlightFadeOut
+  MapAction, MapHighlight, MapState, MapSteps, MapText, MapTransition, textFadeIn, textFadeOut, highlightFadeIn, highlightFadeOut,
 } from './mapReducer.ts';
 import { Position } from 'geojson';
 import SvgTextBox from './SvgTextBox.tsx';
@@ -141,6 +141,13 @@ export default function MapAnimation(props: MapAnimationProps) {
     }
   }
 
+  function animateTextRotate(mapTextId: string, targetRotation: number) {
+    const startRotation = stateRef.current.textCollection.find(({ id }: MapText) => id === mapTextId)!.rotation ?? 0
+    return function (t: number): MapAction {
+      return { type: "TextRotate", mapTextId, newRotation: startRotation + (targetRotation - startRotation) * t }
+    }
+  }
+
   function doAnimation(startTime: number, animateFns: MapActionAnimation | Array<MapActionAnimation>) {
     const now = performance.now();
     const elapsed = now - startTime;
@@ -178,6 +185,8 @@ export default function MapAnimation(props: MapAnimationProps) {
         return animateTextMove(transition.mapTextId, transition.newCoordinates)
       case "TextFontSize":
         return animateTextFontSize(transition.mapTextId, transition.newFontSize)
+      case "TextRotate":
+        return animateTextRotate(transition.mapTextId, transition.newRotation)
       case "HighlightFadeIn":
         return animateHighlightFadeIn(transition.highlight)
       case "HighlightFadeOut":

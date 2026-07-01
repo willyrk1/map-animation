@@ -18,14 +18,16 @@ export default React.memo(function CountryHighlight(props: Readonly<CountryHighl
   const { highlight, coordinates, zoom } = props
   const { opacity, ...restPathProps } = highlight.svgPathProps ?? {}
 
+  const dashed = !!restPathProps.strokeDasharray
+
   return (
     <>
       {coordinates.map((ring, index) => {
         const d = `M ${ring.map(position2CSV).join(' ')} Z`
         return (
           <g key={index} opacity={opacity}>
-            <path d={d} fill="none" stroke="#f2c14e" strokeWidth={6 / zoom} strokeLinejoin="round" opacity={0.35} />
-            <path d={d} fill="none" stroke="#f2c14e" strokeWidth={1.6 / zoom} strokeLinejoin="round" {...restPathProps} />
+            {!dashed && <path d={d} fill="none" stroke="#f2c14e" strokeWidth={6 / zoom} strokeLinejoin="round" opacity={0.35} />}
+            <path d={d} fill="none" stroke={dashed ? 'white' : '#f2c14e'} strokeWidth={1.6 / zoom} strokeLinejoin="round" {...restPathProps} />
           </g>
         )
       })}

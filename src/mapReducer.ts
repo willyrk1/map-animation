@@ -34,6 +34,7 @@ export type MapAction =
   | (TextFadeOut & { opacity: number })
   | TextMove
   | TextFontSize
+  | TextRotate
   | (HighlightFadeIn & { opacity: number })
   | (HighlightFadeOut & { opacity: number })
 
@@ -71,10 +72,17 @@ interface TextFontSize {
   newFontSize: string
 }
 
+interface TextRotate {
+  type: "TextRotate"
+  mapTextId: string
+  newRotation: number
+}
+
 export interface MapText {
   id: string
   text?: string | Array<string> // If undefined, use id instead.
   coordinates: Position
+  rotation?: number
   svgTextProps?: React.SVGTextElementAttributes<SVGTextElement>
   svgGProps?: React.SVGProps<SVGGElement>
   svgRectProps?: React.SVGProps<SVGRectElement>
@@ -105,7 +113,7 @@ export interface MapHighlight {
   svgPathProps?: React.SVGProps<SVGPathElement>
 }
 
-export type MapTransition = CountryReplace | CountryFadeIn | ViewCenterChange | ZoomChange | TextFadeIn | TextFadeOut | TextMove | TextFontSize | HighlightFadeIn | HighlightFadeOut
+export type MapTransition = CountryReplace | CountryFadeIn | ViewCenterChange | ZoomChange | TextFadeIn | TextFadeOut | TextMove | TextFontSize | TextRotate | HighlightFadeIn | HighlightFadeOut
 
 // displayMs is how long autostepping mode pauses on this step (so the user
 // has time to read it) before moving on to the next one.
@@ -156,6 +164,10 @@ export function textMove(mapTextId: string, long: number, lat: number): TextMove
 
 export function textFontSize(mapTextId: string, newFontSize: string): TextFontSize {
   return { type: "TextFontSize", mapTextId, newFontSize }
+}
+
+export function textRotate(mapTextId: string, newRotation: number): TextRotate {
+  return { type: "TextRotate", mapTextId, newRotation }
 }
 
 export function highlightFadeIn(highlight: MapHighlight): HighlightFadeIn {
@@ -286,6 +298,16 @@ export default function reducer(
         }
 
         return state
+      case 'TextRotate':
+        const rotateTextIndex = state.textCollection.findIndex(({ id }) => id === action.mapTextId)
+        if (rotateTextIndex >= 0) {
+          const newTextCollection = [...state.textCollection]
+          const rotateText = newTextCollection[rotateTextIndex]
+          newTextCollection.splice(rotateTextIndex, 1, { ...rotateText, rotation: action.newRotation })
+          return { ...state, textCollection: newTextCollection }
+        }
+
+        return state
       case 'HighlightFadeIn':
         const toHighlightIndex = state.highlightCollection.findIndex(({ id }) => id === action.highlight.id)
         const curToHighlight = state.highlightCollection[toHighlightIndex] ?? action.highlight
@@ -376,6 +398,16 @@ export default function reducer(
                       ...fontSizeText.svgTextProps,
                       fontSize: transition.newFontSize
                     }
+                  })
+                }
+                break;
+              case "TextRotate":
+                const rotateTextIndex = newState.textCollection.findIndex(({ id }) => id === transition.mapTextId)
+                if (rotateTextIndex >= 0) {
+                  const rotateText = newState.textCollection[rotateTextIndex]
+                  newState.textCollection = newState.textCollection.toSpliced(rotateTextIndex, 1, {
+                    ...rotateText,
+                    rotation: transition.newRotation
                   })
                 }
                 break;

@@ -22,11 +22,8 @@ const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
 await page.goto(`http://localhost:${port}/map-animation`, { waitUntil: 'networkidle' });
 
-// Step buttons are every button in the controls' inner div after "Start".
-// (`:nth-child` is evaluated per-element against its own parent, not against
-// "all buttons in .controls" as a flat list — scoping to `.controls > div >
-// button` is required so it doesn't also exclude transition index 0.)
-const stepButtons = page.locator('.controls > div > button:not(:first-child)');
+// The numbered step buttons live in a `.stepPicker` div, shown by default.
+const stepButtons = page.locator('.stepPicker > button');
 const count = await stepButtons.count();
 if (step < 0 || step >= count) {
   throw new Error(`Step ${step} out of range — only ${count} steps exist (0-${count - 1})`);
