@@ -36,13 +36,7 @@ export function areaHighlight(id: string, coordinates: Required<MapHighlight>['c
 }
 
 export function getInitialMapText(): Array<MapText> {
-  const initialTextCollection: Array<MapText> = [
-    {
-      id: 'Russia',
-      coordinates: [40.64032191671039, 57.24804212417763],
-      svgTextProps: { fontSize: "200%" },
-    },
-  ]
+  const initialTextCollection: Array<MapText> = []
 
   return [
     summaryText('StartSummary', 49, 62,
