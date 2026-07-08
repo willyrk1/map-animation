@@ -1,3 +1,18 @@
+@keyframes pulseHighlight {
+  0%   { opacity: 1; }
+  10%  { opacity: 0.1; }
+  20%  { opacity: 1; }
+  30%  { opacity: 0.1; }
+  40%  { opacity: 1; }
+  50%  { opacity: 0.1; }
+  60%  { opacity: 1; }
+  70%  { opacity: 0.1; }
+  80%  { opacity: 1; }
+  90%  { opacity: 0.1; }
+  100% { opacity: 0; }
+}
+.pulseHighlight { animation: pulseHighlight 5s linear 1 forwards; }
+
 .viewport {
   width: 100vw;
   height: 100vh;

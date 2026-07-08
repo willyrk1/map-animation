@@ -3,9 +3,9 @@
 // point in the sequence.
 //
 // This catches the class of bug where a label is faded out in one step but a
-// later step still tries to move or resize it — MapAnimation.tsx's
-// animateTextMove/animateTextFontSize use a non-null assertion on .find(), so a
-// missing id crashes at runtime and silently prevents the step from advancing.
+// later step still tries to move or resize it — mapReducer.ts's doTransitions
+// looks the label up in the startAnimation snapshot, so a missing id makes the
+// transition a silent no-op and the label never moves/resizes.
 
 import { describe, it, expect } from 'vitest';
 import { steps, initialState } from './WW1';
@@ -20,7 +20,7 @@ describe('WW1 animation transition integrity', () => {
       const { transitions } = steps[i];
 
       // Check targets BEFORE applying this step's own transitions — this is the
-      // state animateTextMove/animateTextFontSize see when they read stateRef.current.
+      // snapshot startAnimation captures for the step's transitions to read.
       for (const t of transitions) {
         if (t.type === 'TextMove' || t.type === 'TextFontSize') {
           const id = t.mapTextId;

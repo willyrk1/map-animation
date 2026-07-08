@@ -541,7 +541,7 @@ export const steps: MapSteps = [
     textFontSize('Austria-Hungary', '300%'),
     textRotate('Austria-Hungary', -20),
     textFadeIn(baseText('SarajevoMarker', 18.413, 43.856, { text: '★', svgTextProps: { fontSize: '200%', style: { fill: '#e8c84a' } } })),
-    textFadeIn(baseText('Sarajevo', 18, 43.856, { svgTextProps: { fontSize: '90%', style: { fill: '#e8c84a' } } })),
+    textFadeIn(baseText('Sarajevo', 18.03, 43.856, { svgTextProps: { fontSize: '90%', style: { fill: '#e8c84a' } } })),
     textFadeIn(summaryText('Assassination', 14.8, 42.85, [
       'Tensions boiled over on June 28, 1914',
       'when a Bosnian Serb nationalist',
@@ -552,6 +552,35 @@ export const steps: MapSteps = [
       'capital of Sarajevo.',
     ])),
   ]),
+  // ------------------------------------------------------------------- 41
+  mapStep([
+    textFadeOut('Assassination'),
+    textFadeIn(summaryText('Aftermath', 14.5, 43.0, [
+      'The assassination triggered the',
+      '"July Crisis" with violence',
+      'across Bosnia. Austria-Hungary',
+      'blamed Serbia for the plot and,',
+      'over the following month,',
+      'arrested thousands of ethnic',
+      'Serbs, Croats, and Bosniaks',
+      'suspected of pro-Serbian',
+      'sympathies.',
+    ])),
+  ], 5500),
+  // ------------------------------------------------------------------- 42
+  mapStep([
+    textFadeOut('Aftermath'),
+    textFadeIn(baseText('BelgradeMarker', 20.46, 44.81, { text: '💥', svgTextProps: { fontSize: '200%' } })),
+    textFadeIn(baseText('Belgrade', 20.46, 44.65, { svgTextProps: { fontSize: '90%', style: { fill: '#e8c84a' } } })),
+    textFadeIn(summaryText('WarDeclaration', 14.7, 43.0, [
+      'Negotiations collapsed. On July 28,',
+      '1914 - exactly one month after the',
+      'assassination - Austria-Hungary',
+      'declared war on Serbia and began',
+      'shelling Belgrade, the Serbian',
+      'capital, from across the Danube.',
+    ])),
+  ], 6000, [{ center: [20.46, 44.81], radius: 12 }]),
 ]
 
 function toWithPathProps(country: CountryDetails): CountryDetails {

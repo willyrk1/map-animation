@@ -1,16 +1,38 @@
 import { Position } from "geojson";
 import { CountryDetails } from "./utility";
 
-export interface MapState {
+export interface SteplessMapState {
   countries: Array<CountryDetails>
   textCollection: Array<MapText>
   highlightCollection: Array<MapHighlight>
   viewCenter: Position
   zoom: number
-  step: number
 }
 
-export type SteplessMapState = Omit<MapState, 'step'>
+export interface MapState extends SteplessMapState {
+  steps: MapSteps
+  step: number
+  animationStart?: AnimationStart
+  // Pristine step-0 baseline, captured on the first dispatch (before anything
+  // has changed); reInit and directStep rebuild from this instead of the
+  // caller re-passing the initial values.
+  initial?: SteplessMapState
+}
+
+// Snapshot taken by startAnimation of the values the step's transitions
+// interpolate from, so each doTransitions frame lerps from a fixed starting
+// point instead of compounding on the previous frame's result.
+interface AnimationStart {
+  viewCenter: Position
+  zoom: number
+  textCollection: Array<MapText>
+}
+
+export type MapAction =
+  | { type: 'startAnimation' }
+  | { type: 'doTransitions', percentage: number }
+  | { type: 'reInit' }
+  | { type: 'directStep', step: number }
 
 interface CountryReplace {
   type: "CountryReplace"
@@ -21,23 +43,6 @@ interface CountryFadeIn {
   type: "CountryFadeIn"
   country: CountryDetails
 }
-
-export type MapAction =
-  | { type: 'setViewCenter', newViewCenter: Position }
-  | { type: 'setZoom', newZoom: number }
-  | (CountryReplace & { opacity: number })
-  | (CountryFadeIn & { opacity: number })
-  | { type: 'incrementStep' }
-  | ({ type: 'reInit' } & SteplessMapState)
-  | ({ type: 'directStep' } & MapState)
-  | (TextFadeIn & { opacity: number })
-  | (TextFadeOut & { opacity: number })
-  | TextMove
-  | TextFontSize
-  | TextRotate
-  | (HighlightFadeIn & { opacity: number })
-  | (HighlightFadeOut & { opacity: number })
-
 
 interface ViewCenterChange {
   type: 'ViewCenterChange'
@@ -113,6 +118,11 @@ export interface MapHighlight {
   svgPathProps?: React.SVGProps<SVGPathElement>
 }
 
+export interface PulsingCircle {
+  center: Position
+  radius: number
+}
+
 export type MapTransition = CountryReplace | CountryFadeIn | ViewCenterChange | ZoomChange | TextFadeIn | TextFadeOut | TextMove | TextFontSize | TextRotate | HighlightFadeIn | HighlightFadeOut
 
 // displayMs is how long autostepping mode pauses on this step (so the user
@@ -120,14 +130,29 @@ export type MapTransition = CountryReplace | CountryFadeIn | ViewCenterChange | 
 export interface MapStep {
   transitions: Array<MapTransition>
   displayMs?: number
+  circles?: Array<PulsingCircle>
 }
 
 export type MapSteps = Array<MapStep>
 
 export const DEFAULT_STEP_DISPLAY_MS = 1200
 
-export function mapStep(transitions: Array<MapTransition>, displayMs?: number): MapStep {
-  return { transitions, displayMs }
+export function mapStep(transitions: Array<MapTransition>, displayMs?: number, circles?: Array<PulsingCircle>): MapStep {
+  return { transitions, displayMs, circles }
+}
+
+// Pre-applies path props to every country a CountryFadeIn transition will
+// introduce, so once the steps are in state the reducer never needs the
+// mapping function again.
+export function stepsWithPathProps(steps: MapSteps, toWithPathProps: (country: CountryDetails) => CountryDetails): MapSteps {
+  return steps.map(step => ({
+    ...step,
+    transitions: step.transitions.map(transition =>
+      transition.type === 'CountryFadeIn'
+        ? { ...transition, country: toWithPathProps(transition.country) }
+        : transition
+    ),
+  }))
 }
 
 export function getStepDisplayMs(step: MapStep): number {
@@ -178,259 +203,227 @@ export function highlightFadeOut(id: string): HighlightFadeOut {
   return { type: "HighlightFadeOut", id }
 }
 
-export default function reducer(
-  steps: MapSteps,
-  toWithPathProps: (country: CountryDetails) => CountryDetails
-): (state: MapState, action: MapAction | Array<MapAction>) => MapState {
-  return function (state: MapState, actions: MapAction | Array<MapAction>): MapState {
-    if (Array.isArray(actions)) {
-      return actions.reduce(mapStateReducer, state)
+export default function mapReducer(prevState: MapState, action: MapAction): MapState {
+  const { steps } = prevState
+
+  // The first dispatch is the only one guaranteed to see the pristine step-0
+  // state, so capture the baseline then.
+  const initial: SteplessMapState = prevState.initial ?? {
+    countries: prevState.countries,
+    textCollection: prevState.textCollection,
+    highlightCollection: prevState.highlightCollection,
+    viewCenter: prevState.viewCenter,
+    zoom: prevState.zoom,
+  }
+  const state = prevState.initial ? prevState : { ...prevState, initial }
+
+  switch (action.type) {
+    case "startAnimation":
+      // Increment step and snapshot the values the new step's transitions
+      // interpolate from.
+      return {
+        ...state,
+        step: state.step + 1,
+        animationStart: {
+          viewCenter: state.viewCenter,
+          zoom: state.zoom,
+          textCollection: state.textCollection,
+        }
+      }
+    case "doTransitions": {
+      const transitions = steps[state.step - 1]?.transitions ?? []
+      return transitions.reduce(
+        (curState, transition) => applyTransition(curState, transition, action.percentage),
+        state
+      )
     }
-    else {
-      return mapStateReducer(state, actions)
+    case "reInit":
+      return { ...state, ...initial, step: 0 }
+    case "directStep": {
+      // Replay from the pristine baseline. animationStart must be cleared so
+      // the text transitions read their start values from the state being
+      // replayed, not a stale snapshot of an earlier animation.
+      const baseline: MapState = { ...state, ...initial, animationStart: undefined }
+      const replayed = steps
+        .slice(0, action.step + 1)
+        .flatMap(({ transitions }) => transitions)
+        .reduce((curState, transition) => applyTransition(curState, transition, 1), baseline)
+      return { ...replayed, step: action.step + 1 }
+    }
+    default: {
+      const _exhaustiveCheck: never = action
+      console.log(_exhaustiveCheck)
+      return state
     }
   }
+}
 
-  function mapStateReducer(state: MapState, action: MapAction): MapState {
-    switch (action.type) {
-      case 'setViewCenter':
-        return { ...state, viewCenter: action.newViewCenter }
-      case 'setZoom':
-        return { ...state, zoom: action.newZoom }
-      case 'CountryFadeIn':
-        const toCountryIndex = state.countries.findIndex(({ name }) => name === action.country.name)
-        const curToCountry = state.countries[toCountryIndex] ?? action.country
-        const newToCountry = {
-          ...curToCountry,
-          pathProps: {
-            ...curToCountry.pathProps,
-            opacity: action.opacity
-          }
+// Applies a single transition at percentage t (0 to 1) of its animation,
+// interpolating from the values captured by startAnimation in
+// state.animationStart. No-ops when the transition's target no longer exists.
+function applyTransition(state: MapState, transition: MapTransition, t: number): MapState {
+  const start = state.animationStart
+  const findStartText = (mapTextId: string) =>
+    (start?.textCollection ?? state.textCollection).find(({ id }) => id === mapTextId)
+
+  switch (transition.type) {
+    case "CountryFadeIn": {
+      const index = state.countries.findIndex(({ name }) => name === transition.country.name)
+      const current = state.countries[index] ?? transition.country
+      const faded = {
+        ...current,
+        pathProps: {
+          ...current.pathProps,
+          opacity: t
         }
-
-        return {
-          ...state,
-          countries: state.countries.toSpliced(
-            toCountryIndex >= 0 ? toCountryIndex : state.countries.length,
-            1,
-            newToCountry
-          )
-        }
-      case 'CountryReplace':
-        if (action.opacity >= 1) {
-          const fromCountryIndex = state.countries.findIndex(({ name }) => name === action.name)
-          return {
-            ...state,
-            countries: state.countries.toSpliced(fromCountryIndex, 1)
-          }
-        }
-
-        return state
-      case 'TextFadeIn':
-        const toTextIndex = state.textCollection.findIndex(({ id }) => id === action.mapText.id)
-        const curToText = state.textCollection[toTextIndex] ?? action.mapText
-        const newToText = {
-          ...curToText,
-          svgGProps: {
-            ...curToText.svgGProps,
-            opacity: action.opacity
-          }
-        }
-
-        return {
-          ...state,
-          textCollection: state.textCollection.toSpliced(
-            toTextIndex >= 0 ? toTextIndex : state.textCollection.length,
-            1,
-            newToText
-          )
-        }
-      case 'TextFadeOut':
-        const fromTextIndex = state.textCollection.findIndex(({ id }) => id === action.mapTextId)
-        if (fromTextIndex >= 0) {
-          const newTextCollection = [...state.textCollection]
-          if (action.opacity >= 1) {
-            newTextCollection.splice(fromTextIndex, 1)
-          }
-          else {
-            const fromText = newTextCollection[fromTextIndex]
-            newTextCollection.splice(fromTextIndex, 1, {
-              ...fromText,
-              svgGProps: {
-                ...fromText.svgGProps,
-                opacity: 1 - action.opacity,
-              }
-            })
-          }
-
-          return { ...state, textCollection: newTextCollection }
-        }
-
-        return state
-      case 'TextMove':
-        const moveTextIndex = state.textCollection.findIndex(({ id }) => id === action.mapTextId)
-        if (moveTextIndex >= 0) {
-          const newTextCollection = [...state.textCollection]
-          const moveText = newTextCollection[moveTextIndex]
-          newTextCollection.splice(moveTextIndex, 1, {
-            ...moveText,
-            coordinates: action.newCoordinates
-          })
-
-          return { ...state, textCollection: newTextCollection }
-        }
-
-        return state
-      case 'TextFontSize':
-        const fontSizeTextIndex = state.textCollection.findIndex(({ id }) => id === action.mapTextId)
-        if (fontSizeTextIndex >= 0) {
-          const newTextCollection = [...state.textCollection]
-          const fontSizeText = newTextCollection[fontSizeTextIndex]
-          newTextCollection.splice(fontSizeTextIndex, 1, {
-            ...fontSizeText,
-            svgTextProps: {
-              ...fontSizeText.svgTextProps,
-              fontSize: action.newFontSize
-            }
-          })
-
-          return { ...state, textCollection: newTextCollection }
-        }
-
-        return state
-      case 'TextRotate':
-        const rotateTextIndex = state.textCollection.findIndex(({ id }) => id === action.mapTextId)
-        if (rotateTextIndex >= 0) {
-          const newTextCollection = [...state.textCollection]
-          const rotateText = newTextCollection[rotateTextIndex]
-          newTextCollection.splice(rotateTextIndex, 1, { ...rotateText, rotation: action.newRotation })
-          return { ...state, textCollection: newTextCollection }
-        }
-
-        return state
-      case 'HighlightFadeIn':
-        const toHighlightIndex = state.highlightCollection.findIndex(({ id }) => id === action.highlight.id)
-        const curToHighlight = state.highlightCollection[toHighlightIndex] ?? action.highlight
-        const newToHighlight = {
-          ...curToHighlight,
-          svgPathProps: {
-            ...curToHighlight.svgPathProps,
-            opacity: action.opacity
-          }
-        }
-
-        return {
-          ...state,
-          highlightCollection: state.highlightCollection.toSpliced(
-            toHighlightIndex >= 0 ? toHighlightIndex : state.highlightCollection.length,
-            1,
-            newToHighlight
-          )
-        }
-      case 'HighlightFadeOut':
-        const fromHighlightIndex = state.highlightCollection.findIndex(({ id }) => id === action.id)
-        if (fromHighlightIndex >= 0) {
-          const newHighlightCollection = [...state.highlightCollection]
-          if (action.opacity >= 1) {
-            newHighlightCollection.splice(fromHighlightIndex, 1)
-          }
-          else {
-            const fromHighlight = newHighlightCollection[fromHighlightIndex]
-            newHighlightCollection.splice(fromHighlightIndex, 1, {
-              ...fromHighlight,
-              svgPathProps: {
-                ...fromHighlight.svgPathProps,
-                opacity: 1 - action.opacity,
-              }
-            })
-          }
-
-          return { ...state, highlightCollection: newHighlightCollection }
-        }
-
-        return state
-      case "incrementStep":
-        return { ...state, step: state.step + 1 }
-      case "reInit": {
-        const { type, ...rest } = action
-        return { ...state, ...rest, step: 0 }
       }
-      case "directStep":
-        const { type, step, ...newState } = action
-        steps.slice(0, action.step + 1).forEach((mapStepItem) => {
-          mapStepItem.transitions.forEach(transition => {
-            switch (transition.type) {
-              case "CountryFadeIn":
-                newState.countries = newState.countries.concat(toWithPathProps(transition.country))
-                break;
-              case "CountryReplace":
-                newState.countries = newState.countries.filter(({ name }) => name !== transition.name)
-                break;
-              case "ViewCenterChange":
-                newState.viewCenter = [transition.long, transition.lat]
-                break;
-              case "ZoomChange":
-                newState.zoom = transition.newZoom
-                break;
-              case "TextFadeIn":
-                newState.textCollection = newState.textCollection.concat(transition.mapText)
-                break;
-              case "TextFadeOut":
-                newState.textCollection = newState.textCollection.filter(({ id }) => id !== transition.mapTextId)
-                break;
-              case "TextMove":
-                const moveTextIndex = newState.textCollection.findIndex(({ id }) => id === transition.mapTextId)
-                if (moveTextIndex >= 0) {
-                  const moveText = newState.textCollection[moveTextIndex]
-                  newState.textCollection = newState.textCollection.toSpliced(moveTextIndex, 1, {
-                    ...moveText,
-                    coordinates: transition.newCoordinates
-                  })
-                }
-                break;
-              case "TextFontSize":
-                const fontSizeTextIndex = newState.textCollection.findIndex(({ id }) => id === transition.mapTextId)
-                if (fontSizeTextIndex >= 0) {
-                  const fontSizeText = newState.textCollection[fontSizeTextIndex]
-                  newState.textCollection = newState.textCollection.toSpliced(fontSizeTextIndex, 1, {
-                    ...fontSizeText,
-                    svgTextProps: {
-                      ...fontSizeText.svgTextProps,
-                      fontSize: transition.newFontSize
-                    }
-                  })
-                }
-                break;
-              case "TextRotate":
-                const rotateTextIndex = newState.textCollection.findIndex(({ id }) => id === transition.mapTextId)
-                if (rotateTextIndex >= 0) {
-                  const rotateText = newState.textCollection[rotateTextIndex]
-                  newState.textCollection = newState.textCollection.toSpliced(rotateTextIndex, 1, {
-                    ...rotateText,
-                    rotation: transition.newRotation
-                  })
-                }
-                break;
-              case "HighlightFadeIn":
-                newState.highlightCollection = newState.highlightCollection.concat(transition.highlight)
-                break;
-              case "HighlightFadeOut":
-                newState.highlightCollection = newState.highlightCollection.filter(({ id }) => id !== transition.id)
-                break;
-              default:
-                const _exhaustiveCheck: never = transition;
-                console.log(_exhaustiveCheck)
-                break
-            }
-          })
-        })
 
-        return { ...state, ...newState, step: step + 1 }
-      default:
-        const _exhaustiveCheck: never = action
-        console.log(_exhaustiveCheck)
-        break;
+      return {
+        ...state,
+        countries: state.countries.toSpliced(index >= 0 ? index : state.countries.length, 1, faded)
+      }
     }
-    return state
+    case "CountryReplace": {
+      const index = state.countries.findIndex(({ name }) => name === transition.name)
+      if (t >= 1 && index >= 0) {
+        return { ...state, countries: state.countries.toSpliced(index, 1) }
+      }
+
+      return state
+    }
+    case "ViewCenterChange": {
+      const [startLong, startLat] = start?.viewCenter ?? state.viewCenter
+      const newLong = startLong + (transition.long - startLong) * t
+      const newLat = startLat + (transition.lat - startLat) * t
+      return { ...state, viewCenter: [newLong, newLat] }
+    }
+    case "ZoomChange": {
+      const startZoom = start?.zoom ?? state.zoom
+      return { ...state, zoom: startZoom + (transition.newZoom - startZoom) * t }
+    }
+    case "TextFadeIn": {
+      const index = state.textCollection.findIndex(({ id }) => id === transition.mapText.id)
+      const current = state.textCollection[index] ?? transition.mapText
+      const faded = {
+        ...current,
+        svgGProps: {
+          ...current.svgGProps,
+          opacity: t
+        }
+      }
+
+      return {
+        ...state,
+        textCollection: state.textCollection.toSpliced(index >= 0 ? index : state.textCollection.length, 1, faded)
+      }
+    }
+    case "TextFadeOut": {
+      const index = state.textCollection.findIndex(({ id }) => id === transition.mapTextId)
+      if (index < 0) return state
+      if (t >= 1) {
+        return { ...state, textCollection: state.textCollection.toSpliced(index, 1) }
+      }
+
+      const current = state.textCollection[index]
+      const faded = {
+        ...current,
+        svgGProps: {
+          ...current.svgGProps,
+          opacity: 1 - t
+        }
+      }
+      return { ...state, textCollection: state.textCollection.toSpliced(index, 1, faded) }
+    }
+    case "TextMove": {
+      const index = state.textCollection.findIndex(({ id }) => id === transition.mapTextId)
+      const startText = findStartText(transition.mapTextId)
+      if (index < 0 || !startText) return state
+
+      const [startLong, startLat] = startText.coordinates
+      const newCoordinates = [
+        startLong + (transition.newCoordinates[0] - startLong) * t,
+        startLat + (transition.newCoordinates[1] - startLat) * t,
+      ]
+      return {
+        ...state,
+        textCollection: state.textCollection.toSpliced(index, 1, {
+          ...state.textCollection[index],
+          coordinates: newCoordinates
+        })
+      }
+    }
+    case "TextFontSize": {
+      const index = state.textCollection.findIndex(({ id }) => id === transition.mapTextId)
+      const startText = findStartText(transition.mapTextId)
+      if (index < 0 || !startText) return state
+
+      const startFontSize = parseFloat(startText.svgTextProps?.fontSize as string ?? '100%')
+      const targetFontSize = parseFloat(transition.newFontSize)
+      const newSize = startFontSize + (targetFontSize - startFontSize) * t
+      const current = state.textCollection[index]
+      return {
+        ...state,
+        textCollection: state.textCollection.toSpliced(index, 1, {
+          ...current,
+          svgTextProps: {
+            ...current.svgTextProps,
+            fontSize: `${newSize}%`
+          }
+        })
+      }
+    }
+    case "TextRotate": {
+      const index = state.textCollection.findIndex(({ id }) => id === transition.mapTextId)
+      const startText = findStartText(transition.mapTextId)
+      if (index < 0 || !startText) return state
+
+      const startRotation = startText.rotation ?? 0
+      const newRotation = startRotation + (transition.newRotation - startRotation) * t
+      return {
+        ...state,
+        textCollection: state.textCollection.toSpliced(index, 1, {
+          ...state.textCollection[index],
+          rotation: newRotation
+        })
+      }
+    }
+    case "HighlightFadeIn": {
+      const index = state.highlightCollection.findIndex(({ id }) => id === transition.highlight.id)
+      const current = state.highlightCollection[index] ?? transition.highlight
+      const faded = {
+        ...current,
+        svgPathProps: {
+          ...current.svgPathProps,
+          opacity: t
+        }
+      }
+
+      return {
+        ...state,
+        highlightCollection: state.highlightCollection.toSpliced(index >= 0 ? index : state.highlightCollection.length, 1, faded)
+      }
+    }
+    case "HighlightFadeOut": {
+      const index = state.highlightCollection.findIndex(({ id }) => id === transition.id)
+      if (index < 0) return state
+      if (t >= 1) {
+        return { ...state, highlightCollection: state.highlightCollection.toSpliced(index, 1) }
+      }
+
+      const current = state.highlightCollection[index]
+      const faded = {
+        ...current,
+        svgPathProps: {
+          ...current.svgPathProps,
+          opacity: 1 - t
+        }
+      }
+      return { ...state, highlightCollection: state.highlightCollection.toSpliced(index, 1, faded) }
+    }
+    default: {
+      const _exhaustiveCheck: never = transition
+      console.log(_exhaustiveCheck)
+      return state
+    }
   }
 }
