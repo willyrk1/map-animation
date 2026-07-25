@@ -17,12 +17,12 @@ describe('startAnimation + doTransitions', () => {
 
     state = mapReducer(state, { type: 'doTransitions', percentage: 0.5 });
     const finland = state.textCollection.find(t => t.id === 'Finland');
-    expect(finland?.svgGProps?.opacity).toBe(0.5);
+    expect(finland?.opacity).toBe(0.5);
 
     state = mapReducer(state, { type: 'doTransitions', percentage: 1 });
     expect(state.textCollection.find(t => t.id === 'StartSummary')).toBeUndefined();
-    expect(state.textCollection.find(t => t.id === 'Finland')?.svgGProps?.opacity).toBe(1);
-    expect(state.highlightCollection.find(h => h.id === 'Finland')?.svgPathProps?.opacity).toBe(1);
+    expect(state.textCollection.find(t => t.id === 'Finland')?.opacity).toBe(1);
+    expect(state.highlightCollection.find(h => h.id === 'Finland')?.opacity).toBe(1);
   });
 
   it('interpolates viewCenter/zoom/textMove from animationStart (step 2)', () => {
@@ -68,9 +68,10 @@ describe('initial baseline captured in state', () => {
     expect(state.step).toBe(2);
     // step 1 replaces Russia+Finland with RussiaFinland, which enters state
     // with the pathProps stepsWithPathProps pre-applied to the transition
-    // (plus the opacity its fade-in finishes at)
+    // (plus the top-level opacity its fade-in finishes at)
     expect(state.countries.find(c => c.name === 'Russia')).toBeUndefined();
-    expect(state.countries.find(c => c.name === 'RussiaFinland')?.pathProps).toEqual({ fill: 'marker', opacity: 1 });
+    expect(state.countries.find(c => c.name === 'RussiaFinland')?.pathProps).toEqual({ fill: 'marker' });
+    expect(state.countries.find(c => c.name === 'RussiaFinland')?.opacity).toBe(1);
     // step 0's fade-ins that survive step 1 are present exactly once (no
     // duplicates from the mutated state), and Finland's label was faded out
     expect(state.textCollection.filter(t => t.id === 'RussianEmpireSummary')).toHaveLength(1);

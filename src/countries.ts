@@ -1,7 +1,7 @@
 import { FeatureCollection } from "geojson";
 import modernGeoJson from "./data/custom.midres.geo.json"
 import { geoJson2CountryDetails } from "./utility";
-import { MapHighlight, MapText } from "./mapReducer";
+import { mapTextFadeIn, MapHighlight, MapText } from "./mapReducer";
 
 export function getCountriesHighRes() {
   return geoJson2CountryDetails(modernGeoJson as FeatureCollection)
@@ -17,6 +17,17 @@ export function summaryText(id: string, long: number, lat: number, text: Require
     includeBackground: true,
     ...baseText(id, long, lat, { text, svgTextProps: { className: 'summary', ...svgTextProps }, ...rest })
   }
+}
+
+// A plain-label fade-in, built straight from position + options (no separate
+// baseText call at the call site).
+export function textFadeIn(id: string, long: number, lat: number, mapText?: Omit<MapText, 'id' | 'coordinates'>) {
+  return mapTextFadeIn(baseText(id, long, lat, mapText))
+}
+
+// A summary-box fade-in, same shorthand for the summaryText variant.
+export function summaryTextFadeIn(id: string, long: number, lat: number, text: Required<MapText>['text'], mapText?: Omit<MapText, 'id' | 'coordinates' | 'text'>) {
+  return mapTextFadeIn(summaryText(id, long, lat, text, mapText))
 }
 
 // Builds a MapHighlight that outlines an existing country's current shape

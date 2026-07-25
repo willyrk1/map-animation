@@ -1,12 +1,13 @@
 import React from 'react';
 import './App.css';
-import PositionPath from "./PositionPath.tsx";
-import { CountryDetails, lat2y } from "./utility.ts";
+import Country from "./Country.tsx";
+import { CountryDetails } from "./utility.ts";
 import mapReducer, { MapSteps, SteplessMapState, stepsWithPathProps } from './mapReducer.ts';
 import SvgTextBox from './SvgTextBox.tsx';
 import CountryHighlight from './CountryHighlight.tsx';
 import PulsingCircle from './PulsingCircle.tsx';
 import MapControls from './MapControls.tsx';
+import SvgContainer from './SvgContainer.tsx';
 
 interface MapAnimationProps {
   steps: MapSteps
@@ -14,8 +15,17 @@ interface MapAnimationProps {
   toWithPathProps: (country: CountryDetails) => CountryDetails
 }
 
-const [northLat, southLat] = [85, -60]
-const WORLDHEIGHT = lat2y(northLat) - lat2y(southLat)
+// The URL's ?step= param mirrors the step picker's 0-based numbering (i.e.
+// the argument to directStep), not the reducer's internal `step` field
+// (which is that number + 1, since 0 means "no step taken yet").
+const STEP_QUERY_PARAM = 'step'
+
+function getStepFromQuery(): number | undefined {
+  const raw = new URLSearchParams(window.location.search).get(STEP_QUERY_PARAM)
+  if (raw === null) return undefined
+  const parsed = Number.parseInt(raw, 10)
+  return Number.isInteger(parsed) ? parsed : undefined
+}
 
 export default function MapAnimation(props: MapAnimationProps) {
   const { steps, initialState: { countries: initialCountries, ...initialRest }, toWithPathProps } = props
@@ -26,12 +36,27 @@ export default function MapAnimation(props: MapAnimationProps) {
   )
   const { countries, textCollection, highlightCollection, viewCenter, zoom, step } = state
 
-  const viewBox = React.useMemo(() => {
-    const height = WORLDHEIGHT / zoom
-    const [long, lat] = viewCenter
-    const [x, y] = [long + 180, 180 - lat2y(lat)]
-    return `${x - 1} ${y - height / 2} 2 ${height}`
-  }, [viewCenter, zoom])
+  // On startup/reload, jump straight to the step named in the URL, if valid.
+  React.useEffect(() => {
+    const queryStep = getStepFromQuery()
+    if (queryStep !== undefined && queryStep >= 0 && queryStep < steps.length) {
+      dispatch({ type: 'directStep', step: queryStep })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Keep the URL's ?step= mirroring the current step as the user navigates.
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (step > 0) {
+      params.set(STEP_QUERY_PARAM, String(step - 1))
+    } else {
+      params.delete(STEP_QUERY_PARAM)
+    }
+    const search = params.toString()
+    const newUrl = `${window.location.pathname}${search ? `?${search}` : ''}${window.location.hash}`
+    window.history.replaceState(null, '', newUrl)
+  }, [step])
 
   const animationRef = React.useRef<number>();
 
@@ -75,32 +100,22 @@ export default function MapAnimation(props: MapAnimationProps) {
     <div className='viewport'>
       <div className='container'>
         <MapControls {...{ handleReInit, handleDirectStep, handleNext, steps, step }} />
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox={viewBox}>
-          {countries.map(({ name, coordinates, pathProps }) => {
-            return coordinates.map((countryCoordinates, index) => (
-              <PositionPath key={`${name}${index}`}
-                countryName={name}
-                countryCoordinates={countryCoordinates}
-                pathProps={pathProps}
-              />
-            ))
+        <SvgContainer centerLong={viewCenter[0]} centerLat={viewCenter[1]} zoom={zoom}>
+          {countries.map(country => (
+            <Country key={country.name} {...country} />
+          ))}
+          {highlightCollection.map(highlight => {
+            const coordinates = highlight.coordinates ?? countries.find(({ name }) => name === highlight.id)?.coordinates
+            if (!coordinates) return null
+            return <CountryHighlight key={highlight.id} highlight={highlight} coordinates={coordinates} zoom={zoom} />
           })}
-          <g>
-            {highlightCollection.map(highlight => {
-              const coordinates = highlight.coordinates ?? countries.find(({ name }) => name === highlight.id)?.coordinates
-              if (!coordinates) return null
-              return <CountryHighlight key={highlight.id} highlight={highlight} coordinates={coordinates} zoom={zoom} />
-            })}
-            {steps[step - 1]?.circles?.map((circle, i) => (
-              <PulsingCircle key={i} {...circle} zoom={zoom} />
-            ))}
-          </g>
-          <g fontSize={6 / zoom}>
-            {textCollection.map(mapText => (
-              <SvgTextBox key={mapText.id} {...mapText} zoom={zoom} />
-            ))}
-          </g>
-        </svg>
+          {steps[step - 1]?.circles?.map((circle, i) => (
+            <PulsingCircle key={i} {...circle} zoom={zoom} />
+          ))}
+          {textCollection.map(mapText => (
+            <SvgTextBox key={mapText.id} {...mapText} zoom={zoom} />
+          ))}
+        </SvgContainer>
       </div>
     </div>
   )

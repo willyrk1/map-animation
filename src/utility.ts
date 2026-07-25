@@ -2,10 +2,21 @@ import { Feature, FeatureCollection, MultiPolygon, Polygon, Position } from "geo
 import React from "react";
 import * as turf from '@turf/turf'
 
+// The map's magnification factor — 1 shows the whole world's height, larger
+// values zoom in. Mixed into any props/state shape that carries it.
+export interface Zoom {
+  zoom: number
+}
+
 export interface CountryDetails {
   name: string
   coordinates: Array<Array<Position>>
+  opacity?: number
   pathProps?: React.SVGProps<SVGPathElement>
+  // Two colors [a, b] to fill the country with a diagonal two-color stripe
+  // pattern instead of a solid fill (e.g. Luxembourg shown half-German). The
+  // Country component renders the <pattern> and points the paths' fill at it.
+  stripesColors?: string[]
 }
 
 const RAD2DEG = 180 / Math.PI;

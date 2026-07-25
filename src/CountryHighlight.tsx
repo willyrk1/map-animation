@@ -1,12 +1,11 @@
 import React from "react";
 import { Position } from "geojson";
-import { position2CSV } from "./utility";
+import { position2CSV, Zoom } from "./utility";
 import { MapHighlight } from "./mapReducer";
 
-interface CountryHighlightProps {
+interface CountryHighlightProps extends Zoom {
   highlight: MapHighlight
   coordinates: Array<Array<Position>>
-  zoom: number
 }
 
 // Outlines a shape (a country's current borders, or an arbitrary custom area
@@ -16,9 +15,9 @@ interface CountryHighlightProps {
 // underneath and a crisp line on top.
 export default React.memo(function CountryHighlight(props: Readonly<CountryHighlightProps>) {
   const { highlight, coordinates, zoom } = props
-  const { opacity, ...restPathProps } = highlight.svgPathProps ?? {}
+  const { opacity, svgPathProps } = highlight
 
-  const dashed = !!restPathProps.strokeDasharray
+  const dashed = !!svgPathProps?.strokeDasharray
 
   return (
     <>
@@ -27,7 +26,7 @@ export default React.memo(function CountryHighlight(props: Readonly<CountryHighl
         return (
           <g key={index} opacity={opacity}>
             {!dashed && <path d={d} fill="none" stroke="#f2c14e" strokeWidth={6 / zoom} strokeLinejoin="round" opacity={0.35} />}
-            <path d={d} fill="none" stroke={dashed ? 'white' : '#f2c14e'} strokeWidth={1.6 / zoom} strokeLinejoin="round" {...restPathProps} />
+            <path d={d} fill="none" stroke={dashed ? 'white' : '#f2c14e'} strokeWidth={1.6 / zoom} strokeLinejoin="round" {...svgPathProps} />
           </g>
         )
       })}

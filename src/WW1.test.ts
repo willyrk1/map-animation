@@ -1,4 +1,4 @@
-// Validates that every textMove and textFontSize transition in the WW1 animation
+// Validates that every textMove and textFontPct transition in the WW1 animation
 // references a label id that is actually present in the textCollection at that
 // point in the sequence.
 //
@@ -11,7 +11,7 @@ import { describe, it, expect } from 'vitest';
 import { steps, initialState } from './WW1';
 
 describe('WW1 animation transition integrity', () => {
-  it('every textMove and textFontSize target exists in textCollection when its step runs', () => {
+  it('every textMove and textFontPct target exists in textCollection when its step runs', () => {
     // Replay the same directStep logic the reducer uses: apply each step's
     // transitions in order, maintaining a live set of active label ids.
     const activeIds = new Set(initialState.textCollection.map(t => t.id));
@@ -22,7 +22,7 @@ describe('WW1 animation transition integrity', () => {
       // Check targets BEFORE applying this step's own transitions — this is the
       // snapshot startAnimation captures for the step's transitions to read.
       for (const t of transitions) {
-        if (t.type === 'TextMove' || t.type === 'TextFontSize') {
+        if (t.type === 'TextMove' || t.type === 'TextFontPct') {
           const id = t.mapTextId;
           expect(
             activeIds.has(id),

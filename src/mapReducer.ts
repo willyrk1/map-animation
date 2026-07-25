@@ -1,12 +1,11 @@
 import { Position } from "geojson";
-import { CountryDetails } from "./utility";
+import { CountryDetails, Zoom } from "./utility";
 
-export interface SteplessMapState {
+export interface SteplessMapState extends Zoom {
   countries: Array<CountryDetails>
   textCollection: Array<MapText>
   highlightCollection: Array<MapHighlight>
   viewCenter: Position
-  zoom: number
 }
 
 export interface MapState extends SteplessMapState {
@@ -22,9 +21,8 @@ export interface MapState extends SteplessMapState {
 // Snapshot taken by startAnimation of the values the step's transitions
 // interpolate from, so each doTransitions frame lerps from a fixed starting
 // point instead of compounding on the previous frame's result.
-interface AnimationStart {
+interface AnimationStart extends Zoom {
   viewCenter: Position
-  zoom: number
   textCollection: Array<MapText>
 }
 
@@ -71,10 +69,10 @@ interface TextMove {
   newCoordinates: Position
 }
 
-interface TextFontSize {
-  type: "TextFontSize"
+interface TextFontPct {
+  type: "TextFontPct"
   mapTextId: string
-  newFontSize: string
+  newFontPct: number
 }
 
 interface TextRotate {
@@ -91,6 +89,13 @@ export interface MapText {
   svgTextProps?: React.SVGTextElementAttributes<SVGTextElement>
   svgGProps?: React.SVGProps<SVGGElement>
   svgRectProps?: React.SVGProps<SVGRectElement>
+  opacity?: number
+  // Font size as a percentage of the label layer's base size (100 = base).
+  // SvgTextBox turns this into the `${fontPct}%` the SVG attribute wants.
+  fontPct?: number
+  // Text fill; SvgTextBox applies it as an inline style so the black-fill CSS
+  // rule (.svgText text[style*="fill: black"]) still matches.
+  color?: string
   includeBackground?: boolean
 }
 
@@ -115,6 +120,7 @@ interface HighlightFadeOut {
 export interface MapHighlight {
   id: string
   coordinates?: Position[][]
+  opacity?: number
   svgPathProps?: React.SVGProps<SVGPathElement>
 }
 
@@ -123,7 +129,7 @@ export interface PulsingCircle {
   radius: number
 }
 
-export type MapTransition = CountryReplace | CountryFadeIn | ViewCenterChange | ZoomChange | TextFadeIn | TextFadeOut | TextMove | TextFontSize | TextRotate | HighlightFadeIn | HighlightFadeOut
+export type MapTransition = CountryReplace | CountryFadeIn | ViewCenterChange | ZoomChange | TextFadeIn | TextFadeOut | TextMove | TextFontPct | TextRotate | HighlightFadeIn | HighlightFadeOut
 
 // displayMs is how long autostepping mode pauses on this step (so the user
 // has time to read it) before moving on to the next one.
@@ -175,7 +181,7 @@ export function zoomChange(newZoom: number): ZoomChange {
   return { type: "ZoomChange", newZoom }
 }
 
-export function textFadeIn(mapText: MapText): TextFadeIn {
+export function mapTextFadeIn(mapText: MapText): TextFadeIn {
   return { type: "TextFadeIn", mapText }
 }
 
@@ -187,8 +193,8 @@ export function textMove(mapTextId: string, long: number, lat: number): TextMove
   return { type: "TextMove", mapTextId, newCoordinates: [long, lat] }
 }
 
-export function textFontSize(mapTextId: string, newFontSize: string): TextFontSize {
-  return { type: "TextFontSize", mapTextId, newFontSize }
+export function textFontPct(mapTextId: string, newFontPct: number): TextFontPct {
+  return { type: "TextFontPct", mapTextId, newFontPct }
 }
 
 export function textRotate(mapTextId: string, newRotation: number): TextRotate {
@@ -272,10 +278,7 @@ function applyTransition(state: MapState, transition: MapTransition, t: number):
       const current = state.countries[index] ?? transition.country
       const faded = {
         ...current,
-        pathProps: {
-          ...current.pathProps,
-          opacity: t
-        }
+        opacity: t,
       }
 
       return {
@@ -306,10 +309,7 @@ function applyTransition(state: MapState, transition: MapTransition, t: number):
       const current = state.textCollection[index] ?? transition.mapText
       const faded = {
         ...current,
-        svgGProps: {
-          ...current.svgGProps,
-          opacity: t
-        }
+        opacity: t
       }
 
       return {
@@ -327,10 +327,7 @@ function applyTransition(state: MapState, transition: MapTransition, t: number):
       const current = state.textCollection[index]
       const faded = {
         ...current,
-        svgGProps: {
-          ...current.svgGProps,
-          opacity: 1 - t
-        }
+        opacity: 1 - t
       }
       return { ...state, textCollection: state.textCollection.toSpliced(index, 1, faded) }
     }
@@ -352,23 +349,19 @@ function applyTransition(state: MapState, transition: MapTransition, t: number):
         })
       }
     }
-    case "TextFontSize": {
+    case "TextFontPct": {
       const index = state.textCollection.findIndex(({ id }) => id === transition.mapTextId)
       const startText = findStartText(transition.mapTextId)
       if (index < 0 || !startText) return state
 
-      const startFontSize = parseFloat(startText.svgTextProps?.fontSize as string ?? '100%')
-      const targetFontSize = parseFloat(transition.newFontSize)
-      const newSize = startFontSize + (targetFontSize - startFontSize) * t
+      const startFontPct = startText.fontPct ?? 100
+      const newPct = startFontPct + (transition.newFontPct - startFontPct) * t
       const current = state.textCollection[index]
       return {
         ...state,
         textCollection: state.textCollection.toSpliced(index, 1, {
           ...current,
-          svgTextProps: {
-            ...current.svgTextProps,
-            fontSize: `${newSize}%`
-          }
+          fontPct: newPct
         })
       }
     }
@@ -392,10 +385,7 @@ function applyTransition(state: MapState, transition: MapTransition, t: number):
       const current = state.highlightCollection[index] ?? transition.highlight
       const faded = {
         ...current,
-        svgPathProps: {
-          ...current.svgPathProps,
-          opacity: t
-        }
+        opacity: t
       }
 
       return {
@@ -413,10 +403,7 @@ function applyTransition(state: MapState, transition: MapTransition, t: number):
       const current = state.highlightCollection[index]
       const faded = {
         ...current,
-        svgPathProps: {
-          ...current.svgPathProps,
-          opacity: 1 - t
-        }
+        opacity: 1 - t
       }
       return { ...state, highlightCollection: state.highlightCollection.toSpliced(index, 1, faded) }
     }

@@ -1,9 +1,12 @@
 import React from "react";
-import { position2XY } from "./utility";
+import { position2XY, Zoom } from "./utility";
 import { MapText } from "./mapReducer";
 
-export default React.memo(function SvgTextBox(props: Readonly<MapText & { zoom: number }>) {
-  const { id, coordinates, text = id, rotation, svgGProps, svgRectProps, svgTextProps, includeBackground = false, zoom } = props
+export default React.memo(function SvgTextBox(props: Readonly<MapText & Zoom>) {
+  const {
+      id, coordinates, text = id, rotation, opacity, fontPct, color, svgGProps,
+      svgRectProps, svgTextProps, includeBackground = false, zoom
+  } = props
 
   const textRef = React.useRef<SVGTextElement>(null)
   const rectRef = React.useRef<SVGRectElement>(null)
@@ -35,12 +38,18 @@ export default React.memo(function SvgTextBox(props: Readonly<MapText & { zoom: 
   }, [includeBackground, text, coordinates, zoom, shadowOffset]);
 
   return (
-    <g className="svgText" transform={rotation ? `rotate(${rotation}, ${x}, ${y})` : undefined} {...svgGProps}>
+    <g
+      className="svgText"
+      fontSize={6 / zoom}
+      transform={rotation ? `rotate(${rotation}, ${x}, ${y})` : undefined}
+      opacity={opacity}
+      {...svgGProps}
+    >
       {includeBackground && (
         <rect ref={shadowRectRef} className="svgTextShadow" rx={cornerRadius} ry={cornerRadius} />
       )}
       {includeBackground && <rect ref={rectRef} rx={cornerRadius} ry={cornerRadius} {...svgRectProps} />}
-      <text ref={textRef} x={x} y={y} {...svgTextProps}>
+      <text ref={textRef} x={x} y={y} fontSize={fontPct !== undefined ? `${fontPct}%` : undefined} style={color ? { fill: color } : undefined} {...svgTextProps}>
         {Array.isArray(text) ? text.map((line, index) => (
           <tspan key={line} x={x} dy={index ? "1.2em" : `${0.6 * (1 - text.length)}em`}>{line}</tspan>
         )) : text}
