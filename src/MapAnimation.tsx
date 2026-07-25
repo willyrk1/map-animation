@@ -5,6 +5,7 @@ import { CountryDetails } from "./utility.ts";
 import mapReducer, { MapSteps, SteplessMapState, stepsWithPathProps } from './mapReducer.ts';
 import SvgTextBox from './SvgTextBox.tsx';
 import CountryHighlight from './CountryHighlight.tsx';
+import CurvedArrow from './CurvedArrow.tsx';
 import PulsingCircle from './PulsingCircle.tsx';
 import MapControls from './MapControls.tsx';
 import SvgContainer from './SvgContainer.tsx';
@@ -34,7 +35,7 @@ export default function MapAnimation(props: MapAnimationProps) {
     mapReducer,
     { steps: stepsWithPathProps(steps, toWithPathProps), countries: initialCountries.map(toWithPathProps), ...initialRest, step: 0 }
   )
-  const { countries, textCollection, highlightCollection, viewCenter, zoom, step } = state
+  const { countries, textCollection, highlightCollection, arrowCollection, viewCenter, zoom, step } = state
 
   // On startup/reload, jump straight to the step named in the URL, if valid.
   React.useEffect(() => {
@@ -109,6 +110,9 @@ export default function MapAnimation(props: MapAnimationProps) {
             if (!coordinates) return null
             return <CountryHighlight key={highlight.id} highlight={highlight} coordinates={coordinates} zoom={zoom} />
           })}
+          {arrowCollection.map(arrow => (
+            <CurvedArrow key={arrow.id} {...arrow} zoom={zoom} />
+          ))}
           {steps[step - 1]?.circles?.map((circle, i) => (
             <PulsingCircle key={i} {...circle} zoom={zoom} />
           ))}

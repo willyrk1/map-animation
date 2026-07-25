@@ -1,4 +1,4 @@
-import { countryFadeIn, countryReplace, mapStep, MapSteps, textFadeOut, textMove, textFontPct, textRotate, viewCenterChange, zoomChange, highlightFadeIn, highlightFadeOut } from './mapReducer';
+import { countryFadeIn, countryReplace, mapStep, MapSteps, textFadeOut, textMove, textFontPct, textRotate, viewCenterChange, zoomChange, highlightFadeIn, highlightFadeOut, arrowFadeIn } from './mapReducer';
 import { CountryDetails } from './utility';
 import MapAnimation from './MapAnimation';
 import { getCountriesHighRes, getInitialMapText, textFadeIn, summaryTextFadeIn, modernColorMap, countryHighlight, areaHighlight } from './countries';
@@ -43,6 +43,7 @@ export const initialState = {
   countries: getCountriesHighRes(),
   textCollection: getInitialMapText(),
   highlightCollection: [],
+  arrowCollection: [],
   viewCenter: [28, 57],
   zoom: 3.65,
 }
@@ -633,9 +634,40 @@ export const steps: MapSteps = [
       'The next day, August 2, 1914,',
       'with French troops still a good',
       'distance away, Germany opened the',
-      'western front by invading Luxembourg.',
+      'western front by occupying Luxembourg.',
     ]),
   ]),
+  // ------------------------------------------------------------------- 45
+  mapStep([
+    textFadeOut('LuxembourgInvasion'),
+    textFadeIn('FranceGermanyWarMarker', 6.0, 49.2, { text: '⚔️', fontPct: 150 }),
+    summaryTextFadeIn('BelgiumDemand', 8, 50.5, [
+      'On August 3, Germany declared war',
+      'on France and demanded that neutral',
+      'Belgium allow its troops passage.',
+    ]),
+  ]),
+  // ------------------------------------------------------------------- 46
+  mapStep([
+    textFadeOut('BelgiumDemand'),
+    arrowFadeIn({
+      id: 'GermanyLiege',
+      start: [6.55, 50.5],
+      end: [5.7, 50.6],
+      width: 5,
+      color: modernColorMap['Germany'],
+      borderColor: 'black',
+      borderWidth: 1,
+      curvature: -0.18,
+    }),
+    textFadeIn('LiegeExplosion', 5.5706, 50.6397, { text: '💥', fontPct: 150 }),
+    textFadeIn('Liege', 5.35, 50.7, { text: 'Liège', fontPct: 110, color: 'black' }),
+    summaryTextFadeIn('BelgiumInvasion', 8, 50.5, [
+      'When Belgium refused, Germany',
+      'invaded and the Battle of',
+      'Liège began on August 5.',
+    ]),
+  ], undefined, [{ center: [5.5706, 50.6397], radius: 10 }]),
 ]
 
 function toWithPathProps(country: CountryDetails): CountryDetails {

@@ -5,6 +5,7 @@ export interface SteplessMapState extends Zoom {
   countries: Array<CountryDetails>
   textCollection: Array<MapText>
   highlightCollection: Array<MapHighlight>
+  arrowCollection: Array<MapArrow>
   viewCenter: Position
 }
 
@@ -129,7 +130,41 @@ export interface PulsingCircle {
   radius: number
 }
 
-export type MapTransition = CountryReplace | CountryFadeIn | ViewCenterChange | ZoomChange | TextFadeIn | TextFadeOut | TextMove | TextFontPct | TextRotate | HighlightFadeIn | HighlightFadeOut
+interface ArrowFadeIn {
+  type: "ArrowFadeIn"
+  arrow: MapArrow
+}
+
+interface ArrowFadeOut {
+  type: "ArrowFadeOut"
+  id: string
+}
+
+// A directional arrow drawn from `start` to `end` (both [long, lat]), used to
+// show movement across the map — e.g. an army's line of advance. The shaft
+// follows a quadratic (parabolic) curve controlled by `curvature`; the whole
+// arrow is filled with `color` and optionally outlined with `borderColor` /
+// `borderWidth`. See CurvedArrow.tsx for how the sizes map to screen space.
+export interface MapArrow {
+  id: string
+  start: Position
+  end: Position
+  // Shaft thickness, in the same base units as the rest of the map (divided by
+  // zoom at render time, so on-screen size is zoom-independent).
+  width: number
+  color: string
+  borderColor?: string
+  borderWidth?: number
+  // Sideways bow of the shaft's midpoint as a fraction of the start→end
+  // distance: 0 is a straight line, positive/negative curve to either side.
+  curvature?: number
+  // Arrowhead length and base width, as multiples of `width`.
+  headLength?: number
+  headWidth?: number
+  opacity?: number
+}
+
+export type MapTransition = CountryReplace | CountryFadeIn | ViewCenterChange | ZoomChange | TextFadeIn | TextFadeOut | TextMove | TextFontPct | TextRotate | HighlightFadeIn | HighlightFadeOut | ArrowFadeIn | ArrowFadeOut
 
 // displayMs is how long autostepping mode pauses on this step (so the user
 // has time to read it) before moving on to the next one.
@@ -209,6 +244,14 @@ export function highlightFadeOut(id: string): HighlightFadeOut {
   return { type: "HighlightFadeOut", id }
 }
 
+export function arrowFadeIn(arrow: MapArrow): ArrowFadeIn {
+  return { type: "ArrowFadeIn", arrow }
+}
+
+export function arrowFadeOut(id: string): ArrowFadeOut {
+  return { type: "ArrowFadeOut", id }
+}
+
 export default function mapReducer(prevState: MapState, action: MapAction): MapState {
   const { steps } = prevState
 
@@ -218,6 +261,7 @@ export default function mapReducer(prevState: MapState, action: MapAction): MapS
     countries: prevState.countries,
     textCollection: prevState.textCollection,
     highlightCollection: prevState.highlightCollection,
+    arrowCollection: prevState.arrowCollection,
     viewCenter: prevState.viewCenter,
     zoom: prevState.zoom,
   }
@@ -406,6 +450,33 @@ function applyTransition(state: MapState, transition: MapTransition, t: number):
         opacity: 1 - t
       }
       return { ...state, highlightCollection: state.highlightCollection.toSpliced(index, 1, faded) }
+    }
+    case "ArrowFadeIn": {
+      const index = state.arrowCollection.findIndex(({ id }) => id === transition.arrow.id)
+      const current = state.arrowCollection[index] ?? transition.arrow
+      const faded = {
+        ...current,
+        opacity: t
+      }
+
+      return {
+        ...state,
+        arrowCollection: state.arrowCollection.toSpliced(index >= 0 ? index : state.arrowCollection.length, 1, faded)
+      }
+    }
+    case "ArrowFadeOut": {
+      const index = state.arrowCollection.findIndex(({ id }) => id === transition.id)
+      if (index < 0) return state
+      if (t >= 1) {
+        return { ...state, arrowCollection: state.arrowCollection.toSpliced(index, 1) }
+      }
+
+      const current = state.arrowCollection[index]
+      const faded = {
+        ...current,
+        opacity: 1 - t
+      }
+      return { ...state, arrowCollection: state.arrowCollection.toSpliced(index, 1, faded) }
     }
     default: {
       const _exhaustiveCheck: never = transition
