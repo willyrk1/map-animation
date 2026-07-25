@@ -79,6 +79,7 @@ const serbiaFinalUnion = getSerbiaFinalUnion(initialState)
 const ottomanMiddleEastUnion = getOttomanMiddleEastUnion(initialState)
 const levantUnion = getLevantUnion(initialState)
 const bosniaCoordinates = initialState.countries.find(c => c.name === 'Bosnia and Herz.')?.coordinates ?? []
+const luxembourgCoordinates = initialState.countries.find(c => c.name === 'Luxembourg')?.coordinates ?? []
 
 export const steps: MapSteps = [
   // ------------------------------------------------------------------- 0
@@ -581,6 +582,60 @@ export const steps: MapSteps = [
       'capital, from across the Danube.',
     ]),
   ], 6000, [{ center: [20.46, 44.81], radius: 12 }]),
+  // ------------------------------------------------------------------- 43
+  mapStep([
+    viewCenterChange(22, 49),
+    zoomChange(10),
+    textFadeOut('WarDeclaration'),
+    textMove('Austria-Hungary', 19.5, 47.5),
+    textFontPct('Austria-Hungary', 160),
+    textRotate('Austria-Hungary', 0),
+    textMove('German Empire', 12.5, 52),
+    textMove('Russian Empire', 24, 52),
+    textFontPct('Russian Empire', 160),
+    textFontPct('Serbia', 100),
+    textMove('Romania', 26, 44.6),
+    textMove('Bulgaria', 25.5, 42.6),
+    textFadeOut('Montenegro'),
+    textFadeOut('Albania'),
+    textFontPct('Belgrade', 80),
+    textMove('Belgrade', 20.8, 44.2),
+    textFontPct('France', 160),
+    textFontPct('Switzerland', 85),
+    textFontPct('Bosnia', 90),
+    textFadeOut('Sarajevo'),
+    textFontPct('SarajevoMarker', 100),
+    textFadeIn('Belgium', 4.7, 50.6, { fontPct: 85, color: 'black' }),
+    textFadeIn('Netherlands', 5.6, 52.2, { fontPct: 65, color: 'black' }),
+    textFadeIn('GermanyRussiaMarker', 18, 52.2, { text: '⚔️', fontPct: 180 }),
+    summaryTextFadeIn('GermanyRussiaWar', 35, 52, [
+      'After more failed talks,',
+      "allies followed suit, and",
+      "Germany declared war on",
+      'Russia on August 1, 1914.',
+    ]),
+  ]),
+  // ------------------------------------------------------------------- 44
+  mapStep([
+    viewCenterChange(6.06, 49.75),
+    zoomChange(55),
+    textFadeOut('GermanyRussiaWar'),
+    textMove('France', 4, 49.3),
+    textFontPct('France', 200),
+    textMove('German Empire', 8, 49.9),
+    textFontPct('German Empire', 200),
+    textMove('Belgium', 5.2, 50.4),
+    textFontPct('Belgium', 200),
+    countryReplace('Luxembourg'),
+    countryFadeIn('Luxembourg', luxembourgCoordinates, { stripesColors: [modernColorMap['Luxembourg'], modernColorMap['Germany']] }),
+    textFadeIn('Luxembourg', 6.13, 49.75, { fontPct: 100, color: 'white' }),
+    summaryTextFadeIn('LuxembourgInvasion', 8, 50.5, [
+      'The next day, August 2, 1914,',
+      'with French troops still a good',
+      'distance away, Germany opened the',
+      'western front by invading Luxembourg.',
+    ]),
+  ]),
 ]
 
 function toWithPathProps(country: CountryDetails): CountryDetails {
