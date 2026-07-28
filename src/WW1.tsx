@@ -618,6 +618,8 @@ export const steps: MapSteps = [
   ]),
   // ------------------------------------------------------------------- 44
   mapStep([
+    textMove('Netherlands', 5, 51.7),
+    textFontPct('Netherlands', 200),
     viewCenterChange(6.06, 49.75),
     zoomChange(55),
     textFadeOut('GermanyRussiaWar'),
@@ -639,6 +641,9 @@ export const steps: MapSteps = [
   ]),
   // ------------------------------------------------------------------- 45
   mapStep([
+    viewCenterChange(5.8, 50.4),
+    textMove('Belgium', 4.7, 50.6),
+    textMove('France', 4.1, 49.6),
     textFadeOut('LuxembourgInvasion'),
     textFadeIn('FranceGermanyWarMarker', 6.0, 49.2, { text: '⚔️', fontPct: 150 }),
     summaryTextFadeIn('BelgiumDemand', 8, 50.5, [
@@ -668,6 +673,40 @@ export const steps: MapSteps = [
       'Liège began on August 5.',
     ]),
   ], undefined, [{ center: [5.5706, 50.6397], radius: 10 }]),
+  // ------------------------------------------------------------------- 47
+  mapStep([
+    textFadeOut('BelgiumInvasion'),
+    textMove('Belgium', 4.4, 50.7),
+    arrowFadeIn({
+      id: 'GermanyHalen',
+      start: [5.6, 50.75],
+      end: [5.25, 50.95],
+      width: 5,
+      color: modernColorMap['Germany'],
+      borderColor: 'black',
+      borderWidth: 1,
+      curvature: 0.2,
+    }),
+    arrowFadeIn({
+      id: 'GermanyDinant',
+      start: [5.75, 50.45],
+      end: [5.1, 50.29],
+      width: 5,
+      color: modernColorMap['Germany'],
+      borderColor: 'black',
+      borderWidth: 1,
+      curvature: -0.2,
+    }),
+    textFadeIn('HalenExplosion', 5.11, 50.95, { text: '💥', fontPct: 150 }),
+    textFadeIn('Halen', 4.85, 51, { text: 'Halen', fontPct: 110, color: 'black' }),
+    textFadeIn('DinantExplosion', 4.92, 50.27, { text: '💥', fontPct: 150 }),
+    textFadeIn('Dinant', 4.6, 50.25, { text: 'Dinant', fontPct: 110, color: 'black' }),
+    summaryTextFadeIn('LiegeSiege', 8, 50.5, [
+      'Germany laid siege to Liège as its',
+      'armies pushed deeper into Belgium',
+      'and on towards the French border.',
+    ]),
+  ], undefined, [{ center: [5.11, 50.95], radius: 10 }, { center: [4.92, 50.27], radius: 10 }]),
 ]
 
 function toWithPathProps(country: CountryDetails): CountryDetails {
