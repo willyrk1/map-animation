@@ -1,4 +1,4 @@
-import { countryFadeIn, countryReplace, mapStep, MapSteps, textFadeOut, textMove, textFontPct, textRotate, viewCenterChange, zoomChange, highlightFadeIn, highlightFadeOut, arrowFadeIn } from './mapReducer';
+import { countryFadeIn, countryReplace, mapStep, MapSteps, textFadeOut, textMove, textFontPct, textRotate, viewCenterChange, zoomChange, highlightFadeIn, highlightFadeOut, arrowFadeIn, arrowFadeOut } from './mapReducer';
 import { CountryDetails } from './utility';
 import MapAnimation from './MapAnimation';
 import { getCountriesHighRes, getInitialMapText, textFadeIn, summaryTextFadeIn, modernColorMap, countryHighlight, areaHighlight } from './countries';
@@ -655,16 +655,7 @@ export const steps: MapSteps = [
   // ------------------------------------------------------------------- 46
   mapStep([
     textFadeOut('BelgiumDemand'),
-    arrowFadeIn({
-      id: 'GermanyLiege',
-      start: [6.55, 50.5],
-      end: [5.7, 50.6],
-      width: 5,
-      color: modernColorMap['Germany'],
-      borderColor: 'black',
-      borderWidth: 1,
-      curvature: -0.18,
-    }),
+    arrowFadeIn('GermanyLiege', [6.55, 50.5], [5.7, 50.6], modernColorMap['Germany'], -0.18),
     textFadeIn('LiegeExplosion', 5.5706, 50.6397, { text: '💥', fontPct: 150 }),
     textFadeIn('Liege', 5.35, 50.7, { text: 'Liège', fontPct: 110, color: 'black' }),
     summaryTextFadeIn('BelgiumInvasion', 8, 50.5, [
@@ -677,36 +668,58 @@ export const steps: MapSteps = [
   mapStep([
     textFadeOut('BelgiumInvasion'),
     textMove('Belgium', 4.4, 50.7),
-    arrowFadeIn({
-      id: 'GermanyHalen',
-      start: [5.6, 50.75],
-      end: [5.25, 50.95],
-      width: 5,
-      color: modernColorMap['Germany'],
-      borderColor: 'black',
-      borderWidth: 1,
-      curvature: 0.2,
-    }),
-    arrowFadeIn({
-      id: 'GermanyDinant',
-      start: [5.75, 50.45],
-      end: [5.1, 50.29],
-      width: 5,
-      color: modernColorMap['Germany'],
-      borderColor: 'black',
-      borderWidth: 1,
-      curvature: -0.2,
-    }),
+    arrowFadeIn('GermanyHalen', [5.6, 50.75], [5.25, 50.95], modernColorMap['Germany'], 0.2),
+    arrowFadeIn('GermanyDinant', [5.75, 50.45], [5.1, 50.29], modernColorMap['Germany'], -0.2),
+    arrowFadeIn('FranceDinant', [4.8, 49.85], [4.95, 50.2], modernColorMap['France'], 0.4),
     textFadeIn('HalenExplosion', 5.11, 50.95, { text: '💥', fontPct: 150 }),
-    textFadeIn('Halen', 4.85, 51, { text: 'Halen', fontPct: 110, color: 'black' }),
+    textFadeIn('Halen', 4.85, 51, { fontPct: 110, color: 'black' }),
     textFadeIn('DinantExplosion', 4.92, 50.27, { text: '💥', fontPct: 150 }),
-    textFadeIn('Dinant', 4.6, 50.25, { text: 'Dinant', fontPct: 110, color: 'black' }),
+    textFadeIn('Dinant', 4.7, 50.4, { fontPct: 110, color: 'black' }),
     summaryTextFadeIn('LiegeSiege', 8, 50.5, [
-      'Germany laid siege to Liège as its',
-      'armies pushed deeper into Belgium',
-      'and on towards the French border.',
+      'As Liège fell, Germany\'s armies',
+      'pushed deeper into Belgium and',
+      'on towards the French border',
+      'through mid-August 1914.',
     ]),
   ], undefined, [{ center: [5.11, 50.95], radius: 10 }, { center: [4.92, 50.27], radius: 10 }]),
+  // ------------------------------------------------------------------- 48
+  mapStep([
+    textFadeOut('Halen'),
+    textFadeOut('HalenExplosion'),
+    arrowFadeOut('GermanyHalen'),
+    textFadeOut('LiegeSiege'),
+    // Keep the earlier battles (Liège, Halen, Dinant) and their arrows on
+    // screen; shift the Belgium country label and the Dinant label clear of
+    // the new frontier cluster.
+    textMove('Belgium', 4.4, 50.95),
+    textMove('Dinant', 5.21, 50.18),
+    // Namur — German (from the north), Austrian (from the east), French (from the south, west of Dinant).
+    arrowFadeIn('GermanyNamur', [5.15, 50.7], [4.9, 50.58], modernColorMap['Germany'], 0.25, {width: 3.5}),
+    arrowFadeIn('AustriaNamur', [5.4, 50.6], [5.05, 50.49], modernColorMap['Austria'], -0.15),
+    arrowFadeIn('FranceNamur', [4.6, 49.9], [4.8, 50.38], modernColorMap['France'], -0.3),
+    // Charleroi — German (from the north) and French (from the south-west).
+    arrowFadeIn('GermanyCharleroi', [4.85, 50.7], [4.5, 50.5], modernColorMap['Germany'], 0.25),
+    arrowFadeIn('FranceCharleroi', [3.95, 50.02], [4.3, 50.31], modernColorMap['France'], -0.2),
+    // Mons — German (from the north-east) and British (from the south-west).
+    arrowFadeIn('GermanyMons', [4.5, 50.7], [4.05, 50.6], modernColorMap['Germany'], 0.4),
+    arrowFadeIn('BritainMons', [3.35, 50.05], [3.9, 50.4], modernColorMap['United Kingdom'], 0.2),
+    textFadeIn('NamurExplosion', 4.87, 50.47, { text: '💥', fontPct: 150 }),
+    textFadeIn('Namur', 5.18, 50.42, { fontPct: 110, color: 'black' }),
+    textFadeIn('CharleroiExplosion', 4.43, 50.4, { text: '💥', fontPct: 150 }),
+    textFadeIn('Charleroi', 4.29, 50.5, { text: ['Charle-', 'roi'], fontPct: 110, color: 'black' }),
+    textFadeIn('MonsExplosion', 3.95, 50.48, { text: '💥', fontPct: 150 }),
+    textFadeIn('Mons', 3.75, 50.58, { fontPct: 110, color: 'black' }),
+    summaryTextFadeIn('FrontiersBattle', 8.15, 50.5, [
+      'By the last week of August, German',
+      'and Austrian forces were overrunning',
+      'southern Belgium despite assistance',
+      'from France as well as Britain.',
+    ]),
+  ], undefined, [
+    { center: [4.87, 50.47], radius: 10 },
+    { center: [4.43, 50.4], radius: 10 },
+    { center: [3.95, 50.48], radius: 10 },
+  ]),
 ]
 
 function toWithPathProps(country: CountryDetails): CountryDetails {

@@ -244,8 +244,21 @@ export function highlightFadeOut(id: string): HighlightFadeOut {
   return { type: "HighlightFadeOut", id }
 }
 
-export function arrowFadeIn(arrow: MapArrow): ArrowFadeIn {
-  return { type: "ArrowFadeIn", arrow }
+// id/start/end/color/curvature are the essentials for every arrow; width,
+// borderColor, and borderWidth default to a black-outlined shaft (override
+// them, or set headLength/headWidth/opacity, via the options arg).
+export function arrowFadeIn(
+  id: string,
+  start: Position,
+  end: Position,
+  color: string,
+  curvature: number,
+  options?: Partial<Omit<MapArrow, 'id' | 'start' | 'end' | 'color' | 'curvature'>>
+): ArrowFadeIn {
+  return {
+    type: "ArrowFadeIn",
+    arrow: { width: 5, borderColor: 'black', borderWidth: 1, ...options, id, start, end, color, curvature },
+  }
 }
 
 export function arrowFadeOut(id: string): ArrowFadeOut {
