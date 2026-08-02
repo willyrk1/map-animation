@@ -113,8 +113,12 @@ export default function MapAnimation(props: MapAnimationProps) {
           {arrowCollection.map(arrow => (
             <CurvedArrow key={arrow.id} {...arrow} zoom={zoom} />
           ))}
+          {/* Key by step (not just index) so every circle remounts on each
+              step change and replays its one-shot pulse animation. With a bare
+              index key, a circle slot reused from the previous step keeps its
+              already-finished animation and never pulses again. */}
           {steps[step - 1]?.circles?.map((circle, i) => (
-            <PulsingCircle key={i} {...circle} zoom={zoom} />
+            <PulsingCircle key={`${step}-${i}`} {...circle} zoom={zoom} />
           ))}
           {textCollection.map(mapText => (
             <SvgTextBox key={mapText.id} {...mapText} zoom={zoom} />

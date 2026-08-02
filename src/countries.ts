@@ -11,11 +11,11 @@ export function baseText(id: string, long: number, lat: number, mapText?: Omit<M
   return { id, coordinates: [long, lat], text: id, ...mapText }
 }
 
-export function summaryText(id: string, long: number, lat: number, text: Required<MapText>['text'], mapText?: Omit<MapText, 'id' | 'coordinates' | 'text'>): MapText {
+export function summaryText(id: string, long: number, lat: number, text: Required<MapText>['text'], heading?: string, mapText?: Omit<MapText, 'id' | 'coordinates' | 'text' | 'heading'>): MapText {
   const { svgTextProps, ...rest } = mapText ?? {}
   return {
     includeBackground: true,
-    ...baseText(id, long, lat, { text, svgTextProps: { className: 'summary', ...svgTextProps }, ...rest })
+    ...baseText(id, long, lat, { text, heading, svgTextProps: { className: 'summary', ...svgTextProps }, ...rest })
   }
 }
 
@@ -26,8 +26,8 @@ export function textFadeIn(id: string, long: number, lat: number, mapText?: Omit
 }
 
 // A summary-box fade-in, same shorthand for the summaryText variant.
-export function summaryTextFadeIn(id: string, long: number, lat: number, text: Required<MapText>['text'], mapText?: Omit<MapText, 'id' | 'coordinates' | 'text'>) {
-  return mapTextFadeIn(summaryText(id, long, lat, text, mapText))
+export function summaryTextFadeIn(id: string, long: number, lat: number, text: Required<MapText>['text'], heading?: string, mapText?: Omit<MapText, 'id' | 'coordinates' | 'text' | 'heading'>) {
+  return mapTextFadeIn(summaryText(id, long, lat, text, heading, mapText))
 }
 
 // Builds a MapHighlight that outlines an existing country's current shape
@@ -52,7 +52,6 @@ export function getInitialMapText(): Array<MapText> {
   return [
     summaryText('StartSummary', 49, 62,
       ['World War I began with', 'a map significantly different', 'from the map of today.'],
-      { includeBackground: true },
     ),
     ...initialTextCollection.map(({ id, coordinates: [long, lat], ...maptext }: MapText) => baseText(id, long, lat, maptext))
   ]

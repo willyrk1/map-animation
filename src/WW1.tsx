@@ -545,14 +545,14 @@ export const steps: MapSteps = [
     textFadeIn('SarajevoMarker', 18.413, 43.856, { text: '★', fontPct: 200, color: '#e8c84a' }),
     textFadeIn('Sarajevo', 18.03, 43.856, { fontPct: 90, color: '#e8c84a' }),
     summaryTextFadeIn('Assassination', 14.8, 42.85, [
-      'Tensions boiled over on June 28, 1914',
+      'Tensions finally boiled over',
       'when a Bosnian Serb nationalist',
       'assassinated the heir to the throne',
       'of Austria-Hungary, Archduke Franz',
       'Ferdinand, and his wife, while they',
       'visited the Bosnian provincial',
       'capital of Sarajevo.',
-    ]),
+    ], 'June 28, 1914'),
   ]),
   // ------------------------------------------------------------------- 41
   mapStep([
@@ -567,7 +567,7 @@ export const steps: MapSteps = [
       'Serbs, Croats, and Bosniaks',
       'suspected of pro-Serbian',
       'sympathies.',
-    ]),
+    ], 'July 1914'),
   ], 5500),
   // ------------------------------------------------------------------- 42
   mapStep([
@@ -575,13 +575,13 @@ export const steps: MapSteps = [
     textFadeIn('BelgradeMarker', 20.46, 44.81, { text: '💥', fontPct: 200 }),
     textFadeIn('Belgrade', 20.46, 44.65, { fontPct: 90, color: '#e8c84a' }),
     summaryTextFadeIn('WarDeclaration', 14.7, 43.0, [
-      'Negotiations collapsed. On July 28,',
-      '1914 - exactly one month after the',
-      'assassination - Austria-Hungary',
-      'declared war on Serbia and began',
-      'shelling Belgrade, the Serbian',
-      'capital, from across the Danube.',
-    ]),
+      'Negotiations collapsed. Exactly',
+      'one month after the assassination,',
+      'Austria-Hungary declared war on',
+      'Serbia and began shelling Belgrade,',
+      'the Serbian capital, from',
+      'across the Danube.',
+    ], 'July 28, 1914'),
   ], 6000, [{ center: [20.46, 44.81], radius: 12 }]),
   // ------------------------------------------------------------------- 43
   mapStep([
@@ -611,10 +611,9 @@ export const steps: MapSteps = [
     textFadeIn('GermanyRussiaMarker', 18, 52.2, { text: '⚔️', fontPct: 180 }),
     summaryTextFadeIn('GermanyRussiaWar', 35, 52, [
       'After more failed talks,',
-      "allies followed suit, and",
-      "Germany declared war on",
-      'Russia on August 1, 1914.',
-    ]),
+      'allies followed suit, and',
+      'Germany declared war on Russia.',
+    ], 'August 1, 1914'),
   ]),
   // ------------------------------------------------------------------- 44
   mapStep([
@@ -633,11 +632,10 @@ export const steps: MapSteps = [
     countryFadeIn('Luxembourg', luxembourgCoordinates, { stripesColors: [modernColorMap['Luxembourg'], modernColorMap['Germany']] }),
     textFadeIn('Luxembourg', 6.13, 49.75, { fontPct: 100, color: 'white' }),
     summaryTextFadeIn('LuxembourgInvasion', 8, 50.5, [
-      'The next day, August 2, 1914,',
-      'with French troops still a good',
+      'With French troops still a good',
       'distance away, Germany opened the',
       'western front by occupying Luxembourg.',
-    ]),
+    ], 'August 2, 1914'),
   ]),
   // ------------------------------------------------------------------- 45
   mapStep([
@@ -647,10 +645,10 @@ export const steps: MapSteps = [
     textFadeOut('LuxembourgInvasion'),
     textFadeIn('FranceGermanyWarMarker', 6.0, 49.2, { text: '⚔️', fontPct: 150 }),
     summaryTextFadeIn('BelgiumDemand', 8, 50.5, [
-      'On August 3, Germany declared war',
-      'on France and demanded that neutral',
-      'Belgium allow its troops passage.',
-    ]),
+      'Germany declared war on France',
+      'and demanded that neutral Belgium',
+      'allow its troops passage.',
+    ], 'August 3, 1914'),
   ]),
   // ------------------------------------------------------------------- 46
   mapStep([
@@ -661,12 +659,69 @@ export const steps: MapSteps = [
     summaryTextFadeIn('BelgiumInvasion', 8, 50.5, [
       'When Belgium refused, Germany',
       'invaded and the Battle of',
-      'Liège began on August 5.',
-    ]),
+      'Liège began.',
+    ], 'August 4–5, 1914'),
   ], undefined, [{ center: [5.5706, 50.6397], radius: 10 }]),
   // ------------------------------------------------------------------- 47
   mapStep([
     textFadeOut('BelgiumInvasion'),
+    viewCenterChange(7.34, 47.75),
+    // Bring the surrounding country labels into the Alsace frame for orientation.
+    textMove('France', 4.7, 48),
+    textMove('German Empire', 8.3, 48.9),
+    textMove('Austria-Hungary', 10.55, 47.15),
+    textFontPct('Austria-Hungary', 200),
+    textMove('Switzerland', 8.2, 46.9),
+    textFontPct('Switzerland', 200),
+    arrowFadeIn('FranceMulhouse', [6.55, 47.55], [7.22, 47.73], modernColorMap['France'], 0.2),
+    textFadeIn('MulhouseExplosion', 7.34, 47.75, { text: '💥', fontPct: 150 }),
+    textFadeIn('Mulhouse', 7.75, 47.7, { fontPct: 110, color: 'white' }),
+    summaryTextFadeIn('AlsaceOffensive', 8.9, 48.25, [
+      'France responded to Germany\'s',
+      'declaration of war by attacking',
+      'Mulhouse in German-controlled Alsace.',
+    ], 'August 7, 1914'),
+  ], undefined, [{ center: [7.34, 47.75], radius: 10 }]),
+  // ------------------------------------------------------------------- 48
+  mapStep([
+    // France's second thrust into Alsace-Lorraine: the Battle of Lorraine
+    // (Morhange-Sarrebourg), mid-August 1914. The Mulhouse battle stays on
+    // screen so both French offensives show together.
+    textMove('German Empire', 8.6, 48.9),
+    textFadeOut('AlsaceOffensive'),
+    arrowFadeIn('FranceLorraine', [5.85, 48.6], [6.62, 48.78], modernColorMap['France'], 0.2),
+    textFadeIn('LorraineExplosion', 6.72, 48.8, { text: '💥', fontPct: 150 }),
+    textFadeIn('Morhange', 6.4, 48.9, { fontPct: 110, color: 'white' }),
+    arrowFadeIn('FranceSarrebourg', [6.7, 48.35], [7.0, 48.65], modernColorMap['France'], 0.2),
+    textFadeIn('SarrebourgExplosion', 7.05, 48.74, { text: '💥', fontPct: 150 }),
+    textFadeIn('Sarrebourg', 7.18, 48.85, { fontPct: 110, color: 'white' }),
+    summaryTextFadeIn('LorraineOffensive', 8.9, 48.25, [
+      'France also attacked Lorraine.',
+      'Alsace and Lorraine were French',
+      'territories until the',
+      'Franco-Prussian War of 1871.',
+    ], 'Mid-August 1914'),
+  ], undefined, [{ center: [6.72, 48.8], radius: 10 }, { center: [7.05, 48.74], radius: 10 }]),
+  // ------------------------------------------------------------------- 49
+  mapStep([
+    viewCenterChange(5.8, 50.4),
+    textFadeOut('LorraineOffensive'),
+    textFadeOut('MulhouseExplosion'),
+    textFadeOut('Mulhouse'),
+    arrowFadeOut('FranceMulhouse'),
+    textFadeOut('LorraineExplosion'),
+    textFadeOut('Morhange'),
+    arrowFadeOut('FranceLorraine'),
+    textFadeOut('SarrebourgExplosion'),
+    textFadeOut('Sarrebourg'),
+    arrowFadeOut('FranceSarrebourg'),
+    // Restore the orientation labels to their Belgium-view positions/sizes.
+    textMove('France', 4.1, 49.6),
+    textMove('German Empire', 8, 49.9),
+    textMove('Austria-Hungary', 19.5, 47.5),
+    textFontPct('Austria-Hungary', 160),
+    textMove('Switzerland', 8.2, 46.8),
+    textFontPct('Switzerland', 85),
     textMove('Belgium', 4.4, 50.7),
     arrowFadeIn('GermanyHalen', [5.6, 50.75], [5.25, 50.95], modernColorMap['Germany'], 0.2),
     arrowFadeIn('GermanyDinant', [5.75, 50.45], [5.1, 50.29], modernColorMap['Germany'], -0.2),
@@ -678,11 +733,10 @@ export const steps: MapSteps = [
     summaryTextFadeIn('LiegeSiege', 8, 50.5, [
       'As Liège fell, Germany\'s armies',
       'pushed deeper into Belgium and',
-      'on towards the French border',
-      'through mid-August 1914.',
-    ]),
+      'on towards the French border.',
+    ], 'Mid-August 1914'),
   ], undefined, [{ center: [5.11, 50.95], radius: 10 }, { center: [4.92, 50.27], radius: 10 }]),
-  // ------------------------------------------------------------------- 48
+  // ------------------------------------------------------------------- 50
   mapStep([
     textFadeOut('Halen'),
     textFadeOut('HalenExplosion'),
@@ -710,11 +764,11 @@ export const steps: MapSteps = [
     textFadeIn('MonsExplosion', 3.95, 50.48, { text: '💥', fontPct: 150 }),
     textFadeIn('Mons', 3.75, 50.58, { fontPct: 110, color: 'black' }),
     summaryTextFadeIn('FrontiersBattle', 8.15, 50.5, [
-      'By the last week of August, German',
-      'and Austrian forces were overrunning',
-      'southern Belgium despite assistance',
-      'from France as well as Britain.',
-    ]),
+      'German and Austrian forces were',
+      'overrunning southern Belgium',
+      'despite assistance from France',
+      'as well as Britain.',
+    ], 'Late August 1914'),
   ], undefined, [
     { center: [4.87, 50.47], radius: 10 },
     { center: [4.43, 50.4], radius: 10 },

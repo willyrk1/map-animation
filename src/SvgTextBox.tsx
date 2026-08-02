@@ -4,7 +4,7 @@ import { MapText } from "./mapReducer";
 
 export default React.memo(function SvgTextBox(props: Readonly<MapText & Zoom>) {
   const {
-      id, coordinates, text = id, rotation, opacity, fontPct, color, svgGProps,
+      id, coordinates, text = id, heading, rotation, opacity, fontPct, color, svgGProps,
       svgRectProps, svgTextProps, includeBackground = false, zoom
   } = props
 
@@ -35,7 +35,13 @@ export default React.memo(function SvgTextBox(props: Readonly<MapText & Zoom>) {
         shadowRectRef.current.setAttribute('height', `${rectHeight}`);
       }
     }
-  }, [includeBackground, text, coordinates, zoom, shadowOffset]);
+  }, [includeBackground, text, heading, coordinates, zoom, shadowOffset]);
+
+  // Body text plus an optional heading line stacked above it. When a heading is
+  // present we always render tspans so the two stack; a plain single-line string
+  // with no heading still renders inline (unchanged from before).
+  const bodyLines = Array.isArray(text) ? text : [text]
+  const lines = heading ? [heading, ...bodyLines] : bodyLines
 
   return (
     <g
@@ -50,8 +56,13 @@ export default React.memo(function SvgTextBox(props: Readonly<MapText & Zoom>) {
       )}
       {includeBackground && <rect ref={rectRef} rx={cornerRadius} ry={cornerRadius} {...svgRectProps} />}
       <text ref={textRef} x={x} y={y} fontSize={fontPct !== undefined ? `${fontPct}%` : undefined} style={color ? { fill: color } : undefined} {...svgTextProps}>
-        {Array.isArray(text) ? text.map((line, index) => (
-          <tspan key={line} x={x} dy={index ? "1.2em" : `${0.6 * (1 - text.length)}em`}>{line}</tspan>
+        {heading || Array.isArray(text) ? lines.map((line, index) => (
+          <tspan
+            key={index}
+            x={x}
+            dy={index ? "1.2em" : `${0.6 * (1 - lines.length)}em`}
+            className={heading && index === 0 ? 'summaryHeading' : undefined}
+          >{line}</tspan>
         )) : text}
       </text>
     </g>

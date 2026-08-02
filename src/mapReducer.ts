@@ -85,6 +85,9 @@ interface TextRotate {
 export interface MapText {
   id: string
   text?: string | Array<string> // If undefined, use id instead.
+  // Optional heading rendered above the body text (e.g. a date or date range
+  // on a summary box). SvgTextBox styles it bold via the .summaryHeading class.
+  heading?: string
   coordinates: Position
   rotation?: number
   svgTextProps?: React.SVGTextElementAttributes<SVGTextElement>
